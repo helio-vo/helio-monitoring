@@ -24,22 +24,18 @@ import eu.heliovo.monitoring.model.ServiceStatus;
 @Service("monitoringService")
 public class MonitoringServiceImpl implements MonitoringService, InitializingBean {
 
-	// private final MonitoringDaemon daemon;
-
 	// services from the registry with ID and URL
 	private final Map<String, URL> services = new HashMap<String, URL>();
 
 	private final PingComponent pingComponent;
 
 	@Autowired
-	public MonitoringServiceImpl(/* final MonitoringDaemon daemon , */final PingComponent pingComponent) {
-		// this.daemon = daemon;
+	public MonitoringServiceImpl(final PingComponent pingComponent) {
 		this.pingComponent = pingComponent;
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		// Assert.notNull(daemon, "the property daemon must be set");
 		Assert.notNull(pingComponent, "the pingComponent must not be null");
 		readServicesFromRegistry();
 		pingComponent.setServices(services);
@@ -50,7 +46,7 @@ public class MonitoringServiceImpl implements MonitoringService, InitializingBea
 	 * gets called autmatically by a quartz job from the application context.
 	 * TODO implement this with the real Helio Registry Service<br>
 	 */
-	public void readServicesFromRegistry() {
+	private void readServicesFromRegistry() {
 		try {
 			services.put("local HEC", new URL("http://localhost:8080/core/HECService?wsdl"));
 			services.put("local FrontendFacade", new URL("http://localhost:8080/core/FrontendFacadeService?wsdl"));

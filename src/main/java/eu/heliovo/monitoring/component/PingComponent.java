@@ -49,10 +49,10 @@ public class PingComponent {
 
 			boolean exception = false;
 			final StopWatch watch = new StopWatch(service.getKey());
+			final URL url = service.getValue();
 
 			try {
 
-				final URL url = service.getValue();
 				final URLConnection connection = url.openConnection();
 				connection.setConnectTimeout(TIMEOUT);
 				watch.start();
@@ -67,10 +67,10 @@ public class PingComponent {
 			}
 
 			if (exception) {
-				newCache.add(new ServiceStatus(service.getKey()));
+				newCache.add(new ServiceStatus(service.getKey(), url));
 			} else {
 				final int reponseTime = Double.valueOf(watch.getTotalTimeMillis()).intValue();
-				newCache.add(new ServiceStatus(service.getKey(), State.UP, reponseTime));
+				newCache.add(new ServiceStatus(service.getKey(), url, State.UP, reponseTime));
 			}
 		}
 

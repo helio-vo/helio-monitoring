@@ -10,7 +10,8 @@
            http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
            http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
 
-	<context:component-scan base-package="ch.i4ds.helio.monitoringservice" />
+	<context:component-scan base-package="eu.heliovo.monitoring" />
+	<context:property-placeholder location="classpath:helio-monitoring.properties"/>
 
 	<!--import resource="classpath:META-INF/cxf/cxf.xml" />
 	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
@@ -25,6 +26,7 @@
 		<property name="jobDataAsMap">
 			<map>
 				<entry key="pingComponent"  value-ref="pingComponent" />
+				<entry key="monitoringDaemon"  value-ref="monitoringDaemon" />
 			</map>
   		</property>
 	</bean>
