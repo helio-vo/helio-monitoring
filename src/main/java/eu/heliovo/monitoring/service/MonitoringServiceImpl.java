@@ -21,7 +21,7 @@ import eu.heliovo.monitoring.model.ServiceStatus;
  * @author Kevin Seidler
  * 
  */
-@Service("monitoringService")
+@Service
 public class MonitoringServiceImpl implements MonitoringService, InitializingBean {
 
 	// services from the registry with ID and URL

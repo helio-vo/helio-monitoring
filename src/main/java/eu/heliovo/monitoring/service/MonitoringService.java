@@ -4,7 +4,6 @@ import java.util.List;
 
 import eu.heliovo.monitoring.model.ServiceStatus;
 
-// @WebService
 public interface MonitoringService {
 
 	/**
@@ -12,6 +11,5 @@ public interface MonitoringService {
 	 * 
 	 * @return List of service status
 	 */
-	// @WebMethod
 	public abstract List<ServiceStatus> getPingStatus();
 }
