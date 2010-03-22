@@ -2,10 +2,9 @@ package eu.heliovo.monitoring.scheduling;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import eu.heliovo.monitoring.component.PingComponent;
@@ -14,7 +13,7 @@ import eu.heliovo.monitoring.model.ServiceStatus;
 
 public class PingJob extends QuartzJobBean {
 
-	private final Logger logger = LoggerFactory.getLogger(getClass());
+	private final Logger logger = Logger.getLogger(this.getClass());
 
 	private PingComponent pingComponent;
 	private MonitoringDaemon monitoringDaemon;
