@@ -48,8 +48,6 @@ public class MonitoringServiceImpl implements MonitoringService, InitializingBea
 	 */
 	private void readServicesFromRegistry() {
 		try {
-			services.put("local HEC", new URL("http://localhost:8080/core/HECService?wsdl"));
-			services.put("local FrontendFacade", new URL("http://localhost:8080/core/FrontendFacadeService?wsdl"));
 
 			services.put("HEC", new URL("http://helio.i4ds.technik.fhnw.ch:8080/core/HECService?wsdl"));
 			services.put("FrontendFacade", new URL(

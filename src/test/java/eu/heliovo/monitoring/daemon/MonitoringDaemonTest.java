@@ -127,7 +127,7 @@ public class MonitoringDaemonTest extends Assert {
 	public void testWriteServiceStatusToNagios() throws Exception {
 
 		final File nagiosExternalCommandFile = new File("nagios2.cmd");
-		final MonitoringDaemon daemon = new MonitoringDaemon("nagios2.cmd");
+		final RemotingMonitoringDaemon daemon = new MonitoringDaemon("nagios2.cmd");
 
 		final List<ServiceStatus> serviceStatus = new ArrayList<ServiceStatus>();
 
@@ -167,7 +167,7 @@ public class MonitoringDaemonTest extends Assert {
 
 		long time = System.currentTimeMillis() / 1000;
 		String hostName = "helio.i4ds.technik.fhnw.ch";
-		String statusMessage = first.getState().name() + " response time = " + first.getResponseTime() + " ms";
+		String statusMessage = first.getState().name() + " - response time = " + first.getResponseTime() + " ms";
 
 		final String expectedFirstLine = buildCommandLine(time, hostName, "HEC", NagiosStatus.OK, statusMessage);
 
@@ -180,7 +180,7 @@ public class MonitoringDaemonTest extends Assert {
 
 		time = System.currentTimeMillis() / 1000;
 		hostName = "helio.i4ds.technik.fhnw.ch";
-		statusMessage = second.getState().name() + " response time = " + second.getResponseTime() + " ms";
+		statusMessage = second.getState().name() + " - response time = " + second.getResponseTime() + " ms";
 
 		final String expectedSecondLine = buildCommandLine(time, hostName, "FrontendFacade", NagiosStatus.CRITICAL,
 				statusMessage);

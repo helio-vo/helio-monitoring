@@ -15,11 +15,11 @@ import eu.heliovo.monitoring.model.ServiceStatus;
 import eu.heliovo.monitoring.model.State;
 
 @Component
-public class MonitoringDaemon implements InitializingBean {
+public class MonitoringDaemon implements InitializingBean, RemotingMonitoringDaemon {
 
 	public final static String FILE_ENCODING = "UTF-8";
 
-	private final File nagiosExternalCommandFile;
+	protected final File nagiosExternalCommandFile;
 	private final Logger logger = Logger.getLogger(getClass());
 
 	@Autowired
@@ -73,6 +73,9 @@ public class MonitoringDaemon implements InitializingBean {
 				status, statusMessage);
 	}
 
+	/* (non-Javadoc)
+	 * @see eu.heliovo.monitoring.daemon.RemotingMonitoringDaemon#writeServiceStatusToNagios(java.util.List)
+	 */
 	public void writeServiceStatusToNagios(final List<ServiceStatus> serviceStatus) {
 
 		for (final ServiceStatus actualServiceStatus : serviceStatus) {
@@ -91,7 +94,7 @@ public class MonitoringDaemon implements InitializingBean {
 				throw new IllegalStateException("a state must be given!");
 			}
 
-			final String statusMessage = state.name() + " response time = " + actualServiceStatus.getResponseTime()
+			final String statusMessage = state.name() + " - response time = " + actualServiceStatus.getResponseTime()
 					+ " ms";
 
 			writeToNagiosExternalCommandFile(command, hostName, serviceName, status, statusMessage);

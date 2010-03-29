@@ -19,6 +19,8 @@
 		<!--  common version numbers of dependencies -->
 		<spring.version>3.0.1.RELEASE</spring.version>
 		<commons-io.verion>1.4</commons-io.verion>
+		<quartz.version>1.6.3</quartz.version>
+		<commons-collections.version>3.2.1</commons-collections.version>
 	</properties>
 
 	<dependencies>
@@ -46,12 +48,12 @@
 		<dependency>
 			<groupId>opensymphony</groupId>
 			<artifactId>quartz</artifactId>
-			<version>1.6.3</version>
+			<version>${quartz.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-collections</groupId>
 			<artifactId>commons-collections</artifactId>
-			<version>3.2.1</version>
+			<version>${commons-collections.version}</version>
 		</dependency>
 		
 		<!-- utils -->

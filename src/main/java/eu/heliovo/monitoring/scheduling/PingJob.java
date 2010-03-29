@@ -8,7 +8,7 @@ import org.quartz.JobExecutionException;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import eu.heliovo.monitoring.component.PingComponent;
-import eu.heliovo.monitoring.daemon.MonitoringDaemon;
+import eu.heliovo.monitoring.daemon.RemotingMonitoringDaemon;
 import eu.heliovo.monitoring.model.ServiceStatus;
 
 public class PingJob extends QuartzJobBean {
@@ -16,7 +16,7 @@ public class PingJob extends QuartzJobBean {
 	private final Logger logger = Logger.getLogger(this.getClass());
 
 	private PingComponent pingComponent;
-	private MonitoringDaemon monitoringDaemon;
+	private RemotingMonitoringDaemon monitoringDaemon;
 
 	@Override
 	protected void executeInternal(final JobExecutionContext context) throws JobExecutionException {
@@ -39,7 +39,7 @@ public class PingJob extends QuartzJobBean {
 		this.pingComponent = pingComponent;
 	}
 
-	public void setMonitoringDaemon(final MonitoringDaemon monitoringDaemon) {
+	public void setMonitoringDaemon(final RemotingMonitoringDaemon monitoringDaemon) {
 		this.monitoringDaemon = monitoringDaemon;
 	}
 }
