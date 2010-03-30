@@ -41,8 +41,6 @@ public class MonitoringDaemon implements InitializingBean, RemotingMonitoringDae
 
 		if (nagiosExternalCommandFile == null) {
 			throw new IllegalStateException("nagiosExternalCommandFile must not be null!");
-		} else if (!nagiosExternalCommandFile.isFile()) {
-			throw new IllegalStateException("nagiosExternalCommandFile must be a file!");
 		} else if (!nagiosExternalCommandFile.canWrite()) {
 			throw new IllegalStateException("nagiosExternalCommandFile cannot be written!");
 		}

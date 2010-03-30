@@ -50,15 +50,19 @@ public class MonitoringServiceImpl implements MonitoringService, InitializingBea
 		try {
 
 			services.put("HEC", new URL("http://helio.i4ds.technik.fhnw.ch:8080/core/HECService?wsdl"));
+
 			services.put("FrontendFacade", new URL(
 					"http://helio.i4ds.technik.fhnw.ch:8080/core/FrontendFacadeService?wsdl"));
+
 			services.put("WorkflowsService",
 					new URL("http://helio.i4ds.technik.fhnw.ch/helio-wf/WorkflowsService?wsdl"));
 
-			services.put("helio-dev HEC", new URL("http://helio-dev.i4ds.technik.fhnw.ch:8080/core/HECService?wsdl"));
-			services.put("helio-dev FrontendFacade", new URL(
+			services.put("HEC", new URL("http://helio-dev.i4ds.technik.fhnw.ch:8080/core/HECService?wsdl"));
+
+			services.put("FrontendFacade", new URL(
 					"http://helio-dev.i4ds.technik.fhnw.ch:8080/core/FrontendFacadeService?wsdl"));
-			services.put("helio-dev WorkflowsService", new URL(
+
+			services.put("WorkflowsService", new URL(
 					"http://helio-dev.i4ds.technik.fhnw.ch/helio-wf/WorkflowsService?wsdl"));
 
 			services.put("FakeOfflineService", new URL("http://123.43.121.11/"));
