@@ -12,7 +12,9 @@
 	<artifactId>helio-monitoring</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
-
+	<description>
+		TODO: Add description in helio-monitoring/pom.xml
+	</description>
 	<name>helio-monitoring</name>
 
 	<properties>
