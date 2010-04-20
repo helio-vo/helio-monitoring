@@ -6,9 +6,9 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import eu.heliovo.monitoring.component.MethodCallComponent;
 import eu.heliovo.monitoring.component.PingComponent;
 import eu.heliovo.monitoring.model.ServiceStatus;
-import eu.heliovo.monitoring.service.MonitoringServiceImpl;
 
 /**
  * Tests the MonitoringService.
@@ -19,14 +19,18 @@ import eu.heliovo.monitoring.service.MonitoringServiceImpl;
 public class MonitoringServiceTest extends Assert {
 
 	private final PingComponent pingComponent = new PingComponent();
-	private final MonitoringServiceImpl monitoringService = new MonitoringServiceImpl(pingComponent);
+	private final MethodCallComponent methodCallComponent = new MethodCallComponent("mainlog",
+			"http://localhost:8080/helio-monitoring/logs");
+	private final MonitoringServiceImpl monitoringService = new MonitoringServiceImpl(pingComponent,
+			methodCallComponent);
 
 	@Test
 	public void testService() throws Exception {
 
-		monitoringService.afterPropertiesSet(); // called automatically by
-												// spring
+		monitoringService.afterPropertiesSet(); // called automatically by spring
 		pingComponent.refreshCache(); // also done automatically in runtime
+
+		// TODO evenutally call MethodCallComponent here
 
 		final List<ServiceStatus> result = monitoringService.getPingStatus();
 		assertFalse(result.isEmpty());

@@ -12,26 +12,44 @@
 
 	<!-- scheduling -->
 	
-	<bean name="pingJob" class="org.springframework.scheduling.quartz.JobDetailBean">
-		<property name="jobClass" value="eu.heliovo.monitoring.scheduling.PingJob" />
+	<bean name="executePingPhaseJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass" value="eu.heliovo.monitoring.scheduling.ExecutePhaseJob" />
 		<property name="jobDataAsMap">
 			<map>
-				<entry key="pingComponent"  value-ref="pingComponent" />
+				<entry key="component"  value-ref="pingComponent" />
+				<entry key="monitoringDaemon"  value-ref="${monitoringDaemonSpringBeanId}" />
+			</map>
+  		</property>
+	</bean>
+
+	<bean name="executeMethodCallPhaseJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass" value="eu.heliovo.monitoring.scheduling.ExecutePhaseJob" />
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="component"  value-ref="methodCallComponent" />
 				<entry key="monitoringDaemon"  value-ref="${monitoringDaemonSpringBeanId}" />
 			</map>
   		</property>
 	</bean>
 	
-     <bean id="pingJobTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
-         <property name="jobDetail" ref="pingJob" />
-         <property name="startDelay" value="1000" /> <!-- after initialising wait 1s and then start -->
-         <property name="repeatInterval" value="20000" /> <!-- every 20s -->
-     </bean>
+	<!-- TODO move these Parameters in helio-monitoring.properties -->
+    <bean id="pingPhaseJobTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+        <property name="jobDetail" ref="executePingPhaseJob" />
+        <property name="startDelay" value="1000" /> <!-- after initialising wait 1s and then start -->
+        <property name="repeatInterval" value="20000" /> <!-- every 20s -->
+    </bean>
+    
+    <bean id="methodCallPhaseJobTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+        <property name="jobDetail" ref="executeMethodCallPhaseJob" />
+        <property name="startDelay" value="2000" /> <!-- after initialising wait 2s and then start -->
+        <property name="repeatInterval" value="60000" /> <!-- every 60s -->
+    </bean>
 
     <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
          <property name="triggers">
              <list>
-                 <ref bean="pingJobTrigger" />
+                 <ref bean="pingPhaseJobTrigger" />
+                 <ref bean="methodCallPhaseJobTrigger" />
              </list>
          </property>
      </bean>

@@ -21,21 +21,30 @@ public class MonitoringDaemon implements InitializingBean, RemotingMonitoringDae
 
 	protected final File nagiosExternalCommandFile;
 	private final Logger logger = Logger.getLogger(getClass());
+	private final boolean forceNagiosExternalCommandFileCreation;
 
 	@Autowired
-	public MonitoringDaemon(@Value("${nagiosExternalCommandFilePath}") final String nagiosExternalCommandFile) {
+	public MonitoringDaemon(@Value("${nagiosExternalCommandFilePath}") final String nagiosExternalCommandFile,
+			@Value("${forceNagiosExternalCommandFileCreation}") final boolean forceNagiosExternalCommandFileCreation) {
+
 		this.nagiosExternalCommandFile = new File(nagiosExternalCommandFile);
+		this.forceNagiosExternalCommandFileCreation = forceNagiosExternalCommandFileCreation;
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
 		if (nagiosExternalCommandFile != null && !nagiosExternalCommandFile.exists()) {
-			logger.info("nagiosExternalCommandFile does not exist, but will be created");
-			try {
-				nagiosExternalCommandFile.createNewFile();
-			} catch (final IOException e) {
-				throw new IllegalStateException("nagiosExternalCommandFile could not be created!", e);
+			if (forceNagiosExternalCommandFileCreation) {
+				logger.info("nagiosExternalCommandFile does not exist, but will be created");
+				try {
+					nagiosExternalCommandFile.createNewFile();
+				} catch (final IOException e) {
+					throw new IllegalStateException("nagiosExternalCommandFile could not be created!", e);
+				}
+			} else {
+				throw new IllegalStateException(
+						"nagiosExternalCommandFile does not exist and is not allowed to be created!");
 			}
 		}
 
@@ -71,7 +80,9 @@ public class MonitoringDaemon implements InitializingBean, RemotingMonitoringDae
 				status, statusMessage);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see eu.heliovo.monitoring.daemon.RemotingMonitoringDaemon#writeServiceStatusToNagios(java.util.List)
 	 */
 	public void writeServiceStatusToNagios(final List<ServiceStatus> serviceStatus) {
@@ -92,10 +103,7 @@ public class MonitoringDaemon implements InitializingBean, RemotingMonitoringDae
 				throw new IllegalStateException("a state must be given!");
 			}
 
-			final String statusMessage = state.name() + " - response time = " + actualServiceStatus.getResponseTime()
-					+ " ms";
-
-			writeToNagiosExternalCommandFile(command, hostName, serviceName, status, statusMessage);
+			writeToNagiosExternalCommandFile(command, hostName, serviceName, status, actualServiceStatus.getMessage());
 		}
 	}
 

@@ -1,18 +1,17 @@
 package eu.heliovo.monitoring.service;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import eu.heliovo.monitoring.component.MethodCallComponent;
 import eu.heliovo.monitoring.component.PingComponent;
 import eu.heliovo.monitoring.model.ServiceStatus;
+import eu.heliovo.monitoring.statics.Services;
 
 /**
  * The MonitoringService instatiated as web service. Does only provide getStatus
@@ -25,20 +24,27 @@ import eu.heliovo.monitoring.model.ServiceStatus;
 public class MonitoringServiceImpl implements MonitoringService, InitializingBean {
 
 	// services from the registry with ID and URL
-	private final Map<String, URL> services = new HashMap<String, URL>();
+	private List<eu.heliovo.monitoring.model.Service> services = new ArrayList<eu.heliovo.monitoring.model.Service>();
 
 	private final PingComponent pingComponent;
+	private final MethodCallComponent methodCallComponent;
 
 	@Autowired
-	public MonitoringServiceImpl(final PingComponent pingComponent) {
+	public MonitoringServiceImpl(final PingComponent pingComponent, final MethodCallComponent methodCallComponent) {
 		this.pingComponent = pingComponent;
+		this.methodCallComponent = methodCallComponent;
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
+
 		Assert.notNull(pingComponent, "the pingComponent must not be null");
+		Assert.notNull(methodCallComponent, "the methodCallComponent must not be null");
+
 		readServicesFromRegistry();
+
 		pingComponent.setServices(services);
+		methodCallComponent.setServices(services);
 	}
 
 	/**
@@ -47,29 +53,7 @@ public class MonitoringServiceImpl implements MonitoringService, InitializingBea
 	 * TODO implement this with the real Helio Registry Service<br>
 	 */
 	private void readServicesFromRegistry() {
-		try {
-
-			services.put("HEC", new URL("http://helio.i4ds.technik.fhnw.ch:8080/core/HECService?wsdl"));
-
-			services.put("FrontendFacade", new URL(
-					"http://helio.i4ds.technik.fhnw.ch:8080/core/FrontendFacadeService?wsdl"));
-
-			services.put("WorkflowsService",
-					new URL("http://helio.i4ds.technik.fhnw.ch/helio-wf/WorkflowsService?wsdl"));
-
-			services.put("HEC", new URL("http://helio-dev.i4ds.technik.fhnw.ch:8080/core/HECService?wsdl"));
-
-			services.put("FrontendFacade", new URL(
-					"http://helio-dev.i4ds.technik.fhnw.ch:8080/core/FrontendFacadeService?wsdl"));
-
-			services.put("WorkflowsService", new URL(
-					"http://helio-dev.i4ds.technik.fhnw.ch/helio-wf/WorkflowsService?wsdl"));
-
-			services.put("FakeOfflineService", new URL("http://123.43.121.11/"));
-
-		} catch (final MalformedURLException e) {
-			e.printStackTrace();
-		}
+		services = Services.list;
 	}
 
 	@Override

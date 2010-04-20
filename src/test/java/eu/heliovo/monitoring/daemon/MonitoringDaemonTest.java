@@ -23,7 +23,7 @@ public class MonitoringDaemonTest extends Assert {
 	public void testWriteToNagios() throws Exception {
 
 		File nagiosExternalCommandFile;
-		MonitoringDaemon daemon = new MonitoringDaemon("");
+		MonitoringDaemon daemon = new MonitoringDaemon("", true);
 
 		long time = Long.MIN_VALUE;
 		NagiosCommand command = null;
@@ -46,6 +46,32 @@ public class MonitoringDaemonTest extends Assert {
 		assertTrue(illegalStateException);
 
 		/*
+		 * test for forceNagiosExternalCommandFileCreation = false
+		 */
+
+		daemon = new MonitoringDaemon("nagios", false);
+
+		illegalStateException = false;
+		try {
+			daemon.afterPropertiesSet();
+		} catch (final IllegalStateException e) {
+			illegalStateException = true;
+		}
+		assertTrue(illegalStateException);
+
+		/*
+		 * test for null
+		 */
+
+		illegalStateException = false;
+		try {
+			daemon.afterPropertiesSet();
+		} catch (final IllegalStateException e) {
+			illegalStateException = true;
+		}
+		assertTrue(illegalStateException);
+
+		/*
 		 * test for file is not a file
 		 */
 
@@ -53,7 +79,7 @@ public class MonitoringDaemonTest extends Assert {
 		if (!nagiosExternalCommandFile.exists() && !nagiosExternalCommandFile.mkdir()) {
 			throw new IllegalStateException("directory could not be created!");
 		}
-		daemon = new MonitoringDaemon("nagios");
+		daemon = new MonitoringDaemon("nagios", true);
 
 		illegalStateException = false;
 		try {
@@ -74,7 +100,7 @@ public class MonitoringDaemonTest extends Assert {
 		if (!nagiosExternalCommandFile.setReadOnly()) {
 			throw new IllegalStateException("readOnly cannot be set!");
 		}
-		daemon = new MonitoringDaemon("nagios.cmd");
+		daemon = new MonitoringDaemon("nagios.cmd", true);
 
 		illegalStateException = false;
 		try {
@@ -93,7 +119,7 @@ public class MonitoringDaemonTest extends Assert {
 		}
 
 		nagiosExternalCommandFile = new File("nagios.cmd");
-		daemon = new MonitoringDaemon("nagios.cmd");
+		daemon = new MonitoringDaemon("nagios.cmd", true);
 
 		time = System.currentTimeMillis() / 1000;
 		command = NagiosCommand.PROCESS_SERVICE_CHECK_RESULT;
@@ -127,7 +153,7 @@ public class MonitoringDaemonTest extends Assert {
 	public void testWriteServiceStatusToNagios() throws Exception {
 
 		final File nagiosExternalCommandFile = new File("nagios2.cmd");
-		final RemotingMonitoringDaemon daemon = new MonitoringDaemon("nagios2.cmd");
+		final RemotingMonitoringDaemon daemon = new MonitoringDaemon("nagios2.cmd", true);
 
 		final List<ServiceStatus> serviceStatus = new ArrayList<ServiceStatus>();
 
@@ -135,18 +161,21 @@ public class MonitoringDaemonTest extends Assert {
 				"http://helio.i4ds.technik.fhnw.ch:8080/core/HECService?wsdl"));
 		first.setResponseTime(5);
 		first.setState(State.UP);
+		first.setMessage(first.getState().name() + " - response time = " + first.getResponseTime() + " ms");
 		serviceStatus.add(first);
 
 		final ServiceStatus second = new ServiceStatus("FrontendFacade", new URL(
 				"http://helio.i4ds.technik.fhnw.ch:8080/core/FrontendFacadeService?wsdl"));
 		second.setResponseTime(10);
 		second.setState(State.DOWN);
+		second.setMessage(second.getState().name() + " - response time = " + second.getResponseTime() + " ms");
 		serviceStatus.add(second);
 
 		final ServiceStatus third = new ServiceStatus("helio-dev WorkflowsService", new URL(
 				"http://helio-dev.i4ds.technik.fhnw.ch/helio-wf/WorkflowsService?wsdl"));
 		third.setResponseTime(15);
 		third.setState(State.DOWN);
+		third.setMessage(third.getState().name() + " - response time = " + third.getResponseTime() + " ms");
 		serviceStatus.add(third);
 
 		assertTrue(serviceStatus.size() == 3);

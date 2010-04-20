@@ -13,7 +13,9 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<description>
-		TODO: Add description in helio-monitoring/pom.xml
+		This module provides the Helio Monitoring Service which offers monitoring information about the Helio services. 
+		It executes three phases (ping, method call, teesting) which result in different testing data. These 
+		information are then delivered to Nagios a monitoring tool for IT infrastructures.
 	</description>
 	<name>helio-monitoring</name>
 
@@ -25,25 +27,40 @@
 		<commons-collections.version>3.2.1</commons-collections.version>
 	</properties>
 
+	<repositories>
+
+		<repository>
+			<id>eviwareRepository</id>
+			<url>http://www.eviware.com/repository/maven2/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+
+	</repositories>
+
 	<dependencies>
 
 		<!-- Spring -->
 		<dependency>
-    		<groupId>org.springframework</groupId>
-    		<artifactId>spring-webmvc</artifactId>
-    		<version>${spring.version}</version>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>${spring.version}</version>
 		</dependency>
-		
+
 		<!-- needed for quartz scheduling -->
 		<dependency>
-    		<groupId>org.springframework</groupId>
-    		<artifactId>spring-context-support</artifactId>
-    		<version>${spring.version}</version>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
+			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
-    		<groupId>org.springframework</groupId>
-    		<artifactId>spring-tx</artifactId>
-    		<version>${spring.version}</version>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+			<version>${spring.version}</version>
 		</dependency>
 
 		<!-- scheduling (executing quartz jobs) -->
@@ -57,13 +74,87 @@
 			<artifactId>commons-collections</artifactId>
 			<version>${commons-collections.version}</version>
 		</dependency>
-		
+
 		<!-- utils -->
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>${commons-io.verion}</version>
 		</dependency>
+
+		<!-- dynamic web service access with soapUI -->
+		<dependency>
+			<groupId>eviware</groupId>
+			<artifactId>soapui</artifactId>
+			<version>2.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>wsdl4j</groupId>
+			<artifactId>wsdl4j</artifactId>
+			<version>1.6.2-fixed</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>3.0.1-soapui</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.3</version>
+		</dependency>
+		<dependency>
+			<groupId>xmlbeans</groupId>
+			<artifactId>xmlpublic</artifactId>
+			<version>2.3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>eviware</groupId>
+			<artifactId>soapui-xmlbeans</artifactId>
+			<version>2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>eviware</groupId>
+			<artifactId>ext-xmlbeans</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>eviware</groupId>
+			<artifactId>soap-xmlbeans</artifactId>
+			<version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>bouncycastle</groupId>
+			<artifactId>bcmail-jdk16</artifactId>
+			<version>140</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-ssl</groupId>
+			<artifactId>not-yet-commons-ssl</artifactId>
+			<version>0.3.9-no-validate</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4.1</version>
+		</dependency>
+
+		<!-- servlet api -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.3</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- for unit testing -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-mock</artifactId>
+			<version>2.0.8</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 </project>

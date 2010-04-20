@@ -7,23 +7,23 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
-import eu.heliovo.monitoring.component.PingComponent;
+import eu.heliovo.monitoring.component.AbstractComponent;
 import eu.heliovo.monitoring.daemon.RemotingMonitoringDaemon;
 import eu.heliovo.monitoring.model.ServiceStatus;
 
-public class PingJob extends QuartzJobBean {
+public class ExecutePhaseJob extends QuartzJobBean {
 
 	private final Logger logger = Logger.getLogger(this.getClass());
 
-	private PingComponent pingComponent;
+	private AbstractComponent component;
 	private RemotingMonitoringDaemon monitoringDaemon;
 
 	@Override
 	protected void executeInternal(final JobExecutionContext context) throws JobExecutionException {
 
-		pingComponent.refreshCache();
+		component.refreshCache();
 
-		final List<ServiceStatus> result = pingComponent.getStatus();
+		final List<ServiceStatus> result = component.getStatus();
 		monitoringDaemon.writeServiceStatusToNagios(result);
 
 		if (logger.isDebugEnabled()) {
@@ -35,8 +35,8 @@ public class PingJob extends QuartzJobBean {
 		}
 	}
 
-	public void setPingComponent(final PingComponent pingComponent) {
-		this.pingComponent = pingComponent;
+	public void setComponent(final AbstractComponent component) {
+		this.component = component;
 	}
 
 	public void setMonitoringDaemon(final RemotingMonitoringDaemon monitoringDaemon) {
