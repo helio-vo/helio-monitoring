@@ -15,7 +15,7 @@ public class ServiceStatus implements Serializable {
 
 	private final String id;
 	private final URL url;
-	private State state = State.DOWN;
+	private State state = State.CRITICAL;
 	private long responseTime = 0; // response time in ms
 	private String message = "";
 	

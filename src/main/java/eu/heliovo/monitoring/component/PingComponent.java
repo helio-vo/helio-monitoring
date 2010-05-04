@@ -58,13 +58,13 @@ public class PingComponent extends AbstractComponent {
 			}
 
 			if (exception != null) {
-				final ServiceStatus status = new ServiceStatus(serviceName, url, State.DOWN, 0);
+				final ServiceStatus status = new ServiceStatus(serviceName, url, State.CRITICAL, 0);
 				status.setMessage("an error occured: " + exception.getMessage());
 				newCache.add(status);
 			} else {
 				final int reponseTime = Double.valueOf(watch.getTotalTimeMillis()).intValue();
 
-				final ServiceStatus status = new ServiceStatus(serviceName, url, State.UP, reponseTime);
+				final ServiceStatus status = new ServiceStatus(serviceName, url, State.OK, reponseTime);
 				status.setMessage(status.getState().name() + " - response time = " + reponseTime + " ms");
 
 				newCache.add(status);

@@ -1,11 +1,11 @@
 package eu.heliovo.monitoring.model;
 
 /**
- * simple constant for up or down state of a service
+ * simple constants for the state of a service
  * 
  * @author Kevin Seidler
  * 
  */
 public enum State {
-	UP, DOWN
+	OK, CRITICAL, WARNING, UNKNOWN
 }

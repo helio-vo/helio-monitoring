@@ -1,10 +1,7 @@
 package eu.heliovo.monitoring.component;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -13,17 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.eviware.soapui.impl.WsdlInterfaceFactory;
 import com.eviware.soapui.impl.wsdl.WsdlInterface;
 import com.eviware.soapui.impl.wsdl.WsdlOperation;
 import com.eviware.soapui.impl.wsdl.WsdlProject;
 import com.eviware.soapui.impl.wsdl.WsdlRequest;
 import com.eviware.soapui.impl.wsdl.WsdlSubmitContext;
 import com.eviware.soapui.impl.wsdl.submit.transports.http.WsdlResponse;
-import com.eviware.soapui.impl.wsdl.support.soap.SoapUtils;
-import com.eviware.soapui.impl.wsdl.support.soap.SoapVersion;
-import com.eviware.soapui.impl.wsdl.support.wsdl.WsdlContext;
-import com.eviware.soapui.impl.wsdl.support.wsdl.WsdlValidator;
-import com.eviware.soapui.impl.wsdl.teststeps.WsdlResponseMessageExchange;
 import com.eviware.soapui.model.iface.Request.SubmitException;
 import com.eviware.soapui.model.testsuite.AssertionError;
 import com.eviware.soapui.support.SoapUIException;
@@ -31,9 +24,11 @@ import com.eviware.soapui.support.SoapUIException;
 import eu.heliovo.monitoring.logging.DummyLogFileWriter;
 import eu.heliovo.monitoring.logging.LogFileWriter;
 import eu.heliovo.monitoring.logging.LogFileWriterImpl;
+import eu.heliovo.monitoring.logging.LoggingHelper;
 import eu.heliovo.monitoring.model.Service;
 import eu.heliovo.monitoring.model.ServiceStatus;
 import eu.heliovo.monitoring.model.State;
+import eu.heliovo.monitoring.util.WsdlValidationUtils;
 
 @Component
 public class MethodCallComponent extends AbstractComponent {
@@ -41,13 +36,12 @@ public class MethodCallComponent extends AbstractComponent {
 	protected Logger logger = Logger.getLogger(this.getClass());
 	private final String logFilesDirectory;
 	private final String logFilesUrl;
-	private final FilenameFilter logFilenameFilter = new LogFilenameFilter();
 	private final LogFileWriter dummyLogFileWriter = new DummyLogFileWriter();
 
 	// TODO enable configuration of these parameters from resource file helio-monitoring.properties
 	private final static int IMPORT_WSDL_TIMEOUT = 4000; // in milliseconds
 	private final static int WAIT_FOR_RESPONSE_TIMEOUT = 10000; // in milliseconds
-	private final static boolean GENERATE_OPTINAL_PARAMS = true;
+	private final static boolean GENERATE_OPTINAL_PARAMS = false;
 	private final static String LOG_FILE_SUFFIX = "_method-call_";
 
 	@Autowired
@@ -67,7 +61,7 @@ public class MethodCallComponent extends AbstractComponent {
 	@Override
 	public void refreshCache() {
 
-		deleteLogFilesOlderThanOneDay();
+		LoggingHelper.deleteLogFilesOlderThanOneDay(logFilesDirectory, logger);
 
 		final List<ServiceStatus> newCache = new ArrayList<ServiceStatus>();
 
@@ -75,7 +69,7 @@ public class MethodCallComponent extends AbstractComponent {
 
 			final String serviceName = service.getName() + SERVICE_NAME_SUFFIX;
 			LogFileWriter logFileWriter = null;
-			
+
 			try {
 
 				try {
@@ -104,10 +98,10 @@ public class MethodCallComponent extends AbstractComponent {
 					throw importWsdlRunnable.soapUIException;
 				} else if (importWsdlRunnable.wsdlInterface == null) { // timeout by join operation
 
-					final ServiceStatus status = new ServiceStatus(serviceName, service.getUrl(), State.DOWN, 0);
+					final ServiceStatus status = new ServiceStatus(serviceName, service.getUrl(), State.CRITICAL, 0);
 
 					final String message = "Importing the WSDL file timed out, timeout: " + IMPORT_WSDL_TIMEOUT + " ms";
-					status.setMessage(message + getLogFileText(logFileWriter));
+					status.setMessage(message + LoggingHelper.getLogFileText(logFileWriter, logFilesUrl));
 					logger.debug(message);
 					logFileWriter.writeToLogFile(message);
 
@@ -138,6 +132,10 @@ public class MethodCallComponent extends AbstractComponent {
 					logFileWriter.writeToLogFile("=== Request Content ===");
 					logFileWriter.writeToLogFile(request.getRequestContent());
 
+					// validate request
+					final AssertionError[] requestAssertionErrors = WsdlValidationUtils.validateRequest(request);
+					LoggingHelper.logRequestValidation(requestAssertionErrors, logFileWriter, logger);
+
 					logger.debug("Sending request");
 					logFileWriter.writeToLogFile("Sending request");
 
@@ -154,12 +152,12 @@ public class MethodCallComponent extends AbstractComponent {
 						throw submitRequestRunnable.submitException;
 					} else if (submitRequestRunnable.response == null) { // timeout by join operation
 
-						final ServiceStatus status = new ServiceStatus(serviceName, service.getUrl(), State.DOWN, 0);
+						final ServiceStatus status = new ServiceStatus(serviceName, service.getUrl(), State.CRITICAL, 0);
 
 						final String message = "Waiting for the response timed out, timeout: "
 								+ WAIT_FOR_RESPONSE_TIMEOUT + " ms";
 
-						status.setMessage(message + getLogFileText(logFileWriter));
+						status.setMessage(message + LoggingHelper.getLogFileText(logFileWriter, logFilesUrl));
 						logger.debug(message);
 						logFileWriter.writeToLogFile(message);
 
@@ -182,28 +180,30 @@ public class MethodCallComponent extends AbstractComponent {
 
 						// build status information
 						final ServiceStatus status = new ServiceStatus(serviceName, service.getUrl());
-						status.setState(State.UP);
+						status.setState(State.OK);
 						status.setResponseTime(response.getTimeTaken());
 
 						// build message
 						final StringBuffer stringBuffer = new StringBuffer("Service is working");
 
 						// response validation
-						final AssertionError[] assertionErrors = validateResponse(response);
-						logResponseValidation(assertionErrors, logFileWriter, logger);
-						if (assertionErrors != null && assertionErrors.length > 0) {
+						final AssertionError[] responseAssertionErrors = WsdlValidationUtils.validateResponse(response);
+						LoggingHelper.logResponseValidation(responseAssertionErrors, logFileWriter, logger);
+						if (responseAssertionErrors != null && responseAssertionErrors.length > 0) {
 							stringBuffer.append(", but the repsonse is not valid");
+							status.setState(State.CRITICAL);
 						}
 
 						// SOAP fault test
-						if (isSoapFault(content, request.getOperation())) {
+						if (WsdlValidationUtils.isSoapFault(content, request.getOperation())) {
 							stringBuffer.append(", but the response is a SOAP fault");
 							logger.debug("The response is a SOAP fault!");
 							logFileWriter.writeToLogFile("The response is a SOAP fault!");
+							status.setState(State.WARNING);
 						}
 
 						stringBuffer.append(responseTimeText);
-						stringBuffer.append(getLogFileText(logFileWriter));
+						stringBuffer.append(LoggingHelper.getLogFileText(logFileWriter, logFilesUrl));
 
 						status.setMessage(stringBuffer.toString());
 
@@ -236,103 +236,16 @@ public class MethodCallComponent extends AbstractComponent {
 		this.cache = newCache;
 	}
 
-	private boolean isSoapFault(final String responseContent, final WsdlOperation operation) throws XmlException {
-		final SoapVersion soapVersion = operation.getInterface().getSoapVersion();
-		return SoapUtils.isSoapFault(responseContent, soapVersion);
-	}
-
-	private AssertionError[] validateResponse(final WsdlResponse response) {
-
-		final WsdlRequest request = response.getRequest();
-		final WsdlContext wsdlContext = request.getOperation().getInterface().getWsdlContext();
-		final WsdlValidator validator = new WsdlValidator(wsdlContext);
-
-		final WsdlResponseMessageExchange wsdlMessageExchange = new WsdlResponseMessageExchange(request);
-		wsdlMessageExchange.setResponse(response);
-
-		return validator.assertResponse(wsdlMessageExchange, true);
-	}
-
-	private void logResponseValidation(final AssertionError[] assertionErrors, final LogFileWriter logFileWriter,
-			final Logger logger) {
-
-		logger.debug("Validating response");
-		logFileWriter.writeToLogFile("Validating response");
-
-		if (assertionErrors == null || assertionErrors.length < 1) {
-			logger.debug("No validation erros found");
-			logFileWriter.writeToLogFile("No validation erros found");
-		} else {
-
-			logger.debug("The response has validation erros:");
-			logFileWriter.writeToLogFile("The response has validation erros:");
-
-			for (int i = 0; i < assertionErrors.length; i++) {
-				logger.debug(assertionErrors[i].toString());
-				logFileWriter.writeToLogFile(assertionErrors[i].toString());
-			}
-		}
-
-	}
-
 	private void handleException(final Exception e, final LogFileWriter logFileWriter, final String serviceName,
 			final Service service, final List<ServiceStatus> newCache) {
 
-		final ServiceStatus status = new ServiceStatus(serviceName, service.getUrl(), State.DOWN, 0);
-		status.setMessage("An error occured: " + e.getMessage() + getLogFileText(logFileWriter));
+		final ServiceStatus status = new ServiceStatus(serviceName, service.getUrl(), State.CRITICAL, 0);
+		status.setMessage("An error occured: " + e.getMessage()
+				+ LoggingHelper.getLogFileText(logFileWriter, logFilesUrl));
 		newCache.add(status);
 
 		logFileWriter.writeToLogFile("An error occured: " + e.toString());
 		logFileWriter.writeStacktracetoLogFile(e);
-	}
-
-	private void deleteLogFilesOlderThanOneDay() {
-
-		final File[] oldLogFiles = new File(logFilesDirectory).listFiles(logFilenameFilter);
-		final Calendar now = Calendar.getInstance();
-
-		if (oldLogFiles != null) {
-			for (int i = 0; i < oldLogFiles.length; i++) {
-				if (isDifferenceGreaterThanSevenDays(now.getTimeInMillis(), oldLogFiles[i].lastModified())) {
-					try {
-						oldLogFiles[i].delete();
-					} catch (final SecurityException e) {
-						logger.info("log file " + oldLogFiles[i].toString() + " could not be deleted", e);
-					}
-				}
-			}
-		}
-	}
-
-	private static boolean isDifferenceGreaterThanSevenDays(final long milliseconds1, final long milliseconds2) {
-		return Math.abs(calculateDiffernceInDays(milliseconds1, milliseconds2)) > 7;
-	}
-
-	private static long calculateDiffernceInDays(final long milliseconds1, final long milliseconds2) {
-		return (milliseconds1 - milliseconds2) / (1000 * 60 * 60 * 24);
-	}
-
-	private String getLogFileText(final LogFileWriter logFileWriter) {
-
-		if (logFileWriter == dummyLogFileWriter) {
-			return "";
-		}
-
-		final StringBuffer buffer = new StringBuffer();
-		buffer.append(", see log file: ");
-		buffer.append(logFilesUrl);
-		buffer.append("/");
-		buffer.append(logFileWriter.getFileName());
-
-		return buffer.toString();
-	}
-
-	private final static class LogFilenameFilter implements FilenameFilter {
-
-		@Override
-		public boolean accept(final File dir, final String name) {
-			return name.endsWith(LogFileWriter.FILE_SUFFIX);
-		}
 	}
 
 	private final static class ImportWsdlRunnable implements Runnable {
@@ -350,7 +263,7 @@ public class MethodCallComponent extends AbstractComponent {
 		@Override
 		public void run() {
 			try {
-				wsdlInterface = wsdlProject.importWsdl(url, true)[0];
+				wsdlInterface = WsdlInterfaceFactory.importWsdl(wsdlProject, url, true)[0];
 			} catch (final SoapUIException e) {
 				soapUIException = e;
 			}

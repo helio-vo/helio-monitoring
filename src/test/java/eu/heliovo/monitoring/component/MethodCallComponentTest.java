@@ -31,11 +31,11 @@ public class MethodCallComponentTest extends Assert {
 		for (final ServiceStatus actualServiceStatus : serviceStatus) {
 			if (actualServiceStatus.getId().equals("FakeOfflineService" + component.SERVICE_NAME_SUFFIX)) {
 				testedFakeService = true;
-				assertTrue(actualServiceStatus.getState().equals(State.DOWN));
+				assertTrue(actualServiceStatus.getState().equals(State.CRITICAL));
 			}
 			if (actualServiceStatus.getId().equals("NoWsdlOfflineService" + component.SERVICE_NAME_SUFFIX)) {
 				testedNoWsdlService = true;
-				assertTrue(actualServiceStatus.getState().equals(State.DOWN));
+				assertTrue(actualServiceStatus.getState().equals(State.CRITICAL));
 			}
 		}
 		assertTrue(testedFakeService);

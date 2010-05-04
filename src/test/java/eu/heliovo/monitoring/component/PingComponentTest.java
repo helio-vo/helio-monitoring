@@ -27,7 +27,7 @@ public class PingComponentTest extends Assert {
 		for (final ServiceStatus actualServiceStatus : serviceStatus) {
 			if (actualServiceStatus.getId().equals("FakeOfflineService" + pingComponent.SERVICE_NAME_SUFFIX)) {
 				testedFakeService = true;
-				assertTrue(actualServiceStatus.getState().equals(State.DOWN));
+				assertTrue(actualServiceStatus.getState().equals(State.CRITICAL));
 			}
 		}
 		assertTrue(testedFakeService);

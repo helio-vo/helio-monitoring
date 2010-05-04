@@ -160,21 +160,21 @@ public class MonitoringDaemonTest extends Assert {
 		final ServiceStatus first = new ServiceStatus("HEC", new URL(
 				"http://helio.i4ds.technik.fhnw.ch:8080/core/HECService?wsdl"));
 		first.setResponseTime(5);
-		first.setState(State.UP);
+		first.setState(State.OK);
 		first.setMessage(first.getState().name() + " - response time = " + first.getResponseTime() + " ms");
 		serviceStatus.add(first);
 
 		final ServiceStatus second = new ServiceStatus("FrontendFacade", new URL(
 				"http://helio.i4ds.technik.fhnw.ch:8080/core/FrontendFacadeService?wsdl"));
 		second.setResponseTime(10);
-		second.setState(State.DOWN);
+		second.setState(State.CRITICAL);
 		second.setMessage(second.getState().name() + " - response time = " + second.getResponseTime() + " ms");
 		serviceStatus.add(second);
 
 		final ServiceStatus third = new ServiceStatus("helio-dev WorkflowsService", new URL(
 				"http://helio-dev.i4ds.technik.fhnw.ch/helio-wf/WorkflowsService?wsdl"));
 		third.setResponseTime(15);
-		third.setState(State.DOWN);
+		third.setState(State.CRITICAL);
 		third.setMessage(third.getState().name() + " - response time = " + third.getResponseTime() + " ms");
 		serviceStatus.add(third);
 

@@ -95,10 +95,14 @@ public class MonitoringDaemon implements InitializingBean, RemotingMonitoringDae
 
 			final NagiosStatus status;
 			final State state = actualServiceStatus.getState();
-			if (State.UP.equals(state)) {
+			if (State.OK.equals(state)) {
 				status = NagiosStatus.OK;
-			} else if (State.DOWN.equals(state)) {
+			} else if (State.CRITICAL.equals(state)) {
 				status = NagiosStatus.CRITICAL;
+			} else if (State.WARNING.equals(state)) {
+				status = NagiosStatus.WARNING;
+			} else if (State.UNKNOWN.equals(state)) {
+				status = NagiosStatus.UNKNOWN;
 			} else {
 				throw new IllegalStateException("a state must be given!");
 			}
