@@ -1,15 +1,16 @@
-package eu.heliovo.monitoring.util;
+package eu.heliovo.monitoring.logging;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
 import org.apache.log4j.Logger;
 
-public class LogFileWriter {
+public class LogFileWriterImpl implements LogFileWriter {
 
 	private final File mainDir;
 	private FileWriter fileWriter;
@@ -17,14 +18,14 @@ public class LogFileWriter {
 
 	protected Logger logger = Logger.getLogger(this.getClass());
 
-	public LogFileWriter(final String directory, final String name) {
+	public LogFileWriterImpl(final String directory, final String name) throws RuntimeException {
 
 		mainDir = new File(directory);
 		if (!mainDir.exists()) {
 			try {
 				mainDir.mkdirs();
 			} catch (final SecurityException e) {
-				logger.error(e.getMessage(), e);
+				throw new IllegalStateException(e.getMessage(), e);
 			}
 		}
 
@@ -33,10 +34,13 @@ public class LogFileWriter {
 		buffer.append(name);
 		buffer.append("-");
 		buffer.append(System.currentTimeMillis());
-		buffer.append(".txt");
+		buffer.append(FILE_SUFFIX);
 		this.fileName = buffer.toString();
 	}
 
+	/* (non-Javadoc)
+	 * @see eu.heliovo.monitoring.util.LogFileWriter#writeToLogFile(java.lang.String)
+	 */
 	public void writeToLogFile(final String text) {
 		try {
 
@@ -54,6 +58,13 @@ public class LogFileWriter {
 		}
 	}
 
+	public void writeStacktracetoLogFile(final Exception e) {
+		e.printStackTrace(new PrintWriter(fileWriter));
+	}
+
+	/* (non-Javadoc)
+	 * @see eu.heliovo.monitoring.util.LogFileWriter#close()
+	 */
 	public void close() {
 		try {
 			fileWriter.close();
@@ -62,6 +73,9 @@ public class LogFileWriter {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see eu.heliovo.monitoring.util.LogFileWriter#getFileName()
+	 */
 	public String getFileName() {
 		return new File(fileName).getName();
 	}

@@ -35,14 +35,14 @@
 	<!-- TODO move these Parameters in helio-monitoring.properties -->
     <bean id="pingPhaseJobTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
         <property name="jobDetail" ref="executePingPhaseJob" />
-        <property name="startDelay" value="1000" /> <!-- after initialising wait 1s and then start -->
-        <property name="repeatInterval" value="20000" /> <!-- every 20s -->
+        <property name="startDelay" value="${pingPhaseStartDelay}" />
+        <property name="repeatInterval" value="${pingPhaseInterval}" />
     </bean>
     
     <bean id="methodCallPhaseJobTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
         <property name="jobDetail" ref="executeMethodCallPhaseJob" />
-        <property name="startDelay" value="2000" /> <!-- after initialising wait 2s and then start -->
-        <property name="repeatInterval" value="60000" /> <!-- every 60s -->
+        <property name="startDelay" value="${methodCallPhaseStartDelay}" />
+        <property name="repeatInterval" value="${methodCallPhaseInterval}" />
     </bean>
 
     <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">

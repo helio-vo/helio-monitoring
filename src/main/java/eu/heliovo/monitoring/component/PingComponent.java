@@ -16,7 +16,7 @@ import eu.heliovo.monitoring.model.State;
 public class PingComponent extends AbstractComponent {
 
 	// timeout in seconds
-	private final int TIMEOUT = 300;
+	private final static int TIMEOUT = 300;
 
 	public PingComponent() {
 		super(" -ping-");
