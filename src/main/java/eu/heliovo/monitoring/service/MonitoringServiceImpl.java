@@ -36,7 +36,7 @@ public class MonitoringServiceImpl implements MonitoringService, InitializingBea
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 
 		Assert.notNull(pingComponent, "the pingComponent must not be null");
 		Assert.notNull(methodCallComponent, "the methodCallComponent must not be null");
@@ -53,7 +53,7 @@ public class MonitoringServiceImpl implements MonitoringService, InitializingBea
 	 * TODO implement this with the real Helio Registry Service<br>
 	 */
 	private void readServicesFromRegistry() {
-		services = Services.list;
+		services = Services.LIST;
 	}
 
 	@Override

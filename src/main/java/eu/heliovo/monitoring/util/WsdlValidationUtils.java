@@ -12,8 +12,11 @@ import com.eviware.soapui.impl.wsdl.support.wsdl.WsdlValidator;
 import com.eviware.soapui.impl.wsdl.teststeps.WsdlResponseMessageExchange;
 import com.eviware.soapui.model.testsuite.AssertionError;
 
-public class WsdlValidationUtils {
+public final class WsdlValidationUtils {
 
+	private WsdlValidationUtils() {
+	}
+	
 	public static AssertionError[] validateRequest(final WsdlRequest request) {
 
 		final WsdlContext wsdlContext = request.getOperation().getInterface().getWsdlContext();

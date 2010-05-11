@@ -1,23 +1,22 @@
 package eu.heliovo.monitoring.component;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import eu.heliovo.monitoring.model.Service;
 import eu.heliovo.monitoring.model.ServiceStatus;
-import eu.heliovo.monitoring.util.ObjectCopyUtils;
 
 public abstract class AbstractComponent {
 
 	// cache, could be improved through e.g. EhCache
-	protected List<ServiceStatus> cache = new ArrayList<ServiceStatus>();
+	private List<ServiceStatus> cache = Collections.emptyList();
 
-	protected List<Service> services = new ArrayList<Service>();
+	private List<Service> services = Collections.emptyList();
 
-	public final String SERVICE_NAME_SUFFIX;
+	private final String serviceNameSuffix;
 
 	public AbstractComponent(final String serviceNameSuffix) {
-		this.SERVICE_NAME_SUFFIX = serviceNameSuffix;
+		this.serviceNameSuffix = serviceNameSuffix;
 	}
 
 	public abstract void refreshCache();
@@ -25,12 +24,24 @@ public abstract class AbstractComponent {
 	/**
 	 * Just returning the actual status.
 	 */
-	public List<ServiceStatus> getStatus() {
-		return (List<ServiceStatus>) ObjectCopyUtils.copyCollection(cache, new ArrayList<ServiceStatus>());
+	public final List<ServiceStatus> getStatus() {
+		return cache;
 	}
 
-	public void setServices(final List<Service> services) {
-		this.services = services;
+	public final List<Service> getServices() {
+		return services;
+	}
+
+	public final void setServices(final List<Service> services) {
+		this.services = Collections.unmodifiableList(services);
+	}
+
+	public void setCache(final List<ServiceStatus> cache) {
+		this.cache = Collections.unmodifiableList(cache);
+	}
+
+	public final String getServiceNameSuffix() {
+		return serviceNameSuffix;
 	}
 
 }

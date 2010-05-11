@@ -8,7 +8,10 @@ import org.apache.log4j.Logger;
 
 import com.eviware.soapui.model.testsuite.AssertionError;
 
-public class LoggingHelper {
+public final class LoggingHelper {
+
+	private LoggingHelper() {
+	}
 
 	public static void deleteLogFilesOlderThanOneDay(final String logFilesDirectory, final Logger logger) {
 

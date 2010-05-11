@@ -17,9 +17,9 @@ import eu.heliovo.monitoring.model.State;
 @Component
 public class MonitoringDaemon implements InitializingBean, RemotingMonitoringDaemon {
 
-	public final static String FILE_ENCODING = "UTF-8";
+	public static final String FILE_ENCODING = "UTF-8";
 
-	protected final File nagiosExternalCommandFile;
+	private final File nagiosExternalCommandFile;
 	private final Logger logger = Logger.getLogger(getClass());
 	private final boolean forceNagiosExternalCommandFileCreation;
 
@@ -32,7 +32,7 @@ public class MonitoringDaemon implements InitializingBean, RemotingMonitoringDae
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 
 		if (nagiosExternalCommandFile != null && !nagiosExternalCommandFile.exists()) {
 			if (forceNagiosExternalCommandFileCreation) {
@@ -118,7 +118,7 @@ public class MonitoringDaemon implements InitializingBean, RemotingMonitoringDae
 		buffer.append(time);
 		buffer.append("]");
 		buffer.append(" ");
-		buffer.append(NagiosCommand.PROCESS_SERVICE_CHECK_RESULT.name());
+		buffer.append(command.name());
 		buffer.append(";");
 		buffer.append(hostName);
 		buffer.append(";");

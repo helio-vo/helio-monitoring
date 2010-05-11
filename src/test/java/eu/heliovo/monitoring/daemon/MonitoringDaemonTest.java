@@ -26,7 +26,7 @@ public class MonitoringDaemonTest extends Assert {
 		MonitoringDaemon daemon = new MonitoringDaemon("", true);
 
 		long time = Long.MIN_VALUE;
-		NagiosCommand command = null;
+		NagiosCommand command = NagiosCommand.PROCESS_SERVICE_CHECK_RESULT;
 		String hostName = "";
 		String serviceName = "";
 		NagiosStatus status = NagiosStatus.WARNING;
@@ -157,25 +157,19 @@ public class MonitoringDaemonTest extends Assert {
 
 		final List<ServiceStatus> serviceStatus = new ArrayList<ServiceStatus>();
 
-		final ServiceStatus first = new ServiceStatus("HEC", new URL(
-				"http://helio.i4ds.technik.fhnw.ch:8080/core/HECService?wsdl"));
-		first.setResponseTime(5);
-		first.setState(State.OK);
-		first.setMessage(first.getState().name() + " - response time = " + first.getResponseTime() + " ms");
+		final String message = State.OK.name() + " - response time = " + 5 + " ms";
+		final String firstUrl = "http://helio.i4ds.technik.fhnw.ch:8080/core/HECService?wsdl";
+		final ServiceStatus first = new ServiceStatus("HEC", new URL(firstUrl), State.OK, 5, message);
 		serviceStatus.add(first);
 
 		final ServiceStatus second = new ServiceStatus("FrontendFacade", new URL(
-				"http://helio.i4ds.technik.fhnw.ch:8080/core/FrontendFacadeService?wsdl"));
-		second.setResponseTime(10);
-		second.setState(State.CRITICAL);
-		second.setMessage(second.getState().name() + " - response time = " + second.getResponseTime() + " ms");
+				"http://helio.i4ds.technik.fhnw.ch:8080/core/FrontendFacadeService?wsdl"), State.CRITICAL, 10,
+				State.CRITICAL.name() + " - response time = " + 10 + " ms");
 		serviceStatus.add(second);
 
 		final ServiceStatus third = new ServiceStatus("helio-dev WorkflowsService", new URL(
-				"http://helio-dev.i4ds.technik.fhnw.ch/helio-wf/WorkflowsService?wsdl"));
-		third.setResponseTime(15);
-		third.setState(State.CRITICAL);
-		third.setMessage(third.getState().name() + " - response time = " + third.getResponseTime() + " ms");
+				"http://helio-dev.i4ds.technik.fhnw.ch/helio-wf/WorkflowsService?wsdl"), State.CRITICAL, 15,
+				State.CRITICAL.name() + " - response time = " + 15 + " ms");
 		serviceStatus.add(third);
 
 		assertTrue(serviceStatus.size() == 3);

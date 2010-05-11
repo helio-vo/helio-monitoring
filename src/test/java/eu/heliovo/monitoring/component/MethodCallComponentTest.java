@@ -16,24 +16,26 @@ public class MethodCallComponentTest extends Assert {
 	@Test
 	public void testMethodCallComponent() throws Exception {
 
+		// TODO test individual methods of MethodCallComponent
+
 		final MethodCallComponent component = new MethodCallComponent("mainlog",
 				"http://localhost:8080/helio-monitoring/logs");
-		component.setServices(Services.list);
+		component.setServices(Services.LIST);
 		component.refreshCache();
 
 		final List<ServiceStatus> serviceStatus = component.getStatus();
 
 		assertNotNull(serviceStatus);
-		assertTrue(serviceStatus.size() == Services.list.size());
+		assertTrue(serviceStatus.size() == Services.LIST.size());
 
 		boolean testedFakeService = false;
 		boolean testedNoWsdlService = false;
 		for (final ServiceStatus actualServiceStatus : serviceStatus) {
-			if (actualServiceStatus.getId().equals("FakeOfflineService" + component.SERVICE_NAME_SUFFIX)) {
+			if (actualServiceStatus.getId().equals("FakeOfflineService" + component.getServiceNameSuffix())) {
 				testedFakeService = true;
 				assertTrue(actualServiceStatus.getState().equals(State.CRITICAL));
 			}
-			if (actualServiceStatus.getId().equals("NoWsdlOfflineService" + component.SERVICE_NAME_SUFFIX)) {
+			if (actualServiceStatus.getId().equals("NoWsdlOfflineService" + component.getServiceNameSuffix())) {
 				testedNoWsdlService = true;
 				assertTrue(actualServiceStatus.getState().equals(State.CRITICAL));
 			}
@@ -42,7 +44,7 @@ public class MethodCallComponentTest extends Assert {
 		assertTrue(testedNoWsdlService);
 
 		System.out.println("=== Services to be tested ===");
-		for (final Service service : Services.list) {
+		for (final Service service : Services.LIST) {
 			System.out.println(service.getName() + " " + service.getUrl());
 		}
 

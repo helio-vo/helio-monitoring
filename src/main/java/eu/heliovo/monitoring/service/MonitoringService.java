@@ -11,5 +11,5 @@ public interface MonitoringService {
 	 * 
 	 * @return List of service status
 	 */
-	public abstract List<ServiceStatus> getPingStatus();
+	abstract List<ServiceStatus> getPingStatus();
 }

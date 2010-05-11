@@ -10,17 +10,16 @@ import java.util.Locale;
 
 import org.apache.log4j.Logger;
 
-public class LogFileWriterImpl implements LogFileWriter {
+public final class LogFileWriterImpl implements LogFileWriter {
 
-	private final File mainDir;
 	private FileWriter fileWriter;
 	private final String fileName;
 
-	protected Logger logger = Logger.getLogger(this.getClass());
+	private final Logger logger = Logger.getLogger(this.getClass());
 
-	public LogFileWriterImpl(final String directory, final String name) throws RuntimeException {
+	public LogFileWriterImpl(final String directory, final String name) {
 
-		mainDir = new File(directory);
+		final File mainDir = new File(directory);
 		if (!mainDir.exists()) {
 			try {
 				mainDir.mkdirs();
@@ -54,7 +53,7 @@ public class LogFileWriterImpl implements LogFileWriter {
 			fileWriter.append(timeStamp + text + "\n");
 
 		} catch (final IOException e) {
-			e.printStackTrace();
+			throw new IllegalStateException(e.getMessage(), e);
 		}
 	}
 
@@ -69,7 +68,7 @@ public class LogFileWriterImpl implements LogFileWriter {
 		try {
 			fileWriter.close();
 		} catch (final IOException e) {
-			e.printStackTrace();
+			logger.info(e.getMessage(), e);
 		}
 	}
 

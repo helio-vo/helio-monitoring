@@ -11,40 +11,29 @@ import java.net.URL;
  * 
  */
 @SuppressWarnings("serial")
-public class ServiceStatus implements Serializable {
+public final class ServiceStatus implements Serializable {
 
 	private final String id;
 	private final URL url;
-	private State state = State.CRITICAL;
-	private long responseTime = 0; // response time in ms
-	private String message = "";
+	private final State state;
+	private final long responseTime; // response time in ms
+	private final String message;
 	
-	public ServiceStatus(final String id, final URL url) {
-		this.id = id;
-		this.url = url;
-	}
-	
-	public ServiceStatus(final String id, final URL url, final State state, final long responseTime) {
+	public ServiceStatus(final String id, final URL url, final State state, final long responseTime,
+			final String message) {
 		this.id = id;
 		this.url = url;
 		this.state = state;
 		this.responseTime = responseTime;
+		this.message = message;
 	}
 
 	public State getState() {
 		return state;
 	}
 
-	public void setState(final State state) {
-		this.state = state;
-	}
-
 	public long getResponseTime() {
 		return responseTime;
-	}
-
-	public void setResponseTime(final long responseTime) {
-		this.responseTime = responseTime;
 	}
 
 	public String getId() {
@@ -57,10 +46,6 @@ public class ServiceStatus implements Serializable {
 
 	public String getMessage() {
 		return message;
-	}
-
-	public void setMessage(final String message) {
-		this.message = message;
 	}
 
 	@Override

@@ -16,16 +16,16 @@ public class PingComponentTest extends Assert {
 	public void testPingComponent() throws Exception {
 
 		final PingComponent pingComponent = new PingComponent();
-		pingComponent.setServices(Services.list);
+		pingComponent.setServices(Services.LIST);
 		pingComponent.refreshCache();
 
 		final List<ServiceStatus> serviceStatus = pingComponent.getStatus();
 		assertNotNull(serviceStatus);
-		assertTrue(serviceStatus.size() == Services.list.size());
+		assertTrue(serviceStatus.size() == Services.LIST.size());
 
 		boolean testedFakeService = false;
 		for (final ServiceStatus actualServiceStatus : serviceStatus) {
-			if (actualServiceStatus.getId().equals("FakeOfflineService" + pingComponent.SERVICE_NAME_SUFFIX)) {
+			if (actualServiceStatus.getId().equals("FakeOfflineService" + pingComponent.getServiceNameSuffix())) {
 				testedFakeService = true;
 				assertTrue(actualServiceStatus.getState().equals(State.CRITICAL));
 			}

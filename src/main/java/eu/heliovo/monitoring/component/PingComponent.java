@@ -13,10 +13,10 @@ import eu.heliovo.monitoring.model.ServiceStatus;
 import eu.heliovo.monitoring.model.State;
 
 @Component
-public class PingComponent extends AbstractComponent {
+public final class PingComponent extends AbstractComponent {
 
 	// timeout in seconds
-	private final static int TIMEOUT = 300;
+	private static final int TIMEOUT = 300;
 
 	public PingComponent() {
 		super(" -ping-");
@@ -34,9 +34,9 @@ public class PingComponent extends AbstractComponent {
 
 		// this loop could be parallelized, but time meaturement could be
 		// influenced
-		for (final Service service : super.services) {
+		for (final Service service : super.getServices()) {
 
-			final String serviceName = service.getName() + SERVICE_NAME_SUFFIX;
+			final String serviceName = service.getName() + super.getServiceNameSuffix();
 
 			final StopWatch watch = new StopWatch(serviceName);
 			final URL url = service.getUrl();
@@ -58,19 +58,22 @@ public class PingComponent extends AbstractComponent {
 			}
 
 			if (exception != null) {
-				final ServiceStatus status = new ServiceStatus(serviceName, url, State.CRITICAL, 0);
-				status.setMessage("an error occured: " + exception.getMessage());
-				newCache.add(status);
-			} else {
-				final int reponseTime = Double.valueOf(watch.getTotalTimeMillis()).intValue();
 
-				final ServiceStatus status = new ServiceStatus(serviceName, url, State.OK, reponseTime);
-				status.setMessage(status.getState().name() + " - response time = " + reponseTime + " ms");
+				final String message = "an error occured: " + exception.getMessage();
+				final ServiceStatus status = new ServiceStatus(serviceName, url, State.CRITICAL, 0, message);
+				newCache.add(status);
+
+			} else {
+
+				final int reponseTime = Double.valueOf(watch.getTotalTimeMillis()).intValue();
+				final State state = State.OK;
+				final String message = state.name() + " - response time = " + reponseTime + " ms";
+				final ServiceStatus status = new ServiceStatus(serviceName, url, state, reponseTime, message);
 
 				newCache.add(status);
 			}
 		}
 
-		this.cache = newCache;
+		super.setCache(newCache);
 	}
 }
