@@ -10,6 +10,7 @@ import org.springframework.util.Assert;
 
 import eu.heliovo.monitoring.component.MethodCallComponent;
 import eu.heliovo.monitoring.component.PingComponent;
+import eu.heliovo.monitoring.component.TestingComponent;
 import eu.heliovo.monitoring.model.ServiceStatus;
 import eu.heliovo.monitoring.statics.Services;
 
@@ -28,11 +29,14 @@ public class MonitoringServiceImpl implements MonitoringService, InitializingBea
 
 	private final PingComponent pingComponent;
 	private final MethodCallComponent methodCallComponent;
+	private final TestingComponent testingComponent;
 
 	@Autowired
-	public MonitoringServiceImpl(final PingComponent pingComponent, final MethodCallComponent methodCallComponent) {
+	public MonitoringServiceImpl(final PingComponent pingComponent, final MethodCallComponent methodCallComponent,
+			final TestingComponent testingComponent) {
 		this.pingComponent = pingComponent;
 		this.methodCallComponent = methodCallComponent;
+		this.testingComponent = testingComponent;
 	}
 
 	@Override
@@ -45,6 +49,7 @@ public class MonitoringServiceImpl implements MonitoringService, InitializingBea
 
 		pingComponent.setServices(services);
 		methodCallComponent.setServices(services);
+		testingComponent.setServices(services);
 	}
 
 	/**
@@ -59,5 +64,15 @@ public class MonitoringServiceImpl implements MonitoringService, InitializingBea
 	@Override
 	public List<ServiceStatus> getPingStatus() {
 		return pingComponent.getStatus();
+	}
+
+	@Override
+	public List<ServiceStatus> getMethodCallStatus() {
+		return methodCallComponent.getStatus();
+	}
+
+	@Override
+	public List<ServiceStatus> getTestingStatus() {
+		return testingComponent.getStatus();
 	}
 }

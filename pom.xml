@@ -14,7 +14,7 @@
 	<packaging>war</packaging>
 	<description>
 		This module provides the Helio Monitoring Service which offers monitoring information about the Helio services. 
-		It executes three phases (ping, method call, teesting) which result in different testing data. These 
+		It executes three phases (ping, method call, testing) which result in different testing data. These 
 		information are then delivered to Nagios a monitoring tool for IT infrastructures.
 	</description>
 	<name>helio-monitoring</name>

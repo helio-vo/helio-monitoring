@@ -12,6 +12,12 @@ import eu.heliovo.monitoring.model.Service;
 import eu.heliovo.monitoring.model.ServiceStatus;
 import eu.heliovo.monitoring.model.State;
 
+/**
+ * Just gets the WSDL file to see that the service is not offline.
+ * 
+ * @author Kevin Seidler
+ * 
+ */
 @Component
 public final class PingComponent extends AbstractComponent {
 

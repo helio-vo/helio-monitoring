@@ -32,7 +32,16 @@
   		</property>
 	</bean>
 	
-	<!-- TODO move these Parameters in helio-monitoring.properties -->
+	<bean name="executeTestingPhaseJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass" value="eu.heliovo.monitoring.scheduling.ExecutePhaseJob" />
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="component"  value-ref="testingComponent" />
+				<entry key="monitoringDaemon"  value-ref="${monitoringDaemonSpringBeanId}" />
+			</map>
+  		</property>
+	</bean>
+	
     <bean id="pingPhaseJobTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
         <property name="jobDetail" ref="executePingPhaseJob" />
         <property name="startDelay" value="${pingPhaseStartDelay}" />
@@ -45,11 +54,18 @@
         <property name="repeatInterval" value="${methodCallPhaseInterval}" />
     </bean>
 
+    <bean id="testingPhaseJobTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+        <property name="jobDetail" ref="executeTestingPhaseJob" />
+        <property name="startDelay" value="${testingPhaseStartDelay}" />
+        <property name="repeatInterval" value="${testingPhaseInterval}" />
+    </bean>
+
     <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
          <property name="triggers">
              <list>
                  <ref bean="pingPhaseJobTrigger" />
                  <ref bean="methodCallPhaseJobTrigger" />
+                 <ref bean="testingPhaseJobTrigger" />
              </list>
          </property>
      </bean>

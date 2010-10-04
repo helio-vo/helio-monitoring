@@ -1,5 +1,11 @@
 package eu.heliovo.monitoring.component;
 
+import static eu.heliovo.monitoring.component.ComponentHelper.createRequest;
+import static eu.heliovo.monitoring.component.ComponentHelper.handleException;
+import static eu.heliovo.monitoring.component.ComponentHelper.importWsdl;
+import static eu.heliovo.monitoring.component.ComponentHelper.processResponse;
+import static eu.heliovo.monitoring.component.ComponentHelper.submitRequest;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,39 +16,37 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.eviware.soapui.impl.WsdlInterfaceFactory;
 import com.eviware.soapui.impl.wsdl.WsdlInterface;
 import com.eviware.soapui.impl.wsdl.WsdlOperation;
-import com.eviware.soapui.impl.wsdl.WsdlProject;
 import com.eviware.soapui.impl.wsdl.WsdlRequest;
-import com.eviware.soapui.impl.wsdl.WsdlSubmitContext;
 import com.eviware.soapui.impl.wsdl.submit.transports.http.WsdlResponse;
 import com.eviware.soapui.model.iface.Request.SubmitException;
 import com.eviware.soapui.model.testsuite.AssertionError;
 import com.eviware.soapui.support.SoapUIException;
 
-import eu.heliovo.monitoring.logging.DummyLogFileWriter;
 import eu.heliovo.monitoring.logging.LogFileWriter;
-import eu.heliovo.monitoring.logging.LogFileWriterImpl;
+import eu.heliovo.monitoring.logging.LoggingFactory;
 import eu.heliovo.monitoring.logging.LoggingHelper;
 import eu.heliovo.monitoring.model.Service;
 import eu.heliovo.monitoring.model.ServiceStatus;
 import eu.heliovo.monitoring.model.State;
 import eu.heliovo.monitoring.util.WsdlValidationUtils;
 
+/**
+ * Just calls a random method of every service to see that it is working.
+ * 
+ * @author Kevin Seidler
+ * 
+ */
 @Component
 public final class MethodCallComponent extends AbstractComponent {
 
 	private final Logger logger = Logger.getLogger(this.getClass());
 	private final String logFilesDirectory;
 	private final String logFilesUrl;
-	private final LogFileWriter dummyLogFileWriter = new DummyLogFileWriter();
 
-	// TODO enable configuration of these parameters from resource file helio-monitoring.properties
-	private static final int IMPORT_WSDL_TIMEOUT = 4000; // in milliseconds
-	private static final int WAIT_FOR_RESPONSE_TIMEOUT = 10000; // in milliseconds
-	private static final boolean GENERATE_OPTINAL_PARAMS = false;
 	private static final String LOG_FILE_SUFFIX = "_method-call_";
+	private static final boolean TEST_FOR_SOAP_FAULT = false;
 
 	@Autowired
 	public MethodCallComponent(@Value("${methodCall.log.filePath}") final String logFilesDirectory,
@@ -52,6 +56,9 @@ public final class MethodCallComponent extends AbstractComponent {
 
 		this.logFilesDirectory = logFilesDirectory;
 		this.logFilesUrl = logFilesUrl;
+
+		// TODO find a better solution
+		ComponentHelper.setLogFilesUrl(logFilesUrl);
 	}
 
 	// TODO cache WSDL documents to avoid the import on every run
@@ -62,22 +69,25 @@ public final class MethodCallComponent extends AbstractComponent {
 	@Override
 	public void refreshCache() {
 
-		LoggingHelper.deleteLogFilesOlderThanOneDay(logFilesDirectory, logger);
+		// TODO do this task by scheduling
+		LoggingHelper.deleteLogFilesOlderThanOneDay(logFilesDirectory);
 
 		final List<ServiceStatus> newCache = new ArrayList<ServiceStatus>();
 
 		for (final Service service : super.getServices()) {
 
 			final String serviceName = service.getName() + super.getServiceNameSuffix();
-			LogFileWriter logFileWriter = dummyLogFileWriter;
+			final String logFileWriterName = service.getName() + LOG_FILE_SUFFIX;
+			final LogFileWriter logFileWriter = LoggingFactory.newLogFileWriter(logFilesDirectory, logFileWriterName);
 
 			try {
-				logFileWriter = new LogFileWriterImpl(logFilesDirectory, service.getName() + LOG_FILE_SUFFIX);
 
 				final WsdlInterface wsdlInterface = importWsdl(logFileWriter, service.getUrl().toString());
-				final WsdlRequest request = createRequest(wsdlInterface, logFileWriter);
+				final WsdlOperation operation = selectOperation(wsdlInterface);
+				final WsdlRequest request = createRequest(wsdlInterface, logFileWriter, operation);
 				final WsdlResponse response = submitRequest(request, logFileWriter);
-				final ServiceStatus serviceStatus = processResponse(response, serviceName, service, logFileWriter);
+				processResponse(response, serviceName, service, logFileWriter);
+				final ServiceStatus serviceStatus = buildServiceStatus(response, serviceName, service, logFileWriter);
 
 				newCache.add(serviceStatus);
 				wsdlInterface.getProject().release();
@@ -102,103 +112,15 @@ public final class MethodCallComponent extends AbstractComponent {
 		super.setCache(newCache);
 	}
 
-	private WsdlInterface importWsdl(final LogFileWriter logFileWriter, final String wsdlUrl) throws IOException,
-			SoapUIException, XmlException, InterruptedException {
-
-		final WsdlProject project = new WsdlProject();
-
-		logger.debug("Importing WSDL file " + wsdlUrl);
-		logFileWriter.writeToLogFile("Importing WSDL file " + wsdlUrl);
-
-		final ImportWsdlRunnable importWsdlRunnable = new ImportWsdlRunnable(project, wsdlUrl);
-		final Thread importWsdlThread = new Thread(importWsdlRunnable);
-		importWsdlThread.start();
-		importWsdlThread.join(IMPORT_WSDL_TIMEOUT);
-
-		if (importWsdlRunnable.soapUIException != null) {
-			throw importWsdlRunnable.soapUIException;
-		}
-
-		if (importWsdlRunnable.wsdlInterface == null) { // timeout by join operation
-			project.release();
-			throw new IllegalStateException("Importing the WSDL file timed out, timeout: " + IMPORT_WSDL_TIMEOUT
-					+ " ms");
-		}
-
-		logger.debug("Importing finished");
-		logFileWriter.writeToLogFile("Importing finished");
-
-		return importWsdlRunnable.wsdlInterface;
-	}
-
-	private WsdlRequest createRequest(final WsdlInterface wsdlInterface, final LogFileWriter logFileWriter) {
-
+	private WsdlOperation selectOperation(final WsdlInterface wsdlInterface) {
+		return wsdlInterface.getOperationAt(0);
 		// TODO test best strategy + error handling (choose first, a random or all method(s) of wsdl file)
-		final WsdlOperation operation = wsdlInterface.getOperationAt(0);
 		// wsdlInterface.getOperationCount();
 		// wsdlInterface.getOperationList();
-
-		final WsdlRequest request = operation.addNewRequest(operation.getName());
-
-		// generate the request content from the schema
-		request.setRequestContent(operation.createRequest(GENERATE_OPTINAL_PARAMS));
-
-		logger.debug("=== Request Content ===");
-		logger.debug(request.getRequestContent());
-		logFileWriter.writeToLogFile("=== Request Content ===");
-		logFileWriter.writeToLogFile(request.getRequestContent());
-
-		// validate request
-		final AssertionError[] requestAssertionErrors = WsdlValidationUtils.validateRequest(request);
-		LoggingHelper.logRequestValidation(requestAssertionErrors, logFileWriter, logger);
-
-		return request;
 	}
 
-	private WsdlResponse submitRequest(final WsdlRequest request, final LogFileWriter logFileWriter)
-			throws InterruptedException, SubmitException {
-
-		logger.debug("Sending request");
-		logFileWriter.writeToLogFile("Sending request");
-
-		final SubmitRequestRunnable submitRequestRunnable = new SubmitRequestRunnable(request);
-		final Thread submitRequestThread = new Thread(submitRequestRunnable);
-
-		logger.debug("Waiting for the response");
-		logFileWriter.writeToLogFile("Waiting for the response");
-
-		submitRequestThread.start();
-		submitRequestThread.join(WAIT_FOR_RESPONSE_TIMEOUT);
-
-		if (submitRequestRunnable.submitException != null) {
-			throw submitRequestRunnable.submitException;
-		}
-
-		if (submitRequestRunnable.response == null) { // timeout by join operation
-			throw new IllegalStateException("Waiting for the response timed out, timeout: " + WAIT_FOR_RESPONSE_TIMEOUT
-					+ " ms");
-		}
-
-		return submitRequestRunnable.response;
-	}
-
-	private ServiceStatus processResponse(final WsdlResponse response, final String serviceName, final Service service,
-			final LogFileWriter logFileWriter) throws XmlException {
-
-		final long responseTime = response.getTimeTaken();
-
-		final String responseTimeText = ", response time = " + responseTime + " ms";
-		logger.debug("Response received" + responseTimeText);
-		logFileWriter.writeToLogFile("Response received" + responseTimeText);
-
-		logger.debug("=== Response Content ===");
-		logFileWriter.writeToLogFile("=== Response Content ===");
-
-		final String content = response.getContentAsString();
-		logger.debug(content);
-		logFileWriter.writeToLogFile(content);
-
-		// build status information
+	private ServiceStatus buildServiceStatus(final WsdlResponse response, final String serviceName,
+			final Service service, final LogFileWriter logFileWriter) throws XmlException {
 
 		// build message
 		final StringBuffer stringBuffer = new StringBuffer("Service is working");
@@ -206,83 +128,29 @@ public final class MethodCallComponent extends AbstractComponent {
 
 		// response validation
 		final AssertionError[] responseAssertionErrors = WsdlValidationUtils.validateResponse(response);
-		LoggingHelper.logResponseValidation(responseAssertionErrors, logFileWriter, logger);
+		LoggingHelper.logResponseValidation(responseAssertionErrors, logFileWriter);
+
 		if (responseAssertionErrors != null && responseAssertionErrors.length > 0) {
+
 			stringBuffer.append(", but the repsonse is not valid");
 			state = State.CRITICAL;
+
+		} else if (TEST_FOR_SOAP_FAULT) {
+
+			final WsdlOperation operation = response.getRequest().getOperation();
+			if (WsdlValidationUtils.isSoapFault(response.getContentAsString(), operation)) {
+				stringBuffer.append(", but the response is a SOAP fault");
+				logger.debug("The response is a SOAP fault!");
+				logFileWriter.writeToLogFile("The response is a SOAP fault!");
+				state = State.WARNING;
+			}
 		}
 
-		// SOAP fault test
-		final WsdlOperation operation = response.getRequest().getOperation();
-		if (WsdlValidationUtils.isSoapFault(content, operation)) {
-			stringBuffer.append(", but the response is a SOAP fault");
-			logger.debug("The response is a SOAP fault!");
-			logFileWriter.writeToLogFile("The response is a SOAP fault!");
-			state = State.WARNING;
-		}
-
-		stringBuffer.append(responseTimeText);
+		final long responseTime = response.getTimeTaken();
+		stringBuffer.append(", response time = " + responseTime + " ms");
 		stringBuffer.append(LoggingHelper.getLogFileText(logFileWriter, logFilesUrl));
 		final String message = stringBuffer.toString();
 
 		return new ServiceStatus(serviceName, service.getUrl(), state, responseTime, message);
-	}
-
-	private void handleException(final Exception e, final LogFileWriter logFileWriter, final String serviceName,
-			final Service service, final List<ServiceStatus> newCache) {
-
-		final String message = "An error occured: " + e.getMessage()
-				+ LoggingHelper.getLogFileText(logFileWriter, logFilesUrl);
-		final ServiceStatus status = new ServiceStatus(serviceName, service.getUrl(), State.CRITICAL, 0, message);
-		newCache.add(status);
-
-		logFileWriter.writeToLogFile("An error occured: " + e.getMessage());
-		logFileWriter.writeStacktracetoLogFile(e);
-	}
-
-	private final static class ImportWsdlRunnable implements Runnable {
-
-		private final WsdlProject wsdlProject;
-		private final String url;
-		private WsdlInterface wsdlInterface;
-		private SoapUIException soapUIException;
-
-		public ImportWsdlRunnable(final WsdlProject wsdlProject, final String url) {
-			this.wsdlProject = wsdlProject;
-			this.url = url;
-		}
-
-		@Override
-		public void run() {
-			try {
-				wsdlInterface = WsdlInterfaceFactory.importWsdl(wsdlProject, url, true)[0];
-			} catch (final SoapUIException e) {
-				soapUIException = e;
-			}
-		}
-
-	}
-
-	private final static class SubmitRequestRunnable implements Runnable {
-
-		private final WsdlRequest request;
-		private WsdlResponse response;
-		private SubmitException submitException;
-
-		private final static boolean ASYNC = false;
-
-		public SubmitRequestRunnable(final WsdlRequest request) {
-			this.request = request;
-		}
-
-		@Override
-		public void run() {
-			try {
-				final WsdlSubmitContext wsdlSubmitContext = new WsdlSubmitContext(request.getModelItem());
-				response = (WsdlResponse) request.submit(wsdlSubmitContext, ASYNC).getResponse();
-			} catch (final SubmitException e) {
-				submitException = e;
-			}
-		}
 	}
 }

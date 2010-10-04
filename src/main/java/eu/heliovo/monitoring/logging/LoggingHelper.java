@@ -10,10 +10,12 @@ import com.eviware.soapui.model.testsuite.AssertionError;
 
 public final class LoggingHelper {
 
+	private final static Logger logger = Logger.getLogger(LoggingHelper.class);
+
 	private LoggingHelper() {
 	}
 
-	public static void deleteLogFilesOlderThanOneDay(final String logFilesDirectory, final Logger logger) {
+	public static void deleteLogFilesOlderThanOneDay(final String logFilesDirectory) {
 
 		final File[] oldLogFiles = new File(logFilesDirectory).listFiles(new LogFilenameFilter());
 		final Calendar now = Calendar.getInstance();
@@ -54,18 +56,16 @@ public final class LoggingHelper {
 		return buffer.toString();
 	}
 
-	public static void logRequestValidation(final AssertionError[] assertionErrors, final LogFileWriter logFileWriter,
-			final Logger logger) {
-		logValidationErrors(assertionErrors, logFileWriter, logger, "request");
+	public static void logRequestValidation(final AssertionError[] assertionErrors, final LogFileWriter logFileWriter) {
+		logValidationErrors(assertionErrors, logFileWriter, "request");
 	}
 
-	public static void logResponseValidation(final AssertionError[] assertionErrors, final LogFileWriter logFileWriter,
-			final Logger logger) {
-		logValidationErrors(assertionErrors, logFileWriter, logger, "response");
+	public static void logResponseValidation(final AssertionError[] assertionErrors, final LogFileWriter logFileWriter) {
+		logValidationErrors(assertionErrors, logFileWriter, "response");
 	}
 
 	private static void logValidationErrors(final AssertionError[] assertionErrors, final LogFileWriter logFileWriter,
-			final Logger logger, final String validationObjectName) {
+			final String validationObjectName) {
 
 		logger.debug("Validating " + validationObjectName);
 		logFileWriter.writeToLogFile("Validating " + validationObjectName);

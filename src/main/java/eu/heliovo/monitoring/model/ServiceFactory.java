@@ -3,6 +3,8 @@ package eu.heliovo.monitoring.model;
 import java.net.URL;
 import java.util.List;
 
+import org.springframework.util.StringUtils;
+
 public final class ServiceFactory {
 
 	private ServiceFactory() {
@@ -12,7 +14,25 @@ public final class ServiceFactory {
 		return new ServiceImpl(name, url);
 	}
 
-	public static ServiceWithRequests newService(final String name, final URL url, final List<String> requests) {
-		return new ServiceWithRequestsImpl(name, url, requests);
+	public static TestingService newService(final String name, final URL url, final List<OperationTest> operationTests) {
+		return new TestingServiceImpl(name, url, operationTests);
+	}
+
+	public static OperationTest newOperationTest(final String operationName, final String requestContent) {
+		return ServiceFactory.newOperationTest(operationName, requestContent, null);
+	}
+
+	public static OperationTest newOperationTestWithoutRequest(final String operationName, final String responseContent) {
+		return ServiceFactory.newOperationTest(operationName, null, responseContent);
+	}
+
+	public static OperationTest newOperationTest(final String operationName, final String requestContent,
+			final String responseContent) {
+
+		if (!StringUtils.hasText(operationName)) {
+			throw new IllegalArgumentException("operationName must not be empty!");
+		}
+
+		return new OperationTestImpl(operationName, requestContent, responseContent);
 	}
 }

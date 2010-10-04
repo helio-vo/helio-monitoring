@@ -1,9 +1,9 @@
 package eu.heliovo.monitoring.util;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.util.List;
-
-import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
@@ -11,7 +11,7 @@ import org.junit.Test;
 import eu.heliovo.monitoring.logging.LogFileWriter;
 import eu.heliovo.monitoring.logging.LogFileWriterImpl;
 
-public class LogFileWriterTest extends Assert {
+public class LogFileWriterTest {
 
 	@Test
 	public void testLogFileWriter() throws Exception {
