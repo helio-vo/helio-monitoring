@@ -43,14 +43,13 @@ public class MonitoringDaemon implements InitializingBean, RemotingMonitoringDae
 					throw new IllegalStateException("nagiosExternalCommandFile could not be created!", e);
 				}
 			} else {
-				throw new IllegalStateException(
-						"nagiosExternalCommandFile does not exist and is not allowed to be created!");
+				logger.warn("nagiosExternalCommandFile does not exist and is not allowed to be created!");
 			}
 		}
 
 		if (nagiosExternalCommandFile == null) {
 			throw new IllegalStateException("nagiosExternalCommandFile must not be null!");
-		} else if (!nagiosExternalCommandFile.canWrite()) {
+		} else if (nagiosExternalCommandFile.exists() && !nagiosExternalCommandFile.canWrite()) {
 			throw new IllegalStateException("nagiosExternalCommandFile cannot be written!");
 		}
 	}
@@ -58,18 +57,20 @@ public class MonitoringDaemon implements InitializingBean, RemotingMonitoringDae
 	public void writeToNagiosExternalCommandFile(final long time, final NagiosCommand command, final String hostName,
 			final String serviceName, final NagiosStatus status, final String statusMessage) {
 
-		final String lineToWrite = buildLineToWrite(time, command, hostName, serviceName, status, statusMessage);
-		try {
-
-			final FileWriter fw = new FileWriter(nagiosExternalCommandFile, true);
+		if (nagiosExternalCommandFile.exists() || forceNagiosExternalCommandFileCreation) {
+			final String lineToWrite = buildLineToWrite(time, command, hostName, serviceName, status, statusMessage);
 			try {
-				fw.write(lineToWrite);
-			} finally {
-				fw.close();
-			}
 
-		} catch (final IOException e) {
-			throw new IllegalStateException("data could not be written!", e);
+				final FileWriter fw = new FileWriter(nagiosExternalCommandFile, true);
+				try {
+					fw.write(lineToWrite);
+				} finally {
+					fw.close();
+				}
+
+			} catch (final IOException e) {
+				throw new IllegalStateException("data could not be written!", e);
+			}
 		}
 	}
 

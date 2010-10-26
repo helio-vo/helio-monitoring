@@ -13,6 +13,13 @@ import java.util.List;
 import eu.heliovo.monitoring.model.OperationTest;
 import eu.heliovo.monitoring.model.Service;
 
+/**
+ * 
+ * Contains a static list of all monitored services with optional predefined requests and responses.
+ * 
+ * @author Kevin Seidler
+ * 
+ */
 public final class Services {
 
 	public static final List<Service> LIST;
@@ -28,35 +35,20 @@ public final class Services {
 
 			final List<Service> services = new ArrayList<Service>();
 
-			// taken from https://grid.ie/helio/wiki/HelioDevelopment
-			services.add(newService("HEC", new URL("http://helio.i4ds.technik.fhnw.ch:8080/core/HECService?wsdl")));
-			services.add(newService("HEC_mssl",
-					new URL("http://msslxw.mssl.ucl.ac.uk:8080/helio-hec/HelioService?wsdl"),
-					createHecMsslOperationTest()));
+			// taken from https://grid.ie/helio/wiki/HelioServicesDetails
+			services.add(newService("HEC", new URL("http://140.105.77.30:8080/helio-hec-r3/HelioService?wsdl")));
+
 			services.add(newService("DPAS", new URL("http://msslxw.mssl.ucl.ac.uk:8080/helio-dpas/HelioService?wsdl")));
-			services.add(newService("ICS", new URL("http://msslxw.mssl.ucl.ac.uk:8080/helio-ics/HelioService?wsdl")));
+			services
+					.add(newService("ICS_R2", new URL("http://msslxw.mssl.ucl.ac.uk:8080/helio-ics/HelioService?wsdl")));
+			services.add(newService("ICS_R3", new URL(
+					"http://msslxw.mssl.ucl.ac.uk:8080/helio-ics-r3/HelioService?wsdl")));
 			services.add(newService("ILS", new URL("http://msslxw.mssl.ucl.ac.uk:8080/helio-ils/HelioService?wsdl")));
-			services.add(newService("HRS", new URL(
-					"http://msslxw.mssl.ucl.ac.uk:8080/helio_registry/services/RegistryQueryv1_0?wsdl")));
+			services.add(newService("HRS",
+					new URL("http://msslxw.mssl.ucl.ac.uk:8080/helio_registry/HelioService?wsdl")));
+			services.add(newService("HFC", new URL("http://helio-fc1.obspm.fr:8080/helio-hfc/HelioService?wsdl")));
 
-			services.add(newService("FrontendFacade", new URL(
-					"http://helio.i4ds.technik.fhnw.ch:8080/core/FrontendFacadeService?wsdl"),
-					createFrontendFacadeSampleOperationTest()));
-
-			services.add(newService("WorkflowsService", new URL(
-					"http://helio.i4ds.technik.fhnw.ch/helio-wf/WorkflowsService?wsdl")));
-
-			services.add(newService("HEC", new URL("http://" + HELIO_DEV_HOSTNAME + ":8080/core/HECService?wsdl")));
-
-			services.add(newService("FrontendFacade", new URL("http://" + HELIO_DEV_HOSTNAME
-					+ ":8080/core/FrontendFacadeService?wsdl"), createFrontendFacadeSampleOperationTest()));
-
-			services.add(newService("WorkflowsService", new URL("http://" + HELIO_DEV_HOSTNAME
-					+ "/helio-wf/WorkflowsService?wsdl")));
-
-			services.add(newService("helio-workflow", new URL("http://" + HELIO_DEV_HOSTNAME
-					+ ":8080/helio-workflow/SOAP?WSDL"), createHelioWorkFlowSampleOperationTest()));
-			 
+			// just for testing purposes
 			services.add(newService("FakeOfflineService", new URL("http://123.43.121.11/")));
 
 			services.add(newService("NoWsdlOfflineService", new URL("http://" + HELIO_DEV_HOSTNAME

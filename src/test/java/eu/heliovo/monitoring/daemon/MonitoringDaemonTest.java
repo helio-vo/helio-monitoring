@@ -50,26 +50,8 @@ public class MonitoringDaemonTest extends Assert {
 		 */
 
 		daemon = new MonitoringDaemon("nagios", false);
-
-		illegalStateException = false;
-		try {
-			daemon.afterPropertiesSet();
-		} catch (final IllegalStateException e) {
-			illegalStateException = true;
-		}
-		assertTrue(illegalStateException);
-
-		/*
-		 * test for null
-		 */
-
-		illegalStateException = false;
-		try {
-			daemon.afterPropertiesSet();
-		} catch (final IllegalStateException e) {
-			illegalStateException = true;
-		}
-		assertTrue(illegalStateException);
+		daemon.afterPropertiesSet();
+		// just a warning log message that this file does not exist and is not allowed to be created
 
 		/*
 		 * test for file is not a file
