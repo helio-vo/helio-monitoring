@@ -1,11 +1,15 @@
 package eu.heliovo.monitoring.service;
 
+import static eu.heliovo.monitoring.test.util.TestUtils.getComponentHelper;
+import static eu.heliovo.monitoring.test.util.TestUtils.logFilesUrl;
+
 import java.util.List;
 
 import junit.framework.Assert;
 
 import org.junit.Test;
 
+import eu.heliovo.monitoring.component.ComponentHelper;
 import eu.heliovo.monitoring.component.MethodCallComponent;
 import eu.heliovo.monitoring.component.PingComponent;
 import eu.heliovo.monitoring.component.TestingComponent;
@@ -20,12 +24,21 @@ import eu.heliovo.monitoring.model.ServiceStatus;
 public class MonitoringServiceTest extends Assert {
 
 	private final PingComponent pingComponent = new PingComponent();
-	private final MethodCallComponent methodCallComponent = new MethodCallComponent("mainlog",
-			"http://localhost:8080/helio-monitoring/logs");
-	private final TestingComponent testingComponent = new TestingComponent("mainlog",
-			"http://localhost:8080/helio-monitoring/logs");
-	private final MonitoringServiceImpl monitoringService = new MonitoringServiceImpl(pingComponent,
-			methodCallComponent, testingComponent);
+	private final MethodCallComponent methodCallComponent;
+	private final TestingComponent testingComponent;
+
+	private final MonitoringServiceImpl monitoringService;
+
+	public MonitoringServiceTest() throws Exception {
+
+		ComponentHelper componentHelper = getComponentHelper();
+
+		methodCallComponent = new MethodCallComponent(componentHelper, "mainlog", logFilesUrl);
+		testingComponent = new TestingComponent(componentHelper, "mainlog", logFilesUrl);
+
+		monitoringService = new MonitoringServiceImpl(pingComponent, methodCallComponent, testingComponent, null, null,
+				null, null);
+	}
 
 	@Test
 	public void testService() throws Exception {

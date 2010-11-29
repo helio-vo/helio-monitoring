@@ -2,7 +2,7 @@ package eu.heliovo.monitoring.model;
 
 import java.net.URL;
 
-public class ServiceImpl implements Service {
+public final class ServiceImpl implements Service {
 
 	private final String name;
 	private final URL url;

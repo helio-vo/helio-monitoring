@@ -7,7 +7,7 @@ package eu.heliovo.monitoring.logging;
  * @author Kevin Seidler
  * 
  */
-public class DummyLogFileWriter implements LogFileWriter {
+public final class DummyLogFileWriter implements LogFileWriter {
 
 	@Override
 	public void writeToLogFile(final String text) {

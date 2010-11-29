@@ -1,14 +1,9 @@
 package eu.heliovo.monitoring.component;
 
-import static eu.heliovo.monitoring.component.ComponentHelper.createRequest;
-import static eu.heliovo.monitoring.component.ComponentHelper.handleException;
-import static eu.heliovo.monitoring.component.ComponentHelper.importWsdl;
-import static eu.heliovo.monitoring.component.ComponentHelper.submitRequest;
 import static eu.heliovo.monitoring.util.ReflectionUtils.implementsInterface;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,9 +20,7 @@ import com.eviware.soapui.impl.wsdl.WsdlOperation;
 import com.eviware.soapui.impl.wsdl.WsdlRequest;
 import com.eviware.soapui.impl.wsdl.submit.transports.http.WsdlResponse;
 import com.eviware.soapui.model.iface.Operation;
-import com.eviware.soapui.model.iface.Request.SubmitException;
 import com.eviware.soapui.model.testsuite.AssertionError;
-import com.eviware.soapui.support.SoapUIException;
 
 import eu.heliovo.monitoring.logging.LogFileWriter;
 import eu.heliovo.monitoring.logging.LoggingFactory;
@@ -49,38 +42,38 @@ import eu.heliovo.monitoring.util.WsdlValidationUtils;
 public final class TestingComponent extends AbstractComponent {
 
 	private final Logger logger = Logger.getLogger(this.getClass());
+
+	private final ComponentHelper componentHelper;
 	private final String logFilesDirectory;
 	private final String logFilesUrl;
 
 	private static final String LOG_FILE_SUFFIX = "_testing_";
 
 	@Autowired
-	public TestingComponent(@Value("${methodCall.log.filePath}") final String logFilesDirectory,
-			@Value("${monitoringService.logUrl}") final String logFilesUrl) {
+	public TestingComponent(ComponentHelper componentHelper, @Value("${logging.filePath}") String logFilesDirectory,
+			@Value("${monitoringService.logUrl}") String logFilesUrl) {
 
 		super(" -testing-");
+		this.componentHelper = componentHelper;
 		this.logFilesDirectory = logFilesDirectory;
 		this.logFilesUrl = logFilesUrl;
-
-		// TODO find a better solution
-		ComponentHelper.setLogFilesUrl(logFilesUrl);
 	}
 
 	@Override
 	public void refreshCache() {
 
-		final List<ServiceStatus> newCache = new ArrayList<ServiceStatus>();
+		List<ServiceStatus> newCache = new ArrayList<ServiceStatus>();
 
-		for (final Service service : super.getServices()) {
+		for (Service service : super.getServices()) {
 
-			final String serviceName = service.getName() + super.getServiceNameSuffix();
-			final String logFileWriterName = service.getName() + LOG_FILE_SUFFIX;
-			final LogFileWriter logFileWriter = LoggingFactory.newLogFileWriter(logFilesDirectory, logFileWriterName);
+			String serviceName = service.getName() + super.getServiceNameSuffix();
+			String logFileWriterName = service.getName() + LOG_FILE_SUFFIX;
+			LogFileWriter logFileWriter = LoggingFactory.newLogFileWriter(logFilesDirectory, logFileWriterName);
 
 			try {
 
-				final WsdlInterface wsdlInterface = importWsdl(logFileWriter, service.getUrl().toString());
-				final Statistic statistic = new Statistic(serviceName, service.getUrl());
+				WsdlInterface wsdlInterface = componentHelper.importWsdl(logFileWriter, service.getUrl().toString());
+				Statistic statistic = new Statistic(serviceName, service.getUrl());
 
 				monitorPredefinedOperations(logFileWriter, service, serviceName, wsdlInterface, statistic);
 				monitorAvailableOperations(logFileWriter, service, serviceName, wsdlInterface, statistic);
@@ -91,66 +84,58 @@ public final class TestingComponent extends AbstractComponent {
 				// TODO if service has predefined testing data, user can decide to deactivate the test of not
 				// predefined operations
 
-				final ServiceStatus serviceStatus = buildServiceStatus(statistic, logFileWriter);
+				ServiceStatus serviceStatus = buildServiceStatus(statistic, logFileWriter);
 
 				newCache.add(serviceStatus);
 				wsdlInterface.getProject().release();
 
-			} catch (final RuntimeException e) {
-				handleException(e, logFileWriter, serviceName, service, newCache);
-			} catch (final IOException e) {
-				handleException(e, logFileWriter, serviceName, service, newCache);
-			} catch (final SoapUIException e) {
-				handleException(e, logFileWriter, serviceName, service, newCache);
-			} catch (final XmlException e) {
-				handleException(e, logFileWriter, serviceName, service, newCache);
-			} catch (final InterruptedException e) {
-				handleException(e, logFileWriter, serviceName, service, newCache);
+			} catch (Exception e) {
+				componentHelper.handleException(e, logFileWriter, serviceName, service, newCache);
 			}
-
 			logFileWriter.close();
 		}
-
 		super.setCache(newCache);
 	}
 
-	private void monitorPredefinedOperations(final LogFileWriter logFileWriter, final Service service,
-			final String serviceName, final WsdlInterface wsdlInterface, final Statistic statistic) {
+	// TODO refactor, too many nested blocks
+	private void monitorPredefinedOperations(LogFileWriter logFileWriter, Service service, String serviceName,
+			WsdlInterface wsdlInterface, Statistic statistic) {
 
 		if (implementsInterface(service, TestingService.class)) {
 
 			logFileWriter.writeToLogFile("==== Testing predefined operations ====");
 
-			final TestingService testingService = (TestingService) service;
-			for (final OperationTest operationTest : testingService.getOperationTests()) {
+			TestingService testingService = (TestingService) service;
+			for (OperationTest operationTest : testingService.getOperationTests()) {
 
 				statistic.predefinedOperationsTested++;
 
-				final WsdlOperation operation = wsdlInterface.getOperationByName(operationTest.getOperationName());
+				WsdlOperation operation = wsdlInterface.getOperationByName(operationTest.getOperationName());
 				if (operation != null) {
 
 					try {
 
-						final WsdlOperation wsdlOperation = operation;
+						WsdlOperation wsdlOperation = operation;
 
-						final String requestContent = operationTest.getRequestContent();
-						final WsdlRequest request;
+						String requestContent = operationTest.getRequestContent();
+						WsdlRequest request;
 						if (hasText(requestContent)) {
-							request = createRequest(wsdlInterface, logFileWriter, wsdlOperation, requestContent);
+							request = componentHelper.createRequest(wsdlInterface, logFileWriter, wsdlOperation,
+									requestContent);
 						} else {
-							request = createRequest(wsdlInterface, logFileWriter, wsdlOperation);
+							request = componentHelper.createRequest(wsdlInterface, logFileWriter, wsdlOperation);
 						}
 
-						final WsdlResponse response = submitRequest(request, logFileWriter);
+						WsdlResponse response = componentHelper.submitRequest(request, logFileWriter);
 						processResponse(response, statistic, service, serviceName, logFileWriter);
 
-						final String actualResponseContent = response.getContentAsString();
-						final String expectedResponseContent = operationTest.getResponseContent();
+						String actualResponseContent = response.getContentAsString();
+						String expectedResponseContent = operationTest.getResponseContent();
 
 						if (hasText(expectedResponseContent)) {
 
-							final XmlObject expectedXml = XmlObject.Factory.parse(expectedResponseContent);
-							final XmlObject actualXml = XmlObject.Factory.parse(actualResponseContent);
+							XmlObject expectedXml = XmlObject.Factory.parse(expectedResponseContent);
+							XmlObject actualXml = XmlObject.Factory.parse(actualResponseContent);
 
 							if (expectedXml.valueEquals(actualXml)) {
 
@@ -178,20 +163,14 @@ public final class TestingComponent extends AbstractComponent {
 						// TODO if request is a predefined one and not valid => State.CRITICAL, may throw an exeception
 						// TODO test with predefined response only
 
-					} catch (final InterruptedException e) {
-						logException(e, logFileWriter, operation.getName(), statistic);
-					} catch (final SubmitException e) {
-						logException(e, logFileWriter, operation.getName(), statistic);
-					} catch (final XmlException e) {
-						logException(e, logFileWriter, operation.getName(), statistic);
-					} catch (final RuntimeException e) {
+					} catch (Exception e) {
 						logException(e, logFileWriter, operation.getName(), statistic);
 					}
 
 				} else {
 
-					final String operationName = operationTest.getOperationName();
-					final String message = "predefined operation " + operationName + " not found!";
+					String operationName = operationTest.getOperationName();
+					String message = "predefined operation " + operationName + " not found!";
 					logger.warn(message);
 					logFileWriter.writeToLogFile(message);
 					statistic.predefinedNotFoundOperations.add(operationTest.getOperationName());
@@ -200,12 +179,12 @@ public final class TestingComponent extends AbstractComponent {
 		}
 	}
 
-	private void monitorAvailableOperations(final LogFileWriter logFileWriter, final Service service,
-			final String serviceName, final WsdlInterface wsdlInterface, final Statistic statistic) {
+	private void monitorAvailableOperations(LogFileWriter logFileWriter, Service service, String serviceName,
+			WsdlInterface wsdlInterface, Statistic statistic) {
 
 		logFileWriter.writeToLogFile("==== Testing all available operations ====");
 
-		for (final Operation operation : wsdlInterface.getOperationList()) {
+		for (Operation operation : wsdlInterface.getOperationList()) {
 
 			if (operation instanceof WsdlOperation) {
 
@@ -213,18 +192,12 @@ public final class TestingComponent extends AbstractComponent {
 
 				try {
 
-					final WsdlOperation wsdlOperation = (WsdlOperation) operation;
-					final WsdlRequest request = createRequest(wsdlInterface, logFileWriter, wsdlOperation);
-					final WsdlResponse response = submitRequest(request, logFileWriter);
+					WsdlOperation wsdlOperation = (WsdlOperation) operation;
+					WsdlRequest request = componentHelper.createRequest(wsdlInterface, logFileWriter, wsdlOperation);
+					WsdlResponse response = componentHelper.submitRequest(request, logFileWriter);
 					processResponse(response, statistic, service, serviceName, logFileWriter);
 
-				} catch (final RuntimeException e) {
-					logException(e, logFileWriter, operation.getName(), statistic);
-				} catch (final InterruptedException e) {
-					logException(e, logFileWriter, operation.getName(), statistic);
-				} catch (final SubmitException e) {
-					logException(e, logFileWriter, operation.getName(), statistic);
-				} catch (final XmlException e) {
+				} catch (Exception e) {
 					logException(e, logFileWriter, operation.getName(), statistic);
 				}
 
@@ -235,14 +208,14 @@ public final class TestingComponent extends AbstractComponent {
 		}
 	}
 
-	private void processResponse(final WsdlResponse response, final Statistic statistic, final Service service,
-			final String serviceName, final LogFileWriter logFileWriter) throws XmlException {
+	private void processResponse(WsdlResponse response, Statistic statistic, Service service, String serviceName,
+			LogFileWriter logFileWriter) throws XmlException {
 
-		ComponentHelper.processResponse(response, serviceName, service, logFileWriter);
+		componentHelper.processResponse(response, serviceName, service, logFileWriter);
 
 		// response validation
-		final WsdlOperation operation = response.getRequest().getOperation();
-		final AssertionError[] responseAssertionErrors = WsdlValidationUtils.validateResponse(response);
+		WsdlOperation operation = response.getRequest().getOperation();
+		AssertionError[] responseAssertionErrors = WsdlValidationUtils.validateResponse(response);
 		LoggingHelper.logResponseValidation(responseAssertionErrors, logFileWriter);
 
 		if (responseAssertionErrors != null && responseAssertionErrors.length > 0) {
@@ -254,16 +227,16 @@ public final class TestingComponent extends AbstractComponent {
 		}
 	}
 
-	private ServiceStatus buildServiceStatus(final Statistic statistic, final LogFileWriter logFileWriter) {
+	private ServiceStatus buildServiceStatus(Statistic statistic, LogFileWriter logFileWriter) {
 
 		// assemble statistic message
-		final StringBuffer message = new StringBuffer("Testing Result: ");
+		StringBuffer message = new StringBuffer("Testing Result: ");
 
-		final int problems = statistic.exceptionalOperations.size() + statistic.predefinedNotFoundOperations.size()
+		int problems = statistic.exceptionalOperations.size() + statistic.predefinedNotFoundOperations.size()
 				+ statistic.invalidResponseOperations.size() + statistic.notMatchingResponseOperations.size();
 
-		final int operationsTotal = statistic.operationsTested + statistic.predefinedOperationsTested;
-		final int successful = operationsTotal - problems;
+		int operationsTotal = statistic.operationsTested + statistic.predefinedOperationsTested;
+		int successful = operationsTotal - problems;
 
 		message.append(successful);
 		message.append("/");
@@ -306,17 +279,17 @@ public final class TestingComponent extends AbstractComponent {
 
 		// TODO test notMatchingResponseOperations (request + response, response only)
 
-		final String logMessage = message.toString();
+		String logMessage = message.toString();
 		logStatistic(statistic, logFileWriter, logMessage);
 
 		message.append(LoggingHelper.getLogFileText(logFileWriter, logFilesUrl));
-		final String statusMessage = message.toString();
+		String statusMessage = message.toString();
 
-		final State state = statistic.getServiceState();
+		State state = statistic.getServiceState();
 		return new ServiceStatus(statistic.serviceName, statistic.serviceUrl, state, 0, statusMessage);
 	}
 
-	private void logStatistic(final Statistic statistic, final LogFileWriter logFileWriter, final String logMessage) {
+	private void logStatistic(Statistic statistic, LogFileWriter logFileWriter, String logMessage) {
 
 		logFileWriter.writeToLogFile("==== Testing statistic ====");
 		logger.debug("==== Testing statistic ====");
@@ -327,7 +300,7 @@ public final class TestingComponent extends AbstractComponent {
 		if (!isEmpty(statistic.exceptionalOperations)) {
 			logFileWriter.writeToLogFile("=== exceptional operations ===");
 			logger.debug("=== exceptional operations ===");
-			for (final String operationName : statistic.exceptionalOperations) {
+			for (String operationName : statistic.exceptionalOperations) {
 				logFileWriter.writeToLogFile(operationName);
 				logger.debug(operationName);
 			}
@@ -336,7 +309,7 @@ public final class TestingComponent extends AbstractComponent {
 		if (!isEmpty(statistic.invalidResponseOperations)) {
 			logFileWriter.writeToLogFile("=== operations with invalid responses ===");
 			logger.debug("=== operations with invalid responses ===");
-			for (final String operationName : statistic.invalidResponseOperations) {
+			for (String operationName : statistic.invalidResponseOperations) {
 				logFileWriter.writeToLogFile(operationName);
 				logger.debug(operationName);
 			}
@@ -345,7 +318,7 @@ public final class TestingComponent extends AbstractComponent {
 		if (!isEmpty(statistic.predefinedNotFoundOperations)) {
 			logFileWriter.writeToLogFile("=== predefined operations not found ===");
 			logger.debug("=== predefined operations not found ===");
-			for (final String operationName : statistic.predefinedNotFoundOperations) {
+			for (String operationName : statistic.predefinedNotFoundOperations) {
 				logFileWriter.writeToLogFile(operationName);
 				logger.debug(operationName);
 			}
@@ -354,7 +327,7 @@ public final class TestingComponent extends AbstractComponent {
 		if (!isEmpty(statistic.soapFaultOperations)) {
 			logFileWriter.writeToLogFile("=== operations with SOAP faults ===");
 			logger.debug("=== operations with SOAP faults ===");
-			for (final String operationName : statistic.soapFaultOperations) {
+			for (String operationName : statistic.soapFaultOperations) {
 				logFileWriter.writeToLogFile(operationName);
 				logger.debug(operationName);
 			}
@@ -363,15 +336,14 @@ public final class TestingComponent extends AbstractComponent {
 		if (!isEmpty(statistic.notMatchingResponseOperations)) {
 			logFileWriter.writeToLogFile("=== operations with reponse not matching with predefinition ===");
 			logger.debug("=== operations with reponse not matching with predefinition ===");
-			for (final String operationName : statistic.notMatchingResponseOperations) {
+			for (String operationName : statistic.notMatchingResponseOperations) {
 				logFileWriter.writeToLogFile(operationName);
 				logger.debug(operationName);
 			}
 		}
 	}
 
-	private void logException(final Exception e, final LogFileWriter logFileWriter, final String operationName,
-			final Statistic statistic) {
+	private void logException(Exception e, LogFileWriter logFileWriter, String operationName, Statistic statistic) {
 
 		statistic.exceptionalOperations.add(operationName);
 
@@ -389,7 +361,7 @@ public final class TestingComponent extends AbstractComponent {
 	// invalid or SOAP fault => CRITICAL, because user did predefine, he means the result must be valid
 	// maybe separate predefined statistic
 
-	private final static class Statistic {
+	private static class Statistic {
 
 		private final String serviceName;
 		private final URL serviceUrl;
@@ -403,7 +375,7 @@ public final class TestingComponent extends AbstractComponent {
 		private final List<String> predefinedNotFoundOperations = new ArrayList<String>();
 		private final List<String> notMatchingResponseOperations = new ArrayList<String>();
 
-		public Statistic(final String serviceName, final URL serviceUrl) {
+		public Statistic(String serviceName, URL serviceUrl) {
 			this.serviceName = serviceName;
 			this.serviceUrl = serviceUrl;
 		}
@@ -412,7 +384,7 @@ public final class TestingComponent extends AbstractComponent {
 
 			State state = State.OK;
 			if (!isEmpty(soapFaultOperations)) {
-				state = State.WARNING; // TODO a soap fault must not be an error, it could be an expected result
+				state = State.WARNING;
 			}
 			if (!isEmpty(exceptionalOperations)) {
 				state = State.CRITICAL;

@@ -15,7 +15,9 @@ import eu.heliovo.monitoring.model.ServiceStatus;
 import eu.heliovo.monitoring.model.State;
 
 @Component
-public class MonitoringDaemon implements InitializingBean, RemotingMonitoringDaemon {
+public final class MonitoringDaemon implements InitializingBean, RemotingMonitoringDaemon {
+
+	private static final int TO_SECONDS_DIVISOR = 1000;
 
 	public static final String FILE_ENCODING = "UTF-8";
 
@@ -24,8 +26,8 @@ public class MonitoringDaemon implements InitializingBean, RemotingMonitoringDae
 	private final boolean forceNagiosExternalCommandFileCreation;
 
 	@Autowired
-	public MonitoringDaemon(@Value("${nagiosExternalCommandFilePath}") final String nagiosExternalCommandFile,
-			@Value("${forceNagiosExternalCommandFileCreation}") final boolean forceNagiosExternalCommandFileCreation) {
+	public MonitoringDaemon(@Value("${nagiosExternalCommandFilePath}") String nagiosExternalCommandFile,
+			@Value("${forceNagiosExternalCommandFileCreation}") boolean forceNagiosExternalCommandFileCreation) {
 
 		this.nagiosExternalCommandFile = new File(nagiosExternalCommandFile);
 		this.forceNagiosExternalCommandFileCreation = forceNagiosExternalCommandFileCreation;
@@ -54,11 +56,12 @@ public class MonitoringDaemon implements InitializingBean, RemotingMonitoringDae
 		}
 	}
 
-	public void writeToNagiosExternalCommandFile(final long time, final NagiosCommand command, final String hostName,
-			final String serviceName, final NagiosStatus status, final String statusMessage) {
+	public void writeToNagiosExternalCommandFile(final long timeInSeconds, final NagiosCommand command,
+			final String hostName, final String serviceName, final NagiosStatus status, final String statusMessage) {
 
 		if (nagiosExternalCommandFile.exists() || forceNagiosExternalCommandFileCreation) {
-			final String lineToWrite = buildLineToWrite(time, command, hostName, serviceName, status, statusMessage);
+			final String lineToWrite = buildLineToWrite(timeInSeconds, command, hostName, serviceName, status,
+					statusMessage);
 			try {
 
 				final FileWriter fw = new FileWriter(nagiosExternalCommandFile, true);
@@ -77,8 +80,8 @@ public class MonitoringDaemon implements InitializingBean, RemotingMonitoringDae
 	public void writeToNagiosExternalCommandFile(final NagiosCommand command, final String hostName,
 			final String serviceName, final NagiosStatus status, final String statusMessage) {
 
-		this.writeToNagiosExternalCommandFile(System.currentTimeMillis() / 1000, command, hostName, serviceName,
-				status, statusMessage);
+		long timeInSeconds = System.currentTimeMillis() / TO_SECONDS_DIVISOR;
+		this.writeToNagiosExternalCommandFile(timeInSeconds, command, hostName, serviceName, status, statusMessage);
 	}
 
 	/*
@@ -112,11 +115,11 @@ public class MonitoringDaemon implements InitializingBean, RemotingMonitoringDae
 		}
 	}
 
-	private String buildLineToWrite(final long time, final NagiosCommand command, final String hostName,
+	private String buildLineToWrite(final long timeInSeconds, final NagiosCommand command, final String hostName,
 			final String serviceName, final NagiosStatus status, final String statusMessage) {
 
 		final StringBuffer buffer = new StringBuffer("[");
-		buffer.append(time);
+		buffer.append(timeInSeconds);
 		buffer.append("]");
 		buffer.append(" ");
 		buffer.append(command.name());

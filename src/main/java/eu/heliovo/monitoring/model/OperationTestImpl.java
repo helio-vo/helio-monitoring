@@ -1,7 +1,7 @@
 package eu.heliovo.monitoring.model;
 
 
-public class OperationTestImpl implements OperationTest {
+public final class OperationTestImpl implements OperationTest {
 
 	private final String operationName;
 	private final String requestContent;
@@ -13,15 +13,15 @@ public class OperationTestImpl implements OperationTest {
 		this.responseContent = responseContent;
 	}
 
-	public final String getOperationName() {
+	public String getOperationName() {
 		return operationName;
 	}
 
-	public final String getRequestContent() {
+	public String getRequestContent() {
 		return requestContent;
 	}
 
-	public final String getResponseContent() {
+	public String getResponseContent() {
 		return responseContent;
 	}
 

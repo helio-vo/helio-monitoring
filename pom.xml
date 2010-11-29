@@ -2,8 +2,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<parent>
-		<artifactId>heliovo</artifactId>
 		<groupId>eu.heliovo</groupId>
+		<artifactId>heliovo</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
@@ -62,7 +62,7 @@
 			<artifactId>spring-tx</artifactId>
 			<version>${spring.version}</version>
 		</dependency>
-
+		
 		<!-- scheduling (executing quartz jobs) -->
 		<dependency>
 			<groupId>opensymphony</groupId>
@@ -73,6 +73,13 @@
 			<groupId>commons-collections</groupId>
 			<artifactId>commons-collections</artifactId>
 			<version>${commons-collections.version}</version>
+		</dependency>
+
+		<!-- needed for proxy creation from spring if proxy interface creation not wanted -->
+		<dependency>
+    		<groupId>cglib</groupId>
+    		<artifactId>cglib-nodep</artifactId>
+    		<version>2.2</version>
 		</dependency>
 
 		<!-- utils -->
@@ -182,7 +189,19 @@
 			<version>1.4.1</version>
 		</dependency>
 		<!-- end soapUI dependencies -->
-
+		
+		<!-- IVOA registry access -->
+		<dependency>
+			<groupId>starlink</groupId>
+			<artifactId>registryclient</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>ivoaregistry</groupId>
+			<artifactId>ivoaregistry</artifactId>
+			<version>1.0</version>
+		</dependency>
+		
 	</dependencies>
 
 </project>

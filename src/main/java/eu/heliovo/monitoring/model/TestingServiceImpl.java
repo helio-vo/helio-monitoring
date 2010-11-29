@@ -4,7 +4,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
-public class TestingServiceImpl implements TestingService {
+public final class TestingServiceImpl implements TestingService {
 
 	private final String name;
 	private final URL url;

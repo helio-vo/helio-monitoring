@@ -1,5 +1,7 @@
 package eu.heliovo.monitoring.component;
 
+import static eu.heliovo.monitoring.test.util.TestUtils.getComponentHelper;
+import static eu.heliovo.monitoring.test.util.TestUtils.logFilesUrl;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -15,10 +17,9 @@ import eu.heliovo.monitoring.statics.Services;
 public class TestingComponentTest {
 
 	@Test
-	public final void testRefreshCache() {
+	public final void testRefreshCache() throws Exception {
 
-		final TestingComponent component = new TestingComponent("mainlog",
-				"http://localhost:8080/helio-monitoring/logs");
+		final TestingComponent component = new TestingComponent(getComponentHelper(), "mainlog", logFilesUrl);
 		component.setServices(Services.LIST);
 		component.refreshCache();
 

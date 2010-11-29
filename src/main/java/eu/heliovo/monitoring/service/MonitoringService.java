@@ -2,8 +2,12 @@ package eu.heliovo.monitoring.service;
 
 import java.util.List;
 
+import javax.jws.WebMethod;
+import javax.jws.WebService;
+
 import eu.heliovo.monitoring.model.ServiceStatus;
 
+@WebService
 public interface MonitoringService {
 
 	/**
@@ -11,9 +15,12 @@ public interface MonitoringService {
 	 * 
 	 * @return List of service status
 	 */
-	abstract List<ServiceStatus> getPingStatus();
+	@WebMethod
+	List<ServiceStatus> getPingStatus();
 
-	abstract List<ServiceStatus> getMethodCallStatus();
+	@WebMethod
+	List<ServiceStatus> getMethodCallStatus();
 
-	abstract List<ServiceStatus> getTestingStatus();
+	@WebMethod
+	List<ServiceStatus> getTestingStatus();
 }

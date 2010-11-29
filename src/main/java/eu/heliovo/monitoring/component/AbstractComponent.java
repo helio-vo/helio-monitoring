@@ -36,7 +36,7 @@ public abstract class AbstractComponent {
 		this.services = Collections.unmodifiableList(services);
 	}
 
-	public void setCache(final List<ServiceStatus> cache) {
+	public final void setCache(final List<ServiceStatus> cache) {
 		this.cache = Collections.unmodifiableList(cache);
 	}
 

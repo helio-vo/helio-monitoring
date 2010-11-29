@@ -2,15 +2,25 @@ package eu.heliovo.monitoring.component;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
 import org.apache.xmlbeans.XmlException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import com.eviware.soapui.impl.WsdlInterfaceFactory;
 import com.eviware.soapui.impl.wsdl.WsdlInterface;
 import com.eviware.soapui.impl.wsdl.WsdlOperation;
 import com.eviware.soapui.impl.wsdl.WsdlProject;
 import com.eviware.soapui.impl.wsdl.WsdlRequest;
+import com.eviware.soapui.impl.wsdl.WsdlSubmit;
 import com.eviware.soapui.impl.wsdl.WsdlSubmitContext;
 import com.eviware.soapui.impl.wsdl.submit.transports.http.WsdlResponse;
 import com.eviware.soapui.model.iface.Request.SubmitException;
@@ -24,59 +34,74 @@ import eu.heliovo.monitoring.model.ServiceStatus;
 import eu.heliovo.monitoring.model.State;
 import eu.heliovo.monitoring.util.WsdlValidationUtils;
 
+/**
+ * Contains common code of the Components.
+ * 
+ * @author Kevin Seidler
+ * 
+ */
+@Component
 public final class ComponentHelper {
 
-	private static final Logger logger = Logger.getLogger(ComponentHelper.class);
+	private final Logger logger = Logger.getLogger(this.getClass());
 
-	// TODO enable configuration of these parameters from resource file helio-monitoring.properties
-	private static final int IMPORT_WSDL_TIMEOUT = 10000; // in milliseconds
+	private static final int IMPORT_WSDL_TIMEOUT = 10;
 	private static final boolean GENERATE_OPTINAL_PARAMS = false;
-	private static final int WAIT_FOR_RESPONSE_TIMEOUT = 10000; // in milliseconds
-	private static String logFilesUrl = "";
+	private static final boolean SUBMIT_ASYNC = false;
+	private static final int RESPONSE_TIMEOUT = 10;
 
-	private ComponentHelper() {
+	private static final int FIRST_WSDL_INTERFACE = 0;
+
+	private final ExecutorService executor;
+	private final String logFilesUrl;
+
+	@Autowired
+	public ComponentHelper(ExecutorService executor, @Value("${monitoringService.logUrl}") String logFilesUrl) {
+		this.executor = executor;
+		this.logFilesUrl = logFilesUrl;
 	}
 
-	protected static WsdlInterface importWsdl(final LogFileWriter logFileWriter, final String wsdlUrl)
-			throws IOException, SoapUIException, XmlException, InterruptedException {
+	protected WsdlInterface importWsdl(LogFileWriter logFileWriter, final String wsdlUrl) throws XmlException,
+			IOException, SoapUIException, ExecutionException, InterruptedException {
 
 		final WsdlProject project = new WsdlProject();
 
 		logger.debug("Importing WSDL file " + wsdlUrl);
 		logFileWriter.writeToLogFile("Importing WSDL file " + wsdlUrl);
 
-		final ImportWsdlRunnable importWsdlRunnable = new ImportWsdlRunnable(project, wsdlUrl);
-		final Thread importWsdlThread = new Thread(importWsdlRunnable);
-		importWsdlThread.start();
-		importWsdlThread.join(IMPORT_WSDL_TIMEOUT);
+		Future<WsdlInterface> future = executor.submit(new Callable<WsdlInterface>() {
+			public WsdlInterface call() throws SoapUIException {
+				WsdlInterface[] wsdlInterfaces = WsdlInterfaceFactory.importWsdl(project, wsdlUrl, true);
+				return wsdlInterfaces[FIRST_WSDL_INTERFACE];
+			}
+		});
 
-		if (importWsdlRunnable.soapUIException != null) {
-			throw importWsdlRunnable.soapUIException;
-		}
+		try {
+			// TODO automatically determine timeout
+			WsdlInterface wsdlInterface = future.get(IMPORT_WSDL_TIMEOUT, TimeUnit.SECONDS);
 
-		if (importWsdlRunnable.wsdlInterface == null) { // timeout by join operation
+			logger.debug("Importing finished");
+			logFileWriter.writeToLogFile("Importing finished");
+
+			return wsdlInterface;
+
+		} catch (TimeoutException e) {
 			project.release();
-			throw new IllegalStateException("Importing the WSDL file timed out, timeout: " + IMPORT_WSDL_TIMEOUT
-					+ " ms");
+			throw new IllegalStateException("Importing WSDL file timed out (timeout: " + IMPORT_WSDL_TIMEOUT + " s)");
 		}
-
-		logger.debug("Importing finished");
-		logFileWriter.writeToLogFile("Importing finished");
-
-		return importWsdlRunnable.wsdlInterface;
 	}
 
-	protected static WsdlRequest createRequest(final WsdlInterface wsdlInterface, final LogFileWriter logFileWriter,
-			final WsdlOperation operation) {
+	protected WsdlRequest createRequest(WsdlInterface wsdlInterface, LogFileWriter logFileWriter,
+			WsdlOperation operation) {
 
-		final String requestContent = operation.createRequest(GENERATE_OPTINAL_PARAMS);
-		return ComponentHelper.createRequest(wsdlInterface, logFileWriter, operation, requestContent);
+		 String requestContent = operation.createRequest(GENERATE_OPTINAL_PARAMS);
+		return this.createRequest(wsdlInterface, logFileWriter, operation, requestContent);
 	}
 
-	protected static WsdlRequest createRequest(final WsdlInterface wsdlInterface, final LogFileWriter logFileWriter,
-			final WsdlOperation operation, final String requestContent) {
+	protected WsdlRequest createRequest(WsdlInterface wsdlInterface, LogFileWriter logFileWriter,
+			WsdlOperation operation, String requestContent) {
 
-		final WsdlRequest request = operation.addNewRequest(operation.getName());
+		 WsdlRequest request = operation.addNewRequest(operation.getName());
 
 		// generate the request content from the schema
 		request.setRequestContent(requestContent);
@@ -87,116 +112,65 @@ public final class ComponentHelper {
 		logFileWriter.writeToLogFile(request.getRequestContent());
 
 		// validate request
-		final AssertionError[] requestAssertionErrors = WsdlValidationUtils.validateRequest(request);
+		AssertionError[] requestAssertionErrors = WsdlValidationUtils.validateRequest(request);
 		LoggingHelper.logRequestValidation(requestAssertionErrors, logFileWriter);
 
 		return request;
 	}
 
-	protected static WsdlResponse submitRequest(final WsdlRequest request, final LogFileWriter logFileWriter)
-			throws InterruptedException, SubmitException {
+	protected WsdlResponse submitRequest(final WsdlRequest request, LogFileWriter logFileWriter)
+			throws ExecutionException, InterruptedException, SubmitException {
 
 		logger.debug("Sending request");
 		logFileWriter.writeToLogFile("Sending request");
 
-		final SubmitRequestRunnable submitRequestRunnable = new SubmitRequestRunnable(request);
-		final Thread submitRequestThread = new Thread(submitRequestRunnable);
+		Future<WsdlResponse> future = executor.submit(new Callable<WsdlResponse>() {
+			public WsdlResponse call() throws SubmitException {
+
+				WsdlSubmitContext wsdlSubmitContext = new WsdlSubmitContext(request.getModelItem());
+				WsdlSubmit<WsdlRequest> submit = request.submit(wsdlSubmitContext, SUBMIT_ASYNC);
+
+				return (WsdlResponse) submit.getResponse();
+			}
+		});
 
 		logger.debug("Waiting for the response");
 		logFileWriter.writeToLogFile("Waiting for the response");
 
-		submitRequestThread.start();
-		submitRequestThread.join(WAIT_FOR_RESPONSE_TIMEOUT);
+		try {
+			// TODO automatically determine timeout
+			return future.get(RESPONSE_TIMEOUT, TimeUnit.SECONDS);
 
-		if (submitRequestRunnable.submitException != null) {
-			throw submitRequestRunnable.submitException;
+		} catch (TimeoutException e) {
+			throw new IllegalStateException("Waiting for response timed out (timeout: " + RESPONSE_TIMEOUT + " s)");
 		}
-
-		if (submitRequestRunnable.response == null) { // timeout by join operation
-			throw new IllegalStateException("Waiting for the response timed out, timeout: " + WAIT_FOR_RESPONSE_TIMEOUT
-					+ " ms");
-		}
-
-		return submitRequestRunnable.response;
 	}
 
-	protected static void processResponse(final WsdlResponse response, final String serviceName, final Service service,
-			final LogFileWriter logFileWriter) throws XmlException {
+	protected void processResponse(WsdlResponse response, String serviceName, Service service,
+			LogFileWriter logFileWriter) throws XmlException {
 
-		final long responseTime = response.getTimeTaken();
+		long responseTime = response.getTimeTaken();
+		logger.debug("Response received, response time = " + responseTime + " ms");
+		logFileWriter.writeToLogFile("Response received, response time = " + responseTime + " ms");
 
-		final String responseTimeText = ", response time = " + responseTime + " ms";
-		logger.debug("Response received" + responseTimeText);
-		logFileWriter.writeToLogFile("Response received" + responseTimeText);
-
-		final WsdlOperation operation = response.getRequest().getOperation();
+		 WsdlOperation operation = response.getRequest().getOperation();
 		logger.debug("=== Response Content for Operation \"" + operation.getName() + "\" ===");
 		logFileWriter.writeToLogFile("=== Response Content for Operation \"" + operation.getName() + "\" ===");
 
-		final String content = response.getContentAsString();
+		String content = response.getContentAsString();
 		logger.debug(content);
 		logFileWriter.writeToLogFile(content);
 	}
 
-	protected static void handleException(final Exception e, final LogFileWriter logFileWriter,
-			final String serviceName, final Service service, final List<ServiceStatus> newCache) {
+	protected void handleException(Exception e, LogFileWriter logFileWriter, String serviceName, Service service,
+			List<ServiceStatus> newCache) {
 
-		final String message = "An error occured: " + e.getMessage()
+		 String message = "An error occured: " + e.getMessage()
 				+ LoggingHelper.getLogFileText(logFileWriter, logFilesUrl);
-		final ServiceStatus status = new ServiceStatus(serviceName, service.getUrl(), State.CRITICAL, 0, message);
+		ServiceStatus status = new ServiceStatus(serviceName, service.getUrl(), State.CRITICAL, 0, message);
 		newCache.add(status);
 
 		logFileWriter.writeToLogFile("An error occured: " + e.getMessage());
 		logFileWriter.writeStacktracetoLogFile(e);
-	}
-
-	public static final void setLogFilesUrl(final String logFilesUrl) {
-		ComponentHelper.logFilesUrl = logFilesUrl;
-	}
-
-	private final static class ImportWsdlRunnable implements Runnable {
-
-		private final WsdlProject wsdlProject;
-		private final String url;
-		private WsdlInterface wsdlInterface;
-		private SoapUIException soapUIException;
-
-		public ImportWsdlRunnable(final WsdlProject wsdlProject, final String url) {
-			this.wsdlProject = wsdlProject;
-			this.url = url;
-		}
-
-		@Override
-		public void run() {
-			try {
-				wsdlInterface = WsdlInterfaceFactory.importWsdl(wsdlProject, url, true)[0];
-			} catch (final SoapUIException e) {
-				soapUIException = e;
-			}
-		}
-
-	}
-
-	private final static class SubmitRequestRunnable implements Runnable {
-
-		private final WsdlRequest request;
-		private WsdlResponse response;
-		private SubmitException submitException;
-
-		private final static boolean ASYNC = false;
-
-		public SubmitRequestRunnable(final WsdlRequest request) {
-			this.request = request;
-		}
-
-		@Override
-		public void run() {
-			try {
-				final WsdlSubmitContext wsdlSubmitContext = new WsdlSubmitContext(request.getModelItem());
-				response = (WsdlResponse) request.submit(wsdlSubmitContext, ASYNC).getResponse();
-			} catch (final SubmitException e) {
-				submitException = e;
-			}
-		}
 	}
 }

@@ -15,13 +15,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.util.UrlPathHelper;
 
 @Controller
-public class LogFilesDownloadController {
+public final class LogFilesDownloadController {
 
+	private static final int HTTP_404 = 404;
 	private final UrlPathHelper urlPathHelper = new UrlPathHelper();
 	private final String logFilePath;
 
 	@Autowired
-	public LogFilesDownloadController(@Value("${methodCall.log.filePath}") final String logFilePath) {
+	public LogFilesDownloadController(@Value("${logging.filePath}") final String logFilePath) {
 		this.logFilePath = logFilePath;
 	}
 
@@ -29,13 +30,17 @@ public class LogFilesDownloadController {
 	public void downloadLogFile(final HttpServletRequest request, final HttpServletResponse response)
 			throws IOException {
 
-		final String pathWithinServlet = urlPathHelper.getPathWithinServletMapping(request);
-		final String logFile = pathWithinServlet.substring(1);
+		String pathWithinServlet = urlPathHelper.getPathWithinServletMapping(request);
+		String logFile = pathWithinServlet.substring(1);
+
+		System.out.println("Controller: " + request.getRequestURI());
+		System.out.println("Controller path: " + pathWithinServlet);
+		System.out.println("Controller logFile: " + logFile);
 
 		try {
 			FileCopyUtils.copy(new FileReader(logFilePath + "/" + logFile), response.getWriter());
-		} catch (final FileNotFoundException e) {
-			response.sendError(404);
+		} catch (FileNotFoundException e) {
+			response.sendError(HTTP_404);
 		}
 	}
 }

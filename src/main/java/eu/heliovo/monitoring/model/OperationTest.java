@@ -2,10 +2,10 @@ package eu.heliovo.monitoring.model;
 
 public interface OperationTest {
 
-	public String getOperationName();
+	String getOperationName();
 
-	public String getRequestContent();
+	String getRequestContent();
 
-	public String getResponseContent();
+	String getResponseContent();
 
 }

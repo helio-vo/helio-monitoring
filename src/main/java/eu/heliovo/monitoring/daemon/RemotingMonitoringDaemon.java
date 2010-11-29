@@ -6,6 +6,6 @@ import eu.heliovo.monitoring.model.ServiceStatus;
 
 public interface RemotingMonitoringDaemon {
 
-	abstract void writeServiceStatusToNagios(final List<ServiceStatus> serviceStatus);
+	void writeServiceStatusToNagios(List<ServiceStatus> serviceStatus);
 
 }

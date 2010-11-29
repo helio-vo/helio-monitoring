@@ -29,7 +29,7 @@ public final class LogFileWriterImpl implements LogFileWriter {
 		}
 
 		final StringBuffer buffer = new StringBuffer(mainDir.getPath());
-		buffer.append("/");
+		buffer.append(System.getProperty("file.separator"));
 		buffer.append(name);
 		buffer.append("-");
 		buffer.append(System.currentTimeMillis());

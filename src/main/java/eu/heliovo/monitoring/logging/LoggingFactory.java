@@ -7,11 +7,11 @@ public final class LoggingFactory {
 	private LoggingFactory() {
 	}
 
-	public static final LogFileWriter newLogFileWriter(final String logFilesDirectory, final String name) {
+	public static LogFileWriter newLogFileWriter(String logFilesDirectory, String name) {
 		try {
 			return new LogFileWriterImpl(logFilesDirectory, name);
-		} catch (final RuntimeException e) {
-			final Logger logger = Logger.getLogger(LoggingFactory.class);
+		} catch (RuntimeException e) {
+			Logger logger = Logger.getLogger(LoggingFactory.class);
 			logger.warn("LogFileWriter could not be created: " + e.getMessage() + " using Dummy", e);
 			return new DummyLogFileWriter();
 		}

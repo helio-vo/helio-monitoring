@@ -3,7 +3,7 @@ package eu.heliovo.monitoring.util;
 import java.util.Arrays;
 import java.util.List;
 
-public class ReflectionUtils {
+public final class ReflectionUtils {
 
 	private ReflectionUtils() {
 	}

@@ -1,5 +1,8 @@
 package eu.heliovo.monitoring.component;
 
+import static eu.heliovo.monitoring.test.util.TestUtils.getComponentHelper;
+import static eu.heliovo.monitoring.test.util.TestUtils.logFilesUrl;
+
 import java.util.List;
 
 import junit.framework.Assert;
@@ -18,8 +21,7 @@ public class MethodCallComponentTest extends Assert {
 
 		// TODO test individual methods of MethodCallComponent
 
-		final MethodCallComponent component = new MethodCallComponent("mainlog",
-				"http://localhost:8080/helio-monitoring/logs");
+		MethodCallComponent component = new MethodCallComponent(getComponentHelper(), "mainlog", logFilesUrl);
 		component.setServices(Services.LIST);
 		component.refreshCache();
 

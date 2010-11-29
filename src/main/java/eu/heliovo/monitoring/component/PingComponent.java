@@ -21,8 +21,7 @@ import eu.heliovo.monitoring.model.State;
 @Component
 public final class PingComponent extends AbstractComponent {
 
-	// timeout in seconds
-	private static final int TIMEOUT = 300;
+	private static final int TIMEOUT_IN_SECONDS = 300;
 
 	public PingComponent() {
 		super(" -ping-");
@@ -51,7 +50,7 @@ public final class PingComponent extends AbstractComponent {
 			try {
 
 				final URLConnection connection = url.openConnection();
-				connection.setConnectTimeout(TIMEOUT);
+				connection.setConnectTimeout(TIMEOUT_IN_SECONDS);
 				watch.start();
 				connection.connect();
 				watch.stop();
