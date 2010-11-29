@@ -61,6 +61,8 @@ public final class MonitoringServiceImpl implements MonitoringService, Initializ
 		Assert.notNull(pingComponent, "the pingComponent must not be null");
 		Assert.notNull(methodCallComponent, "the methodCallComponent must not be null");
 		Assert.notNull(testingComponent, "the testingComponent must not be null");
+
+		updateServices();
 	}
 
 	// TODO extract update methods to a new class
@@ -71,9 +73,6 @@ public final class MonitoringServiceImpl implements MonitoringService, Initializ
 	protected void updateServices() {
 
 		// TODO automatic nagios config generation needed
-		// List<Service> services = registryClient == null ? Services.LIST :
-		// registryClient.retrieveServicesFromRegistry();
-
 		List<Service> services = serviceLoader.loadServices();
 
 		pingComponent.setServices(services);
