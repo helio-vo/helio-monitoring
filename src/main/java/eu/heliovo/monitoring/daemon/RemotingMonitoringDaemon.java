@@ -2,10 +2,10 @@ package eu.heliovo.monitoring.daemon;
 
 import java.util.List;
 
-import eu.heliovo.monitoring.model.ServiceStatus;
+import eu.heliovo.monitoring.model.ServiceStatusDetails;
 
 public interface RemotingMonitoringDaemon {
 
-	void writeServiceStatusToNagios(List<ServiceStatus> serviceStatus);
+	void writeServiceStatusToNagios(List<ServiceStatusDetails> serviceStatusDetails);
 
 }

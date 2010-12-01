@@ -1,5 +1,7 @@
 package eu.heliovo.monitoring.component;
 
+import static eu.heliovo.monitoring.model.ServiceFactory.newServiceStatusDetails;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -30,8 +32,8 @@ import com.eviware.soapui.support.SoapUIException;
 import eu.heliovo.monitoring.logging.LogFileWriter;
 import eu.heliovo.monitoring.logging.LoggingHelper;
 import eu.heliovo.monitoring.model.Service;
-import eu.heliovo.monitoring.model.ServiceStatus;
-import eu.heliovo.monitoring.model.State;
+import eu.heliovo.monitoring.model.ServiceStatusDetails;
+import eu.heliovo.monitoring.model.Status;
 import eu.heliovo.monitoring.util.WsdlValidationUtils;
 
 /**
@@ -94,14 +96,14 @@ public final class ComponentHelper {
 	protected WsdlRequest createRequest(WsdlInterface wsdlInterface, LogFileWriter logFileWriter,
 			WsdlOperation operation) {
 
-		 String requestContent = operation.createRequest(GENERATE_OPTINAL_PARAMS);
+		String requestContent = operation.createRequest(GENERATE_OPTINAL_PARAMS);
 		return this.createRequest(wsdlInterface, logFileWriter, operation, requestContent);
 	}
 
 	protected WsdlRequest createRequest(WsdlInterface wsdlInterface, LogFileWriter logFileWriter,
 			WsdlOperation operation, String requestContent) {
 
-		 WsdlRequest request = operation.addNewRequest(operation.getName());
+		WsdlRequest request = operation.addNewRequest(operation.getName());
 
 		// generate the request content from the schema
 		request.setRequestContent(requestContent);
@@ -153,7 +155,7 @@ public final class ComponentHelper {
 		logger.debug("Response received, response time = " + responseTime + " ms");
 		logFileWriter.writeToLogFile("Response received, response time = " + responseTime + " ms");
 
-		 WsdlOperation operation = response.getRequest().getOperation();
+		WsdlOperation operation = response.getRequest().getOperation();
 		logger.debug("=== Response Content for Operation \"" + operation.getName() + "\" ===");
 		logFileWriter.writeToLogFile("=== Response Content for Operation \"" + operation.getName() + "\" ===");
 
@@ -163,12 +165,12 @@ public final class ComponentHelper {
 	}
 
 	protected void handleException(Exception e, LogFileWriter logFileWriter, String serviceName, Service service,
-			List<ServiceStatus> newCache) {
+			List<ServiceStatusDetails> newCache) {
 
-		 String message = "An error occured: " + e.getMessage()
+		String message = "An error occured: " + e.getMessage()
 				+ LoggingHelper.getLogFileText(logFileWriter, logFilesUrl);
-		ServiceStatus status = new ServiceStatus(serviceName, service.getUrl(), State.CRITICAL, 0, message);
-		newCache.add(status);
+
+		newCache.add(newServiceStatusDetails(serviceName, service.getUrl(), Status.CRITICAL, 0, message));
 
 		logFileWriter.writeToLogFile("An error occured: " + e.getMessage());
 		logFileWriter.writeStacktracetoLogFile(e);

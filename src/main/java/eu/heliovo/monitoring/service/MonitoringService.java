@@ -5,7 +5,7 @@ import java.util.List;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 
-import eu.heliovo.monitoring.model.ServiceStatus;
+import eu.heliovo.monitoring.model.ServiceStatusDetails;
 
 @WebService
 public interface MonitoringService {
@@ -16,11 +16,11 @@ public interface MonitoringService {
 	 * @return List of service status
 	 */
 	@WebMethod
-	List<ServiceStatus> getPingStatus();
+	List<ServiceStatusDetails> getPingStatus();
 
 	@WebMethod
-	List<ServiceStatus> getMethodCallStatus();
+	List<ServiceStatusDetails> getMethodCallStatus();
 
 	@WebMethod
-	List<ServiceStatus> getTestingStatus();
+	List<ServiceStatusDetails> getTestingStatus();
 }

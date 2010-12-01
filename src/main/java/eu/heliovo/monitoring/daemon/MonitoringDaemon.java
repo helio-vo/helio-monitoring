@@ -6,16 +6,23 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import eu.heliovo.monitoring.model.ServiceStatus;
-import eu.heliovo.monitoring.model.State;
+import eu.heliovo.monitoring.model.ServiceStatusDetails;
+import eu.heliovo.monitoring.model.Status;
 
+/**
+ * TODO document me!<br/>
+ * TODO generate nagios service configs (e.g. with XSLT) and restart nagios daemon (see
+ * http://nagios.sourceforge.net/docs/1_0/extcommands.html Command: RESTART_PROGRAM)
+ * 
+ * @author Kevin Seidler
+ * 
+ */
 @Component
-public final class MonitoringDaemon implements InitializingBean, RemotingMonitoringDaemon {
+public final class MonitoringDaemon implements RemotingMonitoringDaemon {
 
 	private static final int TO_SECONDS_DIVISOR = 1000;
 
@@ -31,17 +38,18 @@ public final class MonitoringDaemon implements InitializingBean, RemotingMonitor
 
 		this.nagiosExternalCommandFile = new File(nagiosExternalCommandFile);
 		this.forceNagiosExternalCommandFileCreation = forceNagiosExternalCommandFileCreation;
+
+		this.validateCommandFileAccess();
 	}
 
-	@Override
-	public void afterPropertiesSet() {
+	private void validateCommandFileAccess() {
 
 		if (nagiosExternalCommandFile != null && !nagiosExternalCommandFile.exists()) {
 			if (forceNagiosExternalCommandFileCreation) {
 				logger.info("nagiosExternalCommandFile does not exist, but will be created");
 				try {
 					nagiosExternalCommandFile.createNewFile();
-				} catch (final IOException e) {
+				} catch (IOException e) {
 					throw new IllegalStateException("nagiosExternalCommandFile could not be created!", e);
 				}
 			} else {
@@ -56,29 +64,28 @@ public final class MonitoringDaemon implements InitializingBean, RemotingMonitor
 		}
 	}
 
-	public void writeToNagiosExternalCommandFile(final long timeInSeconds, final NagiosCommand command,
-			final String hostName, final String serviceName, final NagiosStatus status, final String statusMessage) {
+	public void writeToNagiosExternalCommandFile(long timeInSeconds, NagiosCommand command, String hostName,
+			String serviceName, NagiosServiceStatus status, String statusMessage) {
 
 		if (nagiosExternalCommandFile.exists() || forceNagiosExternalCommandFileCreation) {
-			final String lineToWrite = buildLineToWrite(timeInSeconds, command, hostName, serviceName, status,
-					statusMessage);
+			String lineToWrite = buildLineToWrite(timeInSeconds, command, hostName, serviceName, status, statusMessage);
 			try {
 
-				final FileWriter fw = new FileWriter(nagiosExternalCommandFile, true);
+				FileWriter fileWriter = new FileWriter(nagiosExternalCommandFile, true);
 				try {
-					fw.write(lineToWrite);
+					fileWriter.write(lineToWrite);
 				} finally {
-					fw.close();
+					fileWriter.close();
 				}
 
-			} catch (final IOException e) {
+			} catch (IOException e) {
 				throw new IllegalStateException("data could not be written!", e);
 			}
 		}
 	}
 
-	public void writeToNagiosExternalCommandFile(final NagiosCommand command, final String hostName,
-			final String serviceName, final NagiosStatus status, final String statusMessage) {
+	public void writeToNagiosExternalCommandFile(NagiosCommand command, String hostName, String serviceName,
+			NagiosServiceStatus status, String statusMessage) {
 
 		long timeInSeconds = System.currentTimeMillis() / TO_SECONDS_DIVISOR;
 		this.writeToNagiosExternalCommandFile(timeInSeconds, command, hostName, serviceName, status, statusMessage);
@@ -89,36 +96,37 @@ public final class MonitoringDaemon implements InitializingBean, RemotingMonitor
 	 * 
 	 * @see eu.heliovo.monitoring.daemon.RemotingMonitoringDaemon#writeServiceStatusToNagios(java.util.List)
 	 */
-	public void writeServiceStatusToNagios(final List<ServiceStatus> serviceStatus) {
+	public void writeServiceStatusToNagios(List<ServiceStatusDetails> serviceStatusDetails) {
 
-		for (final ServiceStatus actualServiceStatus : serviceStatus) {
+		for (ServiceStatusDetails actualServiceStatusDetails : serviceStatusDetails) {
 
-			final NagiosCommand command = NagiosCommand.PROCESS_SERVICE_CHECK_RESULT;
-			final String hostName = actualServiceStatus.getUrl().getHost();
-			final String serviceName = actualServiceStatus.getId();
+			NagiosCommand command = NagiosCommand.PROCESS_SERVICE_CHECK_RESULT;
+			String hostName = actualServiceStatusDetails.getUrl().getHost();
+			String serviceName = actualServiceStatusDetails.getId();
 
-			final NagiosStatus status;
-			final State state = actualServiceStatus.getState();
-			if (State.OK.equals(state)) {
-				status = NagiosStatus.OK;
-			} else if (State.CRITICAL.equals(state)) {
-				status = NagiosStatus.CRITICAL;
-			} else if (State.WARNING.equals(state)) {
-				status = NagiosStatus.WARNING;
-			} else if (State.UNKNOWN.equals(state)) {
-				status = NagiosStatus.UNKNOWN;
+			NagiosServiceStatus nagiosStatus;
+			Status serviceStatus = actualServiceStatusDetails.getStatus();
+			if (Status.OK.equals(serviceStatus)) {
+				nagiosStatus = NagiosServiceStatus.OK;
+			} else if (Status.CRITICAL.equals(serviceStatus)) {
+				nagiosStatus = NagiosServiceStatus.CRITICAL;
+			} else if (Status.WARNING.equals(serviceStatus)) {
+				nagiosStatus = NagiosServiceStatus.WARNING;
+			} else if (Status.UNKNOWN.equals(serviceStatus)) {
+				nagiosStatus = NagiosServiceStatus.UNKNOWN;
 			} else {
 				throw new IllegalStateException("a state must be given!");
 			}
 
-			writeToNagiosExternalCommandFile(command, hostName, serviceName, status, actualServiceStatus.getMessage());
+			writeToNagiosExternalCommandFile(command, hostName, serviceName, nagiosStatus,
+					actualServiceStatusDetails.getMessage());
 		}
 	}
 
-	private String buildLineToWrite(final long timeInSeconds, final NagiosCommand command, final String hostName,
-			final String serviceName, final NagiosStatus status, final String statusMessage) {
+	private String buildLineToWrite(long timeInSeconds, NagiosCommand command, String hostName, String serviceName,
+			NagiosServiceStatus status, String statusMessage) {
 
-		final StringBuffer buffer = new StringBuffer("[");
+		StringBuffer buffer = new StringBuffer("[");
 		buffer.append(timeInSeconds);
 		buffer.append("]");
 		buffer.append(" ");

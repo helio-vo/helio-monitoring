@@ -1,11 +1,11 @@
 package eu.heliovo.monitoring.model;
 
 /**
- * simple constants for the state of a service
+ * The Status of a service, e.g. OK or CRITICAL.
  * 
  * @author Kevin Seidler
  * 
  */
-public enum State {
+public enum Status {
 	OK, CRITICAL, WARNING, UNKNOWN
 }

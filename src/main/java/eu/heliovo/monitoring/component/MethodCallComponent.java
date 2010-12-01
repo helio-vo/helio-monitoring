@@ -1,5 +1,7 @@
 package eu.heliovo.monitoring.component;
 
+import static eu.heliovo.monitoring.model.ServiceFactory.newServiceStatusDetails;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,10 +21,9 @@ import eu.heliovo.monitoring.logging.LogFileWriter;
 import eu.heliovo.monitoring.logging.LoggingFactory;
 import eu.heliovo.monitoring.logging.LoggingHelper;
 import eu.heliovo.monitoring.model.Service;
-import eu.heliovo.monitoring.model.ServiceStatus;
-import eu.heliovo.monitoring.model.State;
+import eu.heliovo.monitoring.model.ServiceStatusDetails;
+import eu.heliovo.monitoring.model.Status;
 import eu.heliovo.monitoring.util.WsdlValidationUtils;
-
 /**
  * Just calls one method of every service to see that it is working.
  * 
@@ -62,7 +63,7 @@ public final class MethodCallComponent extends AbstractComponent {
 	@Override
 	public void refreshCache() {
 
-		final List<ServiceStatus> newCache = new ArrayList<ServiceStatus>();
+		final List<ServiceStatusDetails> newCache = new ArrayList<ServiceStatusDetails>();
 
 		for (Service service : super.getServices()) {
 
@@ -79,7 +80,7 @@ public final class MethodCallComponent extends AbstractComponent {
 				WsdlRequest request = componentHelper.createRequest(wsdlInterface, logFileWriter, operation);
 				WsdlResponse response = componentHelper.submitRequest(request, logFileWriter);
 				componentHelper.processResponse(response, serviceName, service, logFileWriter);
-				ServiceStatus serviceStatus = buildServiceStatus(response, serviceName, service, logFileWriter);
+				ServiceStatusDetails serviceStatus = buildServiceStatus(response, serviceName, service, logFileWriter);
 
 				newCache.add(serviceStatus);
 				wsdlInterface.getProject().release();
@@ -101,12 +102,12 @@ public final class MethodCallComponent extends AbstractComponent {
 		return wsdlInterface.getOperationAt(0);
 	}
 
-	private ServiceStatus buildServiceStatus(final WsdlResponse response, final String serviceName,
+	private ServiceStatusDetails buildServiceStatus(final WsdlResponse response, final String serviceName,
 			final Service service, final LogFileWriter logFileWriter) throws XmlException {
 
 		// build message
 		final StringBuffer stringBuffer = new StringBuffer("Service is working");
-		State state = State.OK;
+		Status status = Status.OK;
 
 		// response validation
 		final AssertionError[] responseAssertionErrors = WsdlValidationUtils.validateResponse(response);
@@ -115,7 +116,7 @@ public final class MethodCallComponent extends AbstractComponent {
 		if (responseAssertionErrors != null && responseAssertionErrors.length > 0) {
 
 			stringBuffer.append(", but the repsonse is not valid");
-			state = State.CRITICAL;
+			status = Status.CRITICAL;
 
 		} else if (TEST_FOR_SOAP_FAULT) {
 
@@ -124,7 +125,7 @@ public final class MethodCallComponent extends AbstractComponent {
 				stringBuffer.append(", but the response is a SOAP fault");
 				logger.debug("The response is a SOAP fault!");
 				logFileWriter.writeToLogFile("The response is a SOAP fault!");
-				state = State.WARNING;
+				status = Status.WARNING;
 			}
 		}
 
@@ -133,6 +134,6 @@ public final class MethodCallComponent extends AbstractComponent {
 		stringBuffer.append(LoggingHelper.getLogFileText(logFileWriter, logFilesUrl));
 		final String message = stringBuffer.toString();
 
-		return new ServiceStatus(serviceName, service.getUrl(), state, responseTime, message);
+		return newServiceStatusDetails(serviceName, service.getUrl(), status, responseTime, message);
 	}
 }

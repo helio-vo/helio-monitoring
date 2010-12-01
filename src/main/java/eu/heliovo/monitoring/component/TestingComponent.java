@@ -1,5 +1,6 @@
 package eu.heliovo.monitoring.component;
 
+import static eu.heliovo.monitoring.model.ServiceFactory.newServiceStatusDetails;
 import static eu.heliovo.monitoring.util.ReflectionUtils.implementsInterface;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;
@@ -27,8 +28,8 @@ import eu.heliovo.monitoring.logging.LoggingFactory;
 import eu.heliovo.monitoring.logging.LoggingHelper;
 import eu.heliovo.monitoring.model.OperationTest;
 import eu.heliovo.monitoring.model.Service;
-import eu.heliovo.monitoring.model.ServiceStatus;
-import eu.heliovo.monitoring.model.State;
+import eu.heliovo.monitoring.model.ServiceStatusDetails;
+import eu.heliovo.monitoring.model.Status;
 import eu.heliovo.monitoring.model.TestingService;
 import eu.heliovo.monitoring.util.WsdlValidationUtils;
 
@@ -62,7 +63,7 @@ public final class TestingComponent extends AbstractComponent {
 	@Override
 	public void refreshCache() {
 
-		List<ServiceStatus> newCache = new ArrayList<ServiceStatus>();
+		List<ServiceStatusDetails> newCache = new ArrayList<ServiceStatusDetails>();
 
 		for (Service service : super.getServices()) {
 
@@ -84,9 +85,9 @@ public final class TestingComponent extends AbstractComponent {
 				// TODO if service has predefined testing data, user can decide to deactivate the test of not
 				// predefined operations
 
-				ServiceStatus serviceStatus = buildServiceStatus(statistic, logFileWriter);
+				ServiceStatusDetails serviceStatusDetails = buildServiceStatusDetails(statistic, logFileWriter);
 
-				newCache.add(serviceStatus);
+				newCache.add(serviceStatusDetails);
 				wsdlInterface.getProject().release();
 
 			} catch (Exception e) {
@@ -227,7 +228,7 @@ public final class TestingComponent extends AbstractComponent {
 		}
 	}
 
-	private ServiceStatus buildServiceStatus(Statistic statistic, LogFileWriter logFileWriter) {
+	private ServiceStatusDetails buildServiceStatusDetails(Statistic statistic, LogFileWriter logFileWriter) {
 
 		// assemble statistic message
 		StringBuffer message = new StringBuffer("Testing Result: ");
@@ -285,8 +286,8 @@ public final class TestingComponent extends AbstractComponent {
 		message.append(LoggingHelper.getLogFileText(logFileWriter, logFilesUrl));
 		String statusMessage = message.toString();
 
-		State state = statistic.getServiceState();
-		return new ServiceStatus(statistic.serviceName, statistic.serviceUrl, state, 0, statusMessage);
+		Status status = statistic.getServiceStatus();
+		return newServiceStatusDetails(statistic.serviceName, statistic.serviceUrl, status, 0, statusMessage);
 	}
 
 	private void logStatistic(Statistic statistic, LogFileWriter logFileWriter, String logMessage) {
@@ -380,25 +381,25 @@ public final class TestingComponent extends AbstractComponent {
 			this.serviceUrl = serviceUrl;
 		}
 
-		public State getServiceState() {
+		public Status getServiceStatus() {
 
-			State state = State.OK;
+			Status status = Status.OK;
 			if (!isEmpty(soapFaultOperations)) {
-				state = State.WARNING;
+				status = Status.WARNING;
 			}
 			if (!isEmpty(exceptionalOperations)) {
-				state = State.CRITICAL;
+				status = Status.CRITICAL;
 			}
 			if (!isEmpty(predefinedNotFoundOperations)) {
-				state = State.CRITICAL;
+				status = Status.CRITICAL;
 			}
 			if (!isEmpty(invalidResponseOperations)) {
-				state = State.CRITICAL;
+				status = Status.CRITICAL;
 			}
 			if (!isEmpty(notMatchingResponseOperations)) {
-				state = State.CRITICAL;
+				status = Status.CRITICAL;
 			}
-			return state;
+			return status;
 		}
 	}
 }

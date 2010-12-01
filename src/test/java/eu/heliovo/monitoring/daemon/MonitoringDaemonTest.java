@@ -1,5 +1,7 @@
 package eu.heliovo.monitoring.daemon;
 
+import static eu.heliovo.monitoring.model.ServiceFactory.newServiceStatusDetails;
+
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -12,8 +14,8 @@ import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Test;
 
-import eu.heliovo.monitoring.model.ServiceStatus;
-import eu.heliovo.monitoring.model.State;
+import eu.heliovo.monitoring.model.ServiceStatusDetails;
+import eu.heliovo.monitoring.model.Status;
 
 public class MonitoringDaemonTest extends Assert {
 
@@ -22,23 +24,20 @@ public class MonitoringDaemonTest extends Assert {
 	@Test
 	public void testWriteToNagios() throws Exception {
 
-		File nagiosExternalCommandFile;
-		MonitoringDaemon daemon = new MonitoringDaemon("", true);
-
 		long time = Long.MIN_VALUE;
 		NagiosCommand command = NagiosCommand.PROCESS_SERVICE_CHECK_RESULT;
 		String hostName = "";
 		String serviceName = "";
-		NagiosStatus status = NagiosStatus.WARNING;
+		NagiosServiceStatus status = NagiosServiceStatus.WARNING;
 		String statusMessage = "";
 
 		/*
-		 * test for null
+		 * test for failing file creation
 		 */
 
 		boolean illegalStateException = false;
 		try {
-			daemon.afterPropertiesSet();
+			MonitoringDaemon daemon = new MonitoringDaemon("", true);
 			daemon.writeToNagiosExternalCommandFile(time, command, hostName, serviceName, status, statusMessage);
 		} catch (final IllegalStateException e) {
 			illegalStateException = true;
@@ -49,15 +48,14 @@ public class MonitoringDaemonTest extends Assert {
 		 * test for forceNagiosExternalCommandFileCreation = false
 		 */
 
-		daemon = new MonitoringDaemon("nagios", false);
-		daemon.afterPropertiesSet();
+		MonitoringDaemon daemon = new MonitoringDaemon("nagios", false);
 		// just a warning log message that this file does not exist and is not allowed to be created
 
 		/*
 		 * test for file is not a file
 		 */
 
-		nagiosExternalCommandFile = new File("nagios");
+		File nagiosExternalCommandFile = new File("nagios");
 		if (!nagiosExternalCommandFile.exists() && !nagiosExternalCommandFile.mkdir()) {
 			throw new IllegalStateException("directory could not be created!");
 		}
@@ -82,10 +80,11 @@ public class MonitoringDaemonTest extends Assert {
 		if (!nagiosExternalCommandFile.setReadOnly()) {
 			throw new IllegalStateException("readOnly cannot be set!");
 		}
-		daemon = new MonitoringDaemon("nagios.cmd", true);
+		// nagiosExternalCommandFile is now readOnly
 
 		illegalStateException = false;
 		try {
+			daemon = new MonitoringDaemon(nagiosExternalCommandFile.getPath(), true);
 			daemon.writeToNagiosExternalCommandFile(time, command, hostName, serviceName, status, statusMessage);
 		} catch (final IllegalStateException e) {
 			illegalStateException = true;
@@ -107,14 +106,14 @@ public class MonitoringDaemonTest extends Assert {
 		command = NagiosCommand.PROCESS_SERVICE_CHECK_RESULT;
 		hostName = "development";
 		serviceName = "someService";
-		status = NagiosStatus.OK;
+		status = NagiosServiceStatus.OK;
 		statusMessage = "someService is working as expected";
 
 		daemon.writeToNagiosExternalCommandFile(time, command, hostName, serviceName, status, statusMessage);
 
 		assertTrue(nagiosExternalCommandFile.exists());
 
-		final List<String> lines = FileUtils.readLines(nagiosExternalCommandFile, MonitoringDaemon.FILE_ENCODING);
+		List<String> lines = FileUtils.readLines(nagiosExternalCommandFile, MonitoringDaemon.FILE_ENCODING);
 
 		assertNotNull(lines);
 		assertTrue(lines.size() > 0);
@@ -137,21 +136,21 @@ public class MonitoringDaemonTest extends Assert {
 		final File nagiosExternalCommandFile = new File("nagios2.cmd");
 		final RemotingMonitoringDaemon daemon = new MonitoringDaemon("nagios2.cmd", true);
 
-		final List<ServiceStatus> serviceStatus = new ArrayList<ServiceStatus>();
+		final List<ServiceStatusDetails> serviceStatus = new ArrayList<ServiceStatusDetails>();
 
-		final String message = State.OK.name() + " - response time = " + 5 + " ms";
+		final String message = Status.OK.name() + " - response time = " + 5 + " ms";
 		final String firstUrl = "http://helio.i4ds.technik.fhnw.ch:8080/core/HECService?wsdl";
-		final ServiceStatus first = new ServiceStatus("HEC", new URL(firstUrl), State.OK, 5, message);
+		final ServiceStatusDetails first = newServiceStatusDetails("HEC", new URL(firstUrl), Status.OK, 5, message);
 		serviceStatus.add(first);
 
-		final ServiceStatus second = new ServiceStatus("FrontendFacade", new URL(
-				"http://helio.i4ds.technik.fhnw.ch:8080/core/FrontendFacadeService?wsdl"), State.CRITICAL, 10,
-				State.CRITICAL.name() + " - response time = " + 10 + " ms");
+		final ServiceStatusDetails second = newServiceStatusDetails("FrontendFacade", new URL(
+				"http://helio.i4ds.technik.fhnw.ch:8080/core/FrontendFacadeService?wsdl"), Status.CRITICAL, 10,
+				Status.CRITICAL.name() + " - response time = " + 10 + " ms");
 		serviceStatus.add(second);
 
-		final ServiceStatus third = new ServiceStatus("helio-dev WorkflowsService", new URL(
-				"http://helio-dev.i4ds.technik.fhnw.ch/helio-wf/WorkflowsService?wsdl"), State.CRITICAL, 15,
-				State.CRITICAL.name() + " - response time = " + 15 + " ms");
+		final ServiceStatusDetails third = newServiceStatusDetails("helio-dev WorkflowsService", new URL(
+				"http://helio-dev.i4ds.technik.fhnw.ch/helio-wf/WorkflowsService?wsdl"), Status.CRITICAL, 15,
+				Status.CRITICAL.name() + " - response time = " + 15 + " ms");
 		serviceStatus.add(third);
 
 		assertTrue(serviceStatus.size() == 3);
@@ -172,9 +171,9 @@ public class MonitoringDaemonTest extends Assert {
 
 		long time = System.currentTimeMillis() / 1000;
 		String hostName = "helio.i4ds.technik.fhnw.ch";
-		String statusMessage = first.getState().name() + " - response time = " + first.getResponseTime() + " ms";
+		String statusMessage = first.getStatus().name() + " - response time = " + first.getResponseTimeInMillis() + " ms";
 
-		final String expectedFirstLine = buildCommandLine(time, hostName, "HEC", NagiosStatus.OK, statusMessage);
+		final String expectedFirstLine = buildCommandLine(time, hostName, "HEC", NagiosServiceStatus.OK, statusMessage);
 
 		logger.debug("expectedFirstLine: " + expectedFirstLine);
 		logger.debug("actualFirstLine: " + actualFirstLine);
@@ -185,9 +184,9 @@ public class MonitoringDaemonTest extends Assert {
 
 		time = System.currentTimeMillis() / 1000;
 		hostName = "helio.i4ds.technik.fhnw.ch";
-		statusMessage = second.getState().name() + " - response time = " + second.getResponseTime() + " ms";
+		statusMessage = second.getStatus().name() + " - response time = " + second.getResponseTimeInMillis() + " ms";
 
-		final String expectedSecondLine = buildCommandLine(time, hostName, "FrontendFacade", NagiosStatus.CRITICAL,
+		final String expectedSecondLine = buildCommandLine(time, hostName, "FrontendFacade", NagiosServiceStatus.CRITICAL,
 				statusMessage);
 
 		logger.debug("expectedSecondLine: " + expectedSecondLine);
@@ -197,7 +196,7 @@ public class MonitoringDaemonTest extends Assert {
 	}
 
 	private final static String buildCommandLine(final long time, final String hostName, final String serviceName,
-			final NagiosStatus status, final String statusMessage) {
+			final NagiosServiceStatus status, final String statusMessage) {
 
 		// building nagios command line, e.g.: [1268669735]
 		// PROCESS_SERVICE_CHECK_RESULT;development;HECWebService.sql;1;Hello

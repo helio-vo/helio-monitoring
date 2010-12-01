@@ -1,40 +1,68 @@
 package eu.heliovo.monitoring.controller;
 
+import java.io.File;
+import java.io.FileReader;
+
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.util.FileCopyUtils;
+
+import eu.heliovo.monitoring.logging.LogFileWriter;
+import eu.heliovo.monitoring.logging.LoggingFactory;
 
 public class LogFilesDownloadControllerTest extends Assert {
-	
-	@Test
-	public void testLogFilesDownloadController() throws Exception {
 
-		// String logDir = System.getProperty("java.io.tmpdir");
-		// if (!logDir.endsWith("/") && !logDir.endsWith("\\")) {
-		// logDir = logDir + System.getProperty("file.separator");
-		// }
-		//
-		// System.out.println(logDir);
-		//
-		// long currentTimeMilliseconds = System.currentTimeMillis();
-		// String logFileName = "FooBarServer-" + currentTimeMilliseconds + LogFileWriter.FILE_SUFFIX;
-		//
-		// LogFileWriter logFileWriter = LoggingFactory.newLogFileWriter(logDir, logFileName);
-		// logFileWriter.writeToLogFile("created");
-		// logFileWriter.close();
-		//
-		// LogFilesDownloadController controller = new LogFilesDownloadController(logDir);
-		//
-		// MockHttpServletRequest request = new MockHttpServletRequest();
-		// MockHttpServletResponse response = new MockHttpServletResponse();
-		//
-		// request.setProtocol("http");
-		// request.setServerName("helio-dev.i4ds.technik.fhnw.ch");
-		// request.setServerPort(8080);
-		// request.setServletPath("helio-monitoring");
-		// request.setRequestURI("http://helio-dev.i4ds.technik.fhnw.ch:8080/helio-monitoring/" + logFileName);
-		// controller.downloadLogFile(request, response);
-		//
-		// System.out.println(response.getStatus());
+	private final String logDir = System.getProperty("java.io.tmpdir");
+
+	@Test
+	public void testDownloadLogFileWithExistingFile() throws Exception {
+
+		LogFileWriter logFileWriter = LoggingFactory.newLogFileWriter(logDir, "FooBarService");
+		logFileWriter.writeToLogFile("created");
+
+		String logFileName = logFileWriter.getFileName();
+
+		logFileWriter.close();
+
+		LogFilesDownloadController controller = new LogFilesDownloadController(logDir);
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		MockHttpServletResponse response = new MockHttpServletResponse();
+
+		request.setServletPath("/" + logFileName);
+		controller.downloadLogFile(request, response);
+
+		assertEquals(200, response.getStatus());
+
+		byte[] responseContent = response.getContentAsByteArray();
+		File responseOutputFile = new File(logDir, "responseOutput.txt");
+		FileCopyUtils.copy(responseContent, responseOutputFile);
+		FileReader fileReader = new FileReader(responseOutputFile);
+
+		char[] responseOutputFileContent = new char[1000];
+		
+		int bytesRead = fileReader.read(responseOutputFileContent);
+		assertEquals(responseContent.length, bytesRead);
+		
+		String responseOutputFileContentAsString = String.valueOf(responseOutputFileContent);
+		System.out.println(responseOutputFileContentAsString);
+		assertTrue(responseOutputFileContentAsString.contains("created"));
+	}
+
+	@Test
+	public void testDownloadLogFileWithNotExistingFile() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		MockHttpServletResponse response = new MockHttpServletResponse();
+
+		LogFilesDownloadController controller = new LogFilesDownloadController(logDir);
+
+		request.setServletPath("/FileDoesNotExist.txt");
+		controller.downloadLogFile(request, response);
+
+		assertEquals(404, response.getStatus());
 	}
 }

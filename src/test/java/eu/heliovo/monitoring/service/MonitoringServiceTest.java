@@ -14,7 +14,7 @@ import eu.heliovo.monitoring.component.MethodCallComponent;
 import eu.heliovo.monitoring.component.PingComponent;
 import eu.heliovo.monitoring.component.TestingComponent;
 import eu.heliovo.monitoring.daemon.RemotingMonitoringDaemon;
-import eu.heliovo.monitoring.model.ServiceStatus;
+import eu.heliovo.monitoring.model.ServiceStatusDetails;
 import eu.heliovo.monitoring.serviceloader.ServiceLoader;
 import eu.heliovo.monitoring.serviceloader.StaticServiceLoader;
 
@@ -44,7 +44,7 @@ public class MonitoringServiceTest extends Assert {
 
 		RemotingMonitoringDaemon daemon = new RemotingMonitoringDaemon() {
 			@Override
-			public void writeServiceStatusToNagios(List<ServiceStatus> serviceStatus) {
+			public void writeServiceStatusToNagios(List<ServiceStatusDetails> serviceStatus) {
 			}
 		};
 
@@ -56,35 +56,32 @@ public class MonitoringServiceTest extends Assert {
 	public void testService() throws Exception {
 
 		// these lines are automatically called by spring
-		monitoringService.afterPropertiesSet();
 		monitoringService.updatePingStatusAndWriteToNagios();
 		monitoringService.updateMethodCallStatusAndWriteToNagios();
 		monitoringService.updateTestingStatusAndWriteToNagios();
 
-		// pingComponent.refreshCache();
-		// methodCallComponent.refreshCache();
-		// testingComponent.refreshCache();
-
-		List<ServiceStatus> result = monitoringService.getPingStatus();
+		List<ServiceStatusDetails> result = monitoringService.getPingStatus();
 		assertFalse(result.isEmpty());
-		for (final ServiceStatus serviceStatus : result) {
-			System.out.println("service: " + serviceStatus.getId() + " status: " + serviceStatus.getState().toString()
-					+ " response time: " + serviceStatus.getResponseTime() + " ms");
+		for (final ServiceStatusDetails serviceStatusDetails : result) {
+			System.out.println("service: " + serviceStatusDetails.getId() + " status: "
+					+ serviceStatusDetails.getStatus().toString() + " response time: "
+					+ serviceStatusDetails.getResponseTimeInMillis() + " ms");
 		}
 
 		result = monitoringService.getMethodCallStatus();
 		assertFalse(result.isEmpty());
-		for (final ServiceStatus serviceStatus : result) {
-			System.out.println("service: " + serviceStatus.getId() + " status: " + serviceStatus.getState().toString()
-					+ " response time: " + serviceStatus.getResponseTime() + " ms");
+		for (final ServiceStatusDetails serviceStatusDetails : result) {
+			System.out.println("service: " + serviceStatusDetails.getId() + " status: "
+					+ serviceStatusDetails.getStatus().toString() + " response time: "
+					+ serviceStatusDetails.getResponseTimeInMillis() + " ms");
 		}
 
 		result = monitoringService.getTestingStatus();
 		assertFalse(result.isEmpty());
-		for (final ServiceStatus serviceStatus : result) {
-			System.out.println("service: " + serviceStatus.getId() + " status: " + serviceStatus.getState().toString()
-					+ " response time: " + serviceStatus.getResponseTime() + " ms");
+		for (final ServiceStatusDetails serviceStatusDetails : result) {
+			System.out.println("service: " + serviceStatusDetails.getId() + " status: "
+					+ serviceStatusDetails.getStatus().toString() + " response time: "
+					+ serviceStatusDetails.getResponseTimeInMillis() + " ms");
 		}
-		// TODO do it as well for method call and testing
 	}
 }

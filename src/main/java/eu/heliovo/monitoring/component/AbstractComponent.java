@@ -4,12 +4,12 @@ import java.util.Collections;
 import java.util.List;
 
 import eu.heliovo.monitoring.model.Service;
-import eu.heliovo.monitoring.model.ServiceStatus;
+import eu.heliovo.monitoring.model.ServiceStatusDetails;
 
 public abstract class AbstractComponent {
 
 	// cache, could be improved through e.g. EhCache
-	private List<ServiceStatus> cache = Collections.emptyList();
+	private List<ServiceStatusDetails> cache = Collections.emptyList();
 
 	private List<Service> services = Collections.emptyList();
 
@@ -24,7 +24,7 @@ public abstract class AbstractComponent {
 	/**
 	 * Just returning the actual status.
 	 */
-	public final List<ServiceStatus> getStatus() {
+	public final List<ServiceStatusDetails> getStatus() {
 		return cache;
 	}
 
@@ -36,7 +36,7 @@ public abstract class AbstractComponent {
 		this.services = Collections.unmodifiableList(services);
 	}
 
-	public final void setCache(final List<ServiceStatus> cache) {
+	public final void setCache(final List<ServiceStatusDetails> cache) {
 		this.cache = Collections.unmodifiableList(cache);
 	}
 

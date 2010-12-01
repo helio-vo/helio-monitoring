@@ -10,8 +10,8 @@ import java.util.List;
 import org.junit.Test;
 
 import eu.heliovo.monitoring.model.Service;
-import eu.heliovo.monitoring.model.ServiceStatus;
-import eu.heliovo.monitoring.model.State;
+import eu.heliovo.monitoring.model.ServiceStatusDetails;
+import eu.heliovo.monitoring.model.Status;
 import eu.heliovo.monitoring.statics.Services;
 
 public class TestingComponentTest {
@@ -23,21 +23,21 @@ public class TestingComponentTest {
 		component.setServices(Services.LIST);
 		component.refreshCache();
 
-		final List<ServiceStatus> serviceStatus = component.getStatus();
+		final List<ServiceStatusDetails> serviceStatus = component.getStatus();
 
 		assertNotNull(serviceStatus);
 		assertTrue(serviceStatus.size() == Services.LIST.size());
 
 		boolean testedFakeService = false;
 		boolean testedNoWsdlService = false;
-		for (final ServiceStatus actualServiceStatus : serviceStatus) {
-			if (actualServiceStatus.getId().equals("FakeOfflineService" + component.getServiceNameSuffix())) {
+		for (final ServiceStatusDetails actualServiceStatusDetails : serviceStatus) {
+			if (actualServiceStatusDetails.getId().equals("FakeOfflineService" + component.getServiceNameSuffix())) {
 				testedFakeService = true;
-				assertTrue(actualServiceStatus.getState().equals(State.CRITICAL));
+				assertTrue(actualServiceStatusDetails.getStatus().equals(Status.CRITICAL));
 			}
-			if (actualServiceStatus.getId().equals("NoWsdlOfflineService" + component.getServiceNameSuffix())) {
+			if (actualServiceStatusDetails.getId().equals("NoWsdlOfflineService" + component.getServiceNameSuffix())) {
 				testedNoWsdlService = true;
-				assertTrue(actualServiceStatus.getState().equals(State.CRITICAL));
+				assertTrue(actualServiceStatusDetails.getStatus().equals(Status.CRITICAL));
 			}
 		}
 		assertTrue(testedFakeService);
@@ -49,8 +49,8 @@ public class TestingComponentTest {
 		}
 
 		System.out.println("=== testing results");
-		for (final ServiceStatus status : component.getStatus()) {
-			System.out.println(status.toString());
+		for (final ServiceStatusDetails serviceStatusDetails : component.getStatus()) {
+			System.out.println(serviceStatusDetails.toString());
 		}
 
 	}

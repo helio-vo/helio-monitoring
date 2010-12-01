@@ -33,10 +33,6 @@ public final class LogFilesDownloadController {
 		String pathWithinServlet = urlPathHelper.getPathWithinServletMapping(request);
 		String logFile = pathWithinServlet.substring(1);
 
-		System.out.println("Controller: " + request.getRequestURI());
-		System.out.println("Controller path: " + pathWithinServlet);
-		System.out.println("Controller logFile: " + logFile);
-
 		try {
 			FileCopyUtils.copy(new FileReader(logFilePath + "/" + logFile), response.getWriter());
 		} catch (FileNotFoundException e) {
