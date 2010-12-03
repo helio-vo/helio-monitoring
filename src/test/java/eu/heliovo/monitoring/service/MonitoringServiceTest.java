@@ -13,7 +13,7 @@ import eu.heliovo.monitoring.component.ComponentHelper;
 import eu.heliovo.monitoring.component.MethodCallComponent;
 import eu.heliovo.monitoring.component.PingComponent;
 import eu.heliovo.monitoring.component.TestingComponent;
-import eu.heliovo.monitoring.daemon.RemotingMonitoringDaemon;
+import eu.heliovo.monitoring.exporter.ServiceStatusDetailsExporter;
 import eu.heliovo.monitoring.model.ServiceStatusDetails;
 import eu.heliovo.monitoring.serviceloader.ServiceLoader;
 import eu.heliovo.monitoring.serviceloader.StaticServiceLoader;
@@ -42,23 +42,23 @@ public class MonitoringServiceTest extends Assert {
 
 		ServiceLoader serviceLoader = new StaticServiceLoader();
 
-		RemotingMonitoringDaemon daemon = new RemotingMonitoringDaemon() {
+		ServiceStatusDetailsExporter exporter = new ServiceStatusDetailsExporter() {
 			@Override
-			public void writeServiceStatusToNagios(List<ServiceStatusDetails> serviceStatus) {
+			public void exportServiceStatusDetails(List<ServiceStatusDetails> serviceStatus) {
 			}
 		};
 
 		monitoringService = new MonitoringServiceImpl(pingComponent, methodCallComponent, testingComponent,
-				serviceLoader, daemon, daemon, null);
+				serviceLoader, exporter);
 	}
 
 	@Test
 	public void testService() throws Exception {
 
 		// these lines are automatically called by spring
-		monitoringService.updatePingStatusAndWriteToNagios();
-		monitoringService.updateMethodCallStatusAndWriteToNagios();
-		monitoringService.updateTestingStatusAndWriteToNagios();
+		monitoringService.updatePingStatusAndExport();
+		monitoringService.updateMethodCallStatusAndExport();
+		monitoringService.updateTestingStatusAndExport();
 
 		List<ServiceStatusDetails> result = monitoringService.getPingStatus();
 		assertFalse(result.isEmpty());

@@ -6,6 +6,6 @@ package eu.heliovo.monitoring.model;
  * @author Kevin Seidler
  * 
  */
-public enum Status {
+public enum ServiceStatus {
 	OK, CRITICAL, WARNING, UNKNOWN
 }

@@ -13,14 +13,16 @@
 	<context:component-scan base-package="eu.heliovo.monitoring" />
 	<context:property-placeholder location="classpath:helio-monitoring.properties" />
 
-	<task:annotation-driven />
+	<task:annotation-driven executor="executor" />
 
-	<bean id="executor" class="org.springframework.scheduling.concurrent.ThreadPoolExecutorFactoryBean" />
+	<bean id="executor" class="org.springframework.scheduling.concurrent.ThreadPoolExecutorFactoryBean">
+		<property name="corePoolSize" value="4" /> <!-- 3 for the 3 components, one for the registry service loader -->
+	</bean>
 
 	<!-- remoting -->
-	<bean id="remotingMonitoringDaemon" class="org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean">
-		<property name="serviceUrl" value="${remotingMonitoringDaemonUrl}" />
-		<property name="serviceInterface" value="eu.heliovo.monitoring.daemon.RemotingMonitoringDaemon" />
+	<bean id="remoteServiceStatusDetailsExporter" class="org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean">
+		<property name="serviceUrl" value="${remoteServiceDetailsExporterUrl}" />
+		<property name="serviceInterface" value="eu.heliovo.monitoring.exporter.ServiceStatusDetailsExporter" />
 	</bean>
 
 </beans>

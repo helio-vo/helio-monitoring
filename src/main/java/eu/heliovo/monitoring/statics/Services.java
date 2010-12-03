@@ -45,10 +45,6 @@ public final class Services {
 			services.add(newService("HRS", new URL(MSSL_URL + "helio_registry/HelioService?wsdl")));
 			services.add(newService("HFC", new URL("http://helio-fc1.obspm.fr:8080/helio-hfc/HelioService?wsdl")));
 
-			// just for testing purposes
-			services.add(newService("FakeOfflineService", new URL("http://123.43.121.11/")));
-			services.add(newService("NoWsdlOfflineService", new URL(HELIO_DEV_URL + "fakeofflineservice")));
-
 			LIST = Collections.unmodifiableList(services);
 
 		} catch (final MalformedURLException e) {

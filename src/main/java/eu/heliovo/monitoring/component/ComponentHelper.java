@@ -32,8 +32,8 @@ import com.eviware.soapui.support.SoapUIException;
 import eu.heliovo.monitoring.logging.LogFileWriter;
 import eu.heliovo.monitoring.logging.LoggingHelper;
 import eu.heliovo.monitoring.model.Service;
+import eu.heliovo.monitoring.model.ServiceStatus;
 import eu.heliovo.monitoring.model.ServiceStatusDetails;
-import eu.heliovo.monitoring.model.Status;
 import eu.heliovo.monitoring.util.WsdlValidationUtils;
 
 /**
@@ -170,7 +170,7 @@ public final class ComponentHelper {
 		String message = "An error occured: " + e.getMessage()
 				+ LoggingHelper.getLogFileText(logFileWriter, logFilesUrl);
 
-		newCache.add(newServiceStatusDetails(serviceName, service.getUrl(), Status.CRITICAL, 0, message));
+		newCache.add(newServiceStatusDetails(serviceName, service.getUrl(), ServiceStatus.CRITICAL, 0, message));
 
 		logFileWriter.writeToLogFile("An error occured: " + e.getMessage());
 		logFileWriter.writeStacktracetoLogFile(e);

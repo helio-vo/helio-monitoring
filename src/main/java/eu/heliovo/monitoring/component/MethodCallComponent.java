@@ -22,7 +22,7 @@ import eu.heliovo.monitoring.logging.LoggingFactory;
 import eu.heliovo.monitoring.logging.LoggingHelper;
 import eu.heliovo.monitoring.model.Service;
 import eu.heliovo.monitoring.model.ServiceStatusDetails;
-import eu.heliovo.monitoring.model.Status;
+import eu.heliovo.monitoring.model.ServiceStatus;
 import eu.heliovo.monitoring.util.WsdlValidationUtils;
 /**
  * Just calls one method of every service to see that it is working.
@@ -107,7 +107,7 @@ public final class MethodCallComponent extends AbstractComponent {
 
 		// build message
 		final StringBuffer stringBuffer = new StringBuffer("Service is working");
-		Status status = Status.OK;
+		ServiceStatus status = ServiceStatus.OK;
 
 		// response validation
 		final AssertionError[] responseAssertionErrors = WsdlValidationUtils.validateResponse(response);
@@ -116,7 +116,7 @@ public final class MethodCallComponent extends AbstractComponent {
 		if (responseAssertionErrors != null && responseAssertionErrors.length > 0) {
 
 			stringBuffer.append(", but the repsonse is not valid");
-			status = Status.CRITICAL;
+			status = ServiceStatus.CRITICAL;
 
 		} else if (TEST_FOR_SOAP_FAULT) {
 
@@ -125,7 +125,7 @@ public final class MethodCallComponent extends AbstractComponent {
 				stringBuffer.append(", but the response is a SOAP fault");
 				logger.debug("The response is a SOAP fault!");
 				logFileWriter.writeToLogFile("The response is a SOAP fault!");
-				status = Status.WARNING;
+				status = ServiceStatus.WARNING;
 			}
 		}
 

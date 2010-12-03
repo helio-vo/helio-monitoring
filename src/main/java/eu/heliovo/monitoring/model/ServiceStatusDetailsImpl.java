@@ -2,15 +2,16 @@ package eu.heliovo.monitoring.model;
 
 import java.net.URL;
 
+@SuppressWarnings("serial")
 public final class ServiceStatusDetailsImpl implements ServiceStatusDetails {
 
 	private final String id;
 	private final URL url;
-	private final Status status;
+	private final ServiceStatus status;
 	private final long responseTimeInMillis;
 	private final String message;
 
-	public ServiceStatusDetailsImpl(String id, URL url, Status status, long responseTimeInMillis, String message) {
+	public ServiceStatusDetailsImpl(String id, URL url, ServiceStatus status, long responseTimeInMillis, String message) {
 
 		this.id = id;
 		this.url = url;
@@ -20,7 +21,7 @@ public final class ServiceStatusDetailsImpl implements ServiceStatusDetails {
 	}
 
 	@Override
-	public Status getStatus() {
+	public ServiceStatus getStatus() {
 		return status;
 	}
 

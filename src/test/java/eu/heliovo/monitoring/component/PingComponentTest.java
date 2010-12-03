@@ -6,9 +6,9 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import eu.heliovo.monitoring.model.ServiceStatus;
 import eu.heliovo.monitoring.model.ServiceStatusDetails;
-import eu.heliovo.monitoring.model.Status;
-import eu.heliovo.monitoring.statics.Services;
+import eu.heliovo.monitoring.test.util.TestServices;
 
 public class PingComponentTest extends Assert {
 
@@ -16,18 +16,18 @@ public class PingComponentTest extends Assert {
 	public void testPingComponent() throws Exception {
 
 		final PingComponent pingComponent = new PingComponent();
-		pingComponent.setServices(Services.LIST);
+		pingComponent.setServices(TestServices.LIST);
 		pingComponent.refreshCache();
 
 		final List<ServiceStatusDetails> serviceStatusDetails = pingComponent.getStatus();
 		assertNotNull(serviceStatusDetails);
-		assertTrue(serviceStatusDetails.size() == Services.LIST.size());
+		assertTrue(serviceStatusDetails.size() == TestServices.LIST.size());
 
 		boolean testedFakeService = false;
 		for (final ServiceStatusDetails actualServiceStatusDetails : serviceStatusDetails) {
 			if (actualServiceStatusDetails.getId().equals("FakeOfflineService" + pingComponent.getServiceNameSuffix())) {
 				testedFakeService = true;
-				assertTrue(actualServiceStatusDetails.getStatus().equals(Status.CRITICAL));
+				assertTrue(actualServiceStatusDetails.getStatus().equals(ServiceStatus.CRITICAL));
 			}
 		}
 		assertTrue(testedFakeService);

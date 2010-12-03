@@ -39,8 +39,9 @@ import eu.heliovo.monitoring.model.Service;
 @Component
 public final class IvoaRegistryServiceLoader implements ServiceLoader {
 
-	private static final String ADQLS_QUERY = "capability LIKE 'helio'";
+	private static final String ADQLS_QUERY = "capability/@standardID='ivo://helio-vo.eu/std/FullQuery/v0.2'";
 	private static final int SOAP_SERVICE = 1;
+	private static final String INTERFACE_NAME = "HelioService";
 	private static final String WSDL_SUFFIX = "?wsdl";
 	private static final int RESPONSE_TIMEOUT = 10;
 
@@ -105,6 +106,8 @@ public final class IvoaRegistryServiceLoader implements ServiceLoader {
 		});
 
 		// TODO automatically determine timeout
+		// TODO registryClient.getResourceIterator(soapRequest) creates another thread which opens a URLConnection which
+		// cannot be interupted and stays open till default connection timeout occurs. how to interrupt this one?
 		return future.get(RESPONSE_TIMEOUT, TimeUnit.SECONDS);
 	}
 
@@ -115,13 +118,37 @@ public final class IvoaRegistryServiceLoader implements ServiceLoader {
 		String serviceName = hasText(resourceShortName) ? resourceShortName : cleanIdentifier(identifier);
 
 		BasicCapability[] capabilities = registryResource.getCapabilities();
-		String serviceUrl = capabilities[SOAP_SERVICE].getAccessUrl();
+		String serviceUrl = getServiceUrl(capabilities);
 
 		if (!serviceUrl.toLowerCase().endsWith(WSDL_SUFFIX)) {
 			serviceUrl += WSDL_SUFFIX;
 		}
 
 		return newService(serviceName, new URL(serviceUrl));
+	}
+
+	private String getServiceUrl(BasicCapability[] capabilities) {
+
+		if (capabilities.length > SOAP_SERVICE) {
+
+			String serviceUrl = capabilities[SOAP_SERVICE].getAccessUrl();
+			if (hasText(serviceUrl) && serviceUrl.endsWith(INTERFACE_NAME)) {
+				return serviceUrl;
+			}
+		}
+
+		return searchForServiceUrl(capabilities); // if the url is registered at the wrong place
+	}
+
+	private String searchForServiceUrl(BasicCapability[] capabilities) {
+
+		for (BasicCapability basicCapability : capabilities) {
+			String serviceUrl = basicCapability.getAccessUrl();
+			if (hasText(serviceUrl) && serviceUrl.endsWith(INTERFACE_NAME)) {
+				return serviceUrl;
+			}
+		}
+		return ""; // leading to a MalformedURLException and not adding this service
 	}
 
 	private String cleanIdentifier(String identifier) {

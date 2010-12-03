@@ -1,5 +1,6 @@
 package eu.heliovo.monitoring.model;
 
+import java.io.Serializable;
 import java.net.URL;
 
 /**
@@ -9,9 +10,9 @@ import java.net.URL;
  * @author Kevin Seidler
  * 
  */
-public interface ServiceStatusDetails {
+public interface ServiceStatusDetails extends Serializable {
 
-	Status getStatus();
+	ServiceStatus getStatus();
 
 	long getResponseTimeInMillis();
 

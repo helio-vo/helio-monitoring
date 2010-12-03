@@ -5,7 +5,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.Assert;
 
@@ -13,7 +12,7 @@ import eu.heliovo.monitoring.component.AbstractComponent;
 import eu.heliovo.monitoring.component.MethodCallComponent;
 import eu.heliovo.monitoring.component.PingComponent;
 import eu.heliovo.monitoring.component.TestingComponent;
-import eu.heliovo.monitoring.daemon.RemotingMonitoringDaemon;
+import eu.heliovo.monitoring.exporter.ServiceStatusDetailsExporter;
 import eu.heliovo.monitoring.model.Service;
 import eu.heliovo.monitoring.model.ServiceStatusDetails;
 import eu.heliovo.monitoring.serviceloader.ServiceLoader;
@@ -36,22 +35,21 @@ public final class MonitoringServiceImpl implements MonitoringService {
 
 	private final ServiceLoader serviceLoader;
 
-	private final RemotingMonitoringDaemon daemon;
+	private final ServiceStatusDetailsExporter serviceStatusDetailsExporter;
 
-	// TODO Spring EL not working in @Qualifier, therefore both daemons are passed with property value for the right
-	// one. Fix this when possbile.
 	@Autowired
-	public MonitoringServiceImpl(PingComponent pingComponent, MethodCallComponent methodCallComponent,
-			TestingComponent testingComponent, @Qualifier("staticServiceLoader") ServiceLoader serviceLoader,
-			@Qualifier("monitoringDaemon") RemotingMonitoringDaemon monitoringDaemon,
-			@Qualifier("remotingMonitoringDaemon") RemotingMonitoringDaemon remotingMonitoringDaemon,
-			@Value("${monitoringDaemonSpringBeanId}") String activeDaemonId) {
+	public MonitoringServiceImpl(
+			PingComponent pingComponent,
+			MethodCallComponent methodCallComponent,
+			TestingComponent testingComponent,
+			@Qualifier("staticServiceLoader") ServiceLoader serviceLoader,
+			@Qualifier("compositeServiceStatusDetailsExporter") ServiceStatusDetailsExporter serviceStatusDetailsExporter) {
 
 		this.pingComponent = pingComponent;
 		this.methodCallComponent = methodCallComponent;
 		this.testingComponent = testingComponent;
 		this.serviceLoader = serviceLoader;
-		this.daemon = "monitoringDaemon".equals(activeDaemonId) ? monitoringDaemon : remotingMonitoringDaemon;
+		this.serviceStatusDetailsExporter = serviceStatusDetailsExporter;
 
 		this.validateState();
 		this.updateServices();
@@ -65,13 +63,14 @@ public final class MonitoringServiceImpl implements MonitoringService {
 	}
 
 	// TODO extract update methods to a new class
+	// TODO abstract from component type, just have a list of components and iterate through them and call the methods
 	/**
 	 * This method is called regularly from Spring to update the available services using the Scheduled annotation.
 	 */
 	@Scheduled(cron = "${registry.updateInterval.cronValue}")
 	protected void updateServices() {
 
-		// TODO automatic nagios config generation needed
+		// TODO automatic nagios config generation needed, static service definition used till implemented
 		List<Service> services = serviceLoader.loadServices();
 
 		pingComponent.setServices(services);
@@ -80,26 +79,26 @@ public final class MonitoringServiceImpl implements MonitoringService {
 	}
 
 	@Scheduled(cron = "${pingComponent.updateInterval.cronValue}")
-	protected void updatePingStatusAndWriteToNagios() {
-		updateStatusAndWriteToNagios(pingComponent, daemon);
+	protected void updatePingStatusAndExport() {
+		updateStatusAndExport(pingComponent, serviceStatusDetailsExporter);
 	}
 
 	@Scheduled(cron = "${methodCallComponent.updateInterval.cronValue}")
-	protected void updateMethodCallStatusAndWriteToNagios() {
-		updateStatusAndWriteToNagios(methodCallComponent, daemon);
+	protected void updateMethodCallStatusAndExport() {
+		updateStatusAndExport(methodCallComponent, serviceStatusDetailsExporter);
 	}
 
 	@Scheduled(cron = "${testingComponent.updateInterval.cronValue}")
-	protected void updateTestingStatusAndWriteToNagios() {
-		updateStatusAndWriteToNagios(testingComponent, daemon);
+	protected void updateTestingStatusAndExport() {
+		updateStatusAndExport(testingComponent, serviceStatusDetailsExporter);
 	}
 
-	private void updateStatusAndWriteToNagios(AbstractComponent component, RemotingMonitoringDaemon monitoringDaemon) {
+	private void updateStatusAndExport(AbstractComponent component, ServiceStatusDetailsExporter monitoringDaemon) {
 
 		component.refreshCache();
 
 		List<ServiceStatusDetails> result = component.getStatus();
-		monitoringDaemon.writeServiceStatusToNagios(result);
+		monitoringDaemon.exportServiceStatusDetails(result);
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("refreshed component's cache");

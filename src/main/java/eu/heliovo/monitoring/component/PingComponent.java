@@ -12,7 +12,7 @@ import org.springframework.util.StopWatch;
 
 import eu.heliovo.monitoring.model.Service;
 import eu.heliovo.monitoring.model.ServiceStatusDetails;
-import eu.heliovo.monitoring.model.Status;
+import eu.heliovo.monitoring.model.ServiceStatus;
 
 /**
  * Just gets the WSDL file to see that the service is not offline.
@@ -62,14 +62,14 @@ public final class PingComponent extends AbstractComponent {
 
 				String message = "an error occured: " + exception.getMessage();
 				int responseTimeInMillis = 0;
-				Status status = Status.CRITICAL;
+				ServiceStatus status = ServiceStatus.CRITICAL;
 
 				newCache.add(newServiceStatusDetails(serviceName, url, status, responseTimeInMillis, message));
 
 			} else {
 
 				int responseTimeInMillis = Double.valueOf(watch.getTotalTimeMillis()).intValue();
-				Status status = Status.OK;
+				ServiceStatus status = ServiceStatus.OK;
 				String message = status.name() + " - response time = " + responseTimeInMillis + " ms";
 
 				newCache.add(newServiceStatusDetails(serviceName, url, status, responseTimeInMillis, message));

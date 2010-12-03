@@ -14,7 +14,7 @@ import eu.heliovo.monitoring.statics.Services;
  * 
  */
 @Component
-public class StaticServiceLoader implements ServiceLoader {
+public final class StaticServiceLoader implements ServiceLoader {
 
 	@Override
 	public List<Service> loadServices() {

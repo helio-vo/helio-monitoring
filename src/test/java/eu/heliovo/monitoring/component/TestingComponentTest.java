@@ -10,9 +10,9 @@ import java.util.List;
 import org.junit.Test;
 
 import eu.heliovo.monitoring.model.Service;
+import eu.heliovo.monitoring.model.ServiceStatus;
 import eu.heliovo.monitoring.model.ServiceStatusDetails;
-import eu.heliovo.monitoring.model.Status;
-import eu.heliovo.monitoring.statics.Services;
+import eu.heliovo.monitoring.test.util.TestServices;
 
 public class TestingComponentTest {
 
@@ -20,31 +20,31 @@ public class TestingComponentTest {
 	public final void testRefreshCache() throws Exception {
 
 		final TestingComponent component = new TestingComponent(getComponentHelper(), "mainlog", logFilesUrl);
-		component.setServices(Services.LIST);
+		component.setServices(TestServices.LIST);
 		component.refreshCache();
 
 		final List<ServiceStatusDetails> serviceStatus = component.getStatus();
 
 		assertNotNull(serviceStatus);
-		assertTrue(serviceStatus.size() == Services.LIST.size());
+		assertTrue(serviceStatus.size() == TestServices.LIST.size());
 
 		boolean testedFakeService = false;
 		boolean testedNoWsdlService = false;
 		for (final ServiceStatusDetails actualServiceStatusDetails : serviceStatus) {
 			if (actualServiceStatusDetails.getId().equals("FakeOfflineService" + component.getServiceNameSuffix())) {
 				testedFakeService = true;
-				assertTrue(actualServiceStatusDetails.getStatus().equals(Status.CRITICAL));
+				assertTrue(actualServiceStatusDetails.getStatus().equals(ServiceStatus.CRITICAL));
 			}
 			if (actualServiceStatusDetails.getId().equals("NoWsdlOfflineService" + component.getServiceNameSuffix())) {
 				testedNoWsdlService = true;
-				assertTrue(actualServiceStatusDetails.getStatus().equals(Status.CRITICAL));
+				assertTrue(actualServiceStatusDetails.getStatus().equals(ServiceStatus.CRITICAL));
 			}
 		}
 		assertTrue(testedFakeService);
 		assertTrue(testedNoWsdlService);
 
 		System.out.println("=== Services to be tested ===");
-		for (final Service service : Services.LIST) {
+		for (final Service service : TestServices.LIST) {
 			System.out.println(service.getName() + " " + service.getUrl());
 		}
 

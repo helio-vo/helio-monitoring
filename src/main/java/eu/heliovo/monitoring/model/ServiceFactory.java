@@ -36,7 +36,7 @@ public final class ServiceFactory {
 		return new OperationTestImpl(operationName, requestContent, responseContent);
 	}
 
-	public static ServiceStatusDetails newServiceStatusDetails(String id, URL url, Status status,
+	public static ServiceStatusDetails newServiceStatusDetails(String id, URL url, ServiceStatus status,
 			long responseTimeInMillis, String message) {
 
 		return new ServiceStatusDetailsImpl(id, url, status, responseTimeInMillis, message);

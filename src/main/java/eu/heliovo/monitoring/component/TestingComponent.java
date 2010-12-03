@@ -28,8 +28,8 @@ import eu.heliovo.monitoring.logging.LoggingFactory;
 import eu.heliovo.monitoring.logging.LoggingHelper;
 import eu.heliovo.monitoring.model.OperationTest;
 import eu.heliovo.monitoring.model.Service;
+import eu.heliovo.monitoring.model.ServiceStatus;
 import eu.heliovo.monitoring.model.ServiceStatusDetails;
-import eu.heliovo.monitoring.model.Status;
 import eu.heliovo.monitoring.model.TestingService;
 import eu.heliovo.monitoring.util.WsdlValidationUtils;
 
@@ -228,6 +228,7 @@ public final class TestingComponent extends AbstractComponent {
 		}
 	}
 
+	// TODO refactor, to many nested blocks
 	private ServiceStatusDetails buildServiceStatusDetails(Statistic statistic, LogFileWriter logFileWriter) {
 
 		// assemble statistic message
@@ -286,10 +287,11 @@ public final class TestingComponent extends AbstractComponent {
 		message.append(LoggingHelper.getLogFileText(logFileWriter, logFilesUrl));
 		String statusMessage = message.toString();
 
-		Status status = statistic.getServiceStatus();
+		ServiceStatus status = statistic.getServiceStatus();
 		return newServiceStatusDetails(statistic.serviceName, statistic.serviceUrl, status, 0, statusMessage);
 	}
 
+	// TODO refactor, to many nested blocks
 	private void logStatistic(Statistic statistic, LogFileWriter logFileWriter, String logMessage) {
 
 		logFileWriter.writeToLogFile("==== Testing statistic ====");
@@ -381,23 +383,23 @@ public final class TestingComponent extends AbstractComponent {
 			this.serviceUrl = serviceUrl;
 		}
 
-		public Status getServiceStatus() {
+		public ServiceStatus getServiceStatus() {
 
-			Status status = Status.OK;
+			ServiceStatus status = ServiceStatus.OK;
 			if (!isEmpty(soapFaultOperations)) {
-				status = Status.WARNING;
+				status = ServiceStatus.WARNING;
 			}
 			if (!isEmpty(exceptionalOperations)) {
-				status = Status.CRITICAL;
+				status = ServiceStatus.CRITICAL;
 			}
 			if (!isEmpty(predefinedNotFoundOperations)) {
-				status = Status.CRITICAL;
+				status = ServiceStatus.CRITICAL;
 			}
 			if (!isEmpty(invalidResponseOperations)) {
-				status = Status.CRITICAL;
+				status = ServiceStatus.CRITICAL;
 			}
 			if (!isEmpty(notMatchingResponseOperations)) {
-				status = Status.CRITICAL;
+				status = ServiceStatus.CRITICAL;
 			}
 			return status;
 		}
