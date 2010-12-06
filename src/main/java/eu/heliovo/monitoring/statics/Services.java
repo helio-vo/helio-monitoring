@@ -24,7 +24,6 @@ public final class Services {
 
 	public static final List<Service> LIST;
 
-	private static final String HELIO_DEV_URL = "http://helio-dev.i4ds.ch/";
 	private static final String MSSL_URL = "http://msslxw.mssl.ucl.ac.uk:8080/";
 
 	private Services() {

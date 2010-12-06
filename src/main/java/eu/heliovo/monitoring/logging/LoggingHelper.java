@@ -1,12 +1,10 @@
 package eu.heliovo.monitoring.logging;
 
-import java.io.File;
-import java.io.FilenameFilter;
+import java.io.*;
 import java.util.Calendar;
 
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -54,7 +52,7 @@ public final class LoggingHelper {
 		return (milliseconds1 - milliseconds2) / TO_DAYS_DIVISOR;
 	}
 
-	public static String getLogFileText(final LogFileWriter logFileWriter, final String logFilesUrl) {
+	public static String getLogFileText(LogFileWriter logFileWriter, String logFilesUrl) {
 
 		if (DummyLogFileWriter.class.equals(logFileWriter.getClass())) {
 			return "";
@@ -81,19 +79,19 @@ public final class LoggingHelper {
 			final String validationObjectName) {
 
 		LOGGER.debug("Validating " + validationObjectName);
-		logFileWriter.writeToLogFile("Validating " + validationObjectName);
+		logFileWriter.write("Validating " + validationObjectName);
 
 		if (assertionErrors == null || assertionErrors.length < 1) {
 			LOGGER.debug("No validation erros found");
-			logFileWriter.writeToLogFile("No validation erros found");
+			logFileWriter.write("No validation erros found");
 		} else {
 
 			LOGGER.debug("The " + validationObjectName + " has validation erros:");
-			logFileWriter.writeToLogFile("The " + validationObjectName + " has validation erros:");
+			logFileWriter.write("The " + validationObjectName + " has validation erros:");
 
 			for (int i = 0; i < assertionErrors.length; i++) {
 				LOGGER.debug(assertionErrors[i].toString());
-				logFileWriter.writeToLogFile(assertionErrors[i].toString());
+				logFileWriter.write(assertionErrors[i].toString());
 			}
 		}
 	}

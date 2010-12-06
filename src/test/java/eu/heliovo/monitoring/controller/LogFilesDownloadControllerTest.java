@@ -1,17 +1,14 @@
 package eu.heliovo.monitoring.controller;
 
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
 
 import junit.framework.Assert;
 
 import org.junit.Test;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.*;
 import org.springframework.util.FileCopyUtils;
 
-import eu.heliovo.monitoring.logging.LogFileWriter;
-import eu.heliovo.monitoring.logging.LoggingFactory;
+import eu.heliovo.monitoring.logging.*;
 
 public class LogFilesDownloadControllerTest extends Assert {
 
@@ -20,8 +17,8 @@ public class LogFilesDownloadControllerTest extends Assert {
 	@Test
 	public void testDownloadLogFileWithExistingFile() throws Exception {
 
-		LogFileWriter logFileWriter = LoggingFactory.newLogFileWriter(logDir, "FooBarService");
-		logFileWriter.writeToLogFile("created");
+		LogFileWriter logFileWriter = LoggingUtils.getLoggingFactory().newLogFileWriter("FooBarService");
+		logFileWriter.write("created");
 
 		String logFileName = logFileWriter.getFileName();
 

@@ -41,7 +41,7 @@ public final class ImportWsdlCommand {
 		final WsdlProject project = new WsdlProject();
 
 		logger.debug("Importing WSDL file " + wsdlUrl);
-		logFileWriter.writeToLogFile("Importing WSDL file " + wsdlUrl);
+		logFileWriter.write("Importing WSDL file " + wsdlUrl);
 
 		Future<WsdlInterface> future = executor.submit(new Callable<WsdlInterface>() {
 			public WsdlInterface call() throws SoapUIException {
@@ -55,7 +55,7 @@ public final class ImportWsdlCommand {
 			WsdlInterface wsdlInterface = future.get(IMPORT_WSDL_TIMEOUT, TimeUnit.SECONDS);
 
 			logger.debug("Importing finished");
-			logFileWriter.writeToLogFile("Importing finished");
+			logFileWriter.write("Importing finished");
 
 			return wsdlInterface;
 

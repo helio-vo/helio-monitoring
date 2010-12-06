@@ -11,11 +11,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
 import eu.heliovo.monitoring.model.Service;
-import eu.heliovo.monitoring.model.ServiceStatusDetails;
 import eu.heliovo.monitoring.model.ServiceStatus;
+import eu.heliovo.monitoring.model.ServiceStatusDetails;
 
 /**
- * Just gets the WSDL file to see that the service is not offline.
+ * Just gets the WSDL file to see that the service is not offline. By convention the file is on the same host as the
+ * service.
  * 
  * @author Kevin Seidler
  * 
@@ -30,20 +31,19 @@ public final class PingComponent extends AbstractComponent {
 	}
 
 	/**
-	 * Pings the Helio services, tracks online or offline status with a given timeout and measures response time. This
-	 * method gets executed autmatically by a quartz job from the application context.
+	 * Pings the Helio services, tracks online or offline status with a given timeout and measures response time.
 	 */
 	@Override
 	public void refreshCache() {
 
 		List<ServiceStatusDetails> newCache = new ArrayList<ServiceStatusDetails>();
 
-		for (final Service service : super.getServices()) {
+		for (Service service : super.getServices()) {
 
-			final String serviceName = service.getName() + super.getServiceNameSuffix();
+			String serviceName = service.getName() + super.getServiceNameSuffix();
 
-			final StopWatch watch = new StopWatch(serviceName);
-			final URL url = service.getUrl();
+			StopWatch watch = new StopWatch(serviceName);
+			URL url = service.getUrl();
 
 			Exception exception = null;
 			try {
@@ -54,15 +54,15 @@ public final class PingComponent extends AbstractComponent {
 				connection.connect();
 				watch.stop();
 
-			} catch (final Exception e) {
+			} catch (Exception e) {
 				exception = e;
 			}
 
 			if (exception != null) {
 
-				String message = "an error occured: " + exception.getMessage();
 				int responseTimeInMillis = 0;
 				ServiceStatus status = ServiceStatus.CRITICAL;
+				String message = "an error occured: " + exception.getMessage();
 
 				newCache.add(newServiceStatusDetails(serviceName, url, status, responseTimeInMillis, message));
 

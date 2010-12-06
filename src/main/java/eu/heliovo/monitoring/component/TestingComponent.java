@@ -6,31 +6,20 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import org.apache.log4j.Logger;
-import org.apache.xmlbeans.XmlException;
-import org.apache.xmlbeans.XmlObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.apache.xmlbeans.*;
+import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.Component;
 
-import com.eviware.soapui.impl.wsdl.WsdlInterface;
-import com.eviware.soapui.impl.wsdl.WsdlOperation;
-import com.eviware.soapui.impl.wsdl.WsdlRequest;
+import com.eviware.soapui.impl.wsdl.*;
 import com.eviware.soapui.impl.wsdl.submit.transports.http.WsdlResponse;
 import com.eviware.soapui.model.iface.Operation;
 import com.eviware.soapui.model.testsuite.AssertionError;
 
-import eu.heliovo.monitoring.logging.LogFileWriter;
-import eu.heliovo.monitoring.logging.LoggingFactory;
-import eu.heliovo.monitoring.logging.LoggingHelper;
-import eu.heliovo.monitoring.model.OperationTest;
-import eu.heliovo.monitoring.model.Service;
-import eu.heliovo.monitoring.model.ServiceStatus;
-import eu.heliovo.monitoring.model.ServiceStatusDetails;
-import eu.heliovo.monitoring.model.TestingService;
+import eu.heliovo.monitoring.logging.*;
+import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.util.WsdlValidationUtils;
 
 /**
@@ -45,18 +34,18 @@ public final class TestingComponent extends AbstractComponent {
 	private final Logger logger = Logger.getLogger(this.getClass());
 
 	private final ComponentHelper componentHelper;
-	private final String logFilesDirectory;
+	private final LoggingFactory loggingFactory;
 	private final String logFilesUrl;
 
 	private static final String LOG_FILE_SUFFIX = "_testing_";
 
 	@Autowired
-	public TestingComponent(ComponentHelper componentHelper, @Value("${logging.filePath}") String logFilesDirectory,
+	public TestingComponent(ComponentHelper componentHelper, LoggingFactory loggingFactory,
 			@Value("${monitoringService.logUrl}") String logFilesUrl) {
 
 		super(" -testing-");
 		this.componentHelper = componentHelper;
-		this.logFilesDirectory = logFilesDirectory;
+		this.loggingFactory = loggingFactory;
 		this.logFilesUrl = logFilesUrl;
 	}
 
@@ -69,7 +58,7 @@ public final class TestingComponent extends AbstractComponent {
 
 			String serviceName = service.getName() + super.getServiceNameSuffix();
 			String logFileWriterName = service.getName() + LOG_FILE_SUFFIX;
-			LogFileWriter logFileWriter = LoggingFactory.newLogFileWriter(logFilesDirectory, logFileWriterName);
+			LogFileWriter logFileWriter = loggingFactory.newLogFileWriter(logFileWriterName);
 
 			try {
 
@@ -104,7 +93,7 @@ public final class TestingComponent extends AbstractComponent {
 
 		if (implementsInterface(service, TestingService.class)) {
 
-			logFileWriter.writeToLogFile("==== Testing predefined operations ====");
+			logFileWriter.write("==== Testing predefined operations ====");
 
 			TestingService testingService = (TestingService) service;
 			for (OperationTest operationTest : testingService.getOperationTests()) {
@@ -139,24 +128,15 @@ public final class TestingComponent extends AbstractComponent {
 							XmlObject actualXml = XmlObject.Factory.parse(actualResponseContent);
 
 							if (expectedXml.valueEquals(actualXml)) {
-
-								logger.debug("Actual and predefined response are matching");
-								logFileWriter.writeToLogFile("Actual and predefined response are matching");
-
+								logFileWriter.write("Actual and predefined response are matching");
 							} else {
 
 								statistic.notMatchingResponseOperations.add(operation.getName());
 
-								logger.debug("Actual and expected response are not the same!");
-								logFileWriter.writeToLogFile("Actual and expected response are not the same!");
-
-								logger.debug("=== Actual response Content for Operation \"" + operation.getName()
-										+ "\" ===");
-								logFileWriter.writeToLogFile("=== Actual response Content for Operation \""
+								logFileWriter.write("Actual and expected response are not the same!");
+								logFileWriter.write("=== Actual response Content for Operation \""
 										+ operation.getName() + "\" ===");
-
-								logger.debug(actualResponseContent);
-								logFileWriter.writeToLogFile(actualResponseContent);
+								logFileWriter.write(actualResponseContent);
 
 							}
 						}
@@ -172,8 +152,7 @@ public final class TestingComponent extends AbstractComponent {
 
 					String operationName = operationTest.getOperationName();
 					String message = "predefined operation " + operationName + " not found!";
-					logger.warn(message);
-					logFileWriter.writeToLogFile(message);
+					logFileWriter.write(message);
 					statistic.predefinedNotFoundOperations.add(operationTest.getOperationName());
 				}
 			}
@@ -183,7 +162,7 @@ public final class TestingComponent extends AbstractComponent {
 	private void monitorAvailableOperations(LogFileWriter logFileWriter, Service service, String serviceName,
 			WsdlInterface wsdlInterface, Statistic statistic) {
 
-		logFileWriter.writeToLogFile("==== Testing all available operations ====");
+		logFileWriter.write("==== Testing all available operations ====");
 
 		for (Operation operation : wsdlInterface.getOperationList()) {
 
@@ -224,7 +203,7 @@ public final class TestingComponent extends AbstractComponent {
 		} else if (WsdlValidationUtils.isSoapFault(response.getContentAsString(), operation)) {
 			// SOAP fault test
 			statistic.soapFaultOperations.add(operation.getName());
-			logFileWriter.writeToLogFile("The response is a SOAP fault!");
+			logFileWriter.write("The response is a SOAP fault!");
 		}
 	}
 
@@ -294,64 +273,50 @@ public final class TestingComponent extends AbstractComponent {
 	// TODO refactor, to many nested blocks
 	private void logStatistic(Statistic statistic, LogFileWriter logFileWriter, String logMessage) {
 
-		logFileWriter.writeToLogFile("==== Testing statistic ====");
-		logger.debug("==== Testing statistic ====");
-
-		logFileWriter.writeToLogFile(logMessage);
-		logger.debug(logMessage);
+		logFileWriter.write("==== Testing statistic ====");
+		logFileWriter.write(logMessage);
 
 		if (!isEmpty(statistic.exceptionalOperations)) {
-			logFileWriter.writeToLogFile("=== exceptional operations ===");
-			logger.debug("=== exceptional operations ===");
+			logFileWriter.write("=== exceptional operations ===");
 			for (String operationName : statistic.exceptionalOperations) {
-				logFileWriter.writeToLogFile(operationName);
-				logger.debug(operationName);
+				logFileWriter.write(operationName);
 			}
 		}
 
 		if (!isEmpty(statistic.invalidResponseOperations)) {
-			logFileWriter.writeToLogFile("=== operations with invalid responses ===");
-			logger.debug("=== operations with invalid responses ===");
+			logFileWriter.write("=== operations with invalid responses ===");
 			for (String operationName : statistic.invalidResponseOperations) {
-				logFileWriter.writeToLogFile(operationName);
-				logger.debug(operationName);
+				logFileWriter.write(operationName);
 			}
 		}
 
 		if (!isEmpty(statistic.predefinedNotFoundOperations)) {
-			logFileWriter.writeToLogFile("=== predefined operations not found ===");
-			logger.debug("=== predefined operations not found ===");
+			logFileWriter.write("=== predefined operations not found ===");
 			for (String operationName : statistic.predefinedNotFoundOperations) {
-				logFileWriter.writeToLogFile(operationName);
-				logger.debug(operationName);
+				logFileWriter.write(operationName);
 			}
 		}
 
 		if (!isEmpty(statistic.soapFaultOperations)) {
-			logFileWriter.writeToLogFile("=== operations with SOAP faults ===");
-			logger.debug("=== operations with SOAP faults ===");
+			logFileWriter.write("=== operations with SOAP faults ===");
 			for (String operationName : statistic.soapFaultOperations) {
-				logFileWriter.writeToLogFile(operationName);
-				logger.debug(operationName);
+				logFileWriter.write(operationName);
 			}
 		}
 
 		if (!isEmpty(statistic.notMatchingResponseOperations)) {
-			logFileWriter.writeToLogFile("=== operations with reponse not matching with predefinition ===");
-			logger.debug("=== operations with reponse not matching with predefinition ===");
+			logFileWriter.write("=== operations with reponse not matching with predefinition ===");
 			for (String operationName : statistic.notMatchingResponseOperations) {
-				logFileWriter.writeToLogFile(operationName);
-				logger.debug(operationName);
+				logFileWriter.write(operationName);
 			}
 		}
 	}
 
-	private void logException(Exception e, LogFileWriter logFileWriter, String operationName, Statistic statistic) {
+	private void logException(Exception exception, LogFileWriter logFileWriter, String operationName,
+			Statistic statistic) {
 
 		statistic.exceptionalOperations.add(operationName);
-
-		logFileWriter.writeToLogFile("An error occured: " + e.getMessage());
-		logFileWriter.writeStacktracetoLogFile(e);
+		logFileWriter.write(exception);
 	}
 
 	// TODO invalid requests

@@ -9,14 +9,11 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import eu.heliovo.monitoring.component.ComponentHelper;
-import eu.heliovo.monitoring.component.MethodCallComponent;
-import eu.heliovo.monitoring.component.PingComponent;
-import eu.heliovo.monitoring.component.TestingComponent;
+import eu.heliovo.monitoring.component.*;
 import eu.heliovo.monitoring.exporter.ServiceStatusDetailsExporter;
+import eu.heliovo.monitoring.logging.LoggingUtils;
 import eu.heliovo.monitoring.model.ServiceStatusDetails;
-import eu.heliovo.monitoring.serviceloader.ServiceLoader;
-import eu.heliovo.monitoring.serviceloader.StaticServiceLoader;
+import eu.heliovo.monitoring.serviceloader.*;
 
 /**
  * Tests the MonitoringService.
@@ -37,8 +34,8 @@ public class MonitoringServiceTest extends Assert {
 		ComponentHelper componentHelper = getComponentHelper();
 
 		pingComponent = new PingComponent();
-		methodCallComponent = new MethodCallComponent(componentHelper, "mainlog", logFilesUrl);
-		testingComponent = new TestingComponent(componentHelper, "mainlog", logFilesUrl);
+		methodCallComponent = new MethodCallComponent(componentHelper, LoggingUtils.getLoggingFactory(), logFilesUrl);
+		testingComponent = new TestingComponent(componentHelper, LoggingUtils.getLoggingFactory(), logFilesUrl);
 
 		ServiceLoader serviceLoader = new StaticServiceLoader();
 

@@ -10,11 +10,11 @@ package eu.heliovo.monitoring.logging;
 public final class DummyLogFileWriter implements LogFileWriter {
 
 	@Override
-	public void writeToLogFile(final String text) {
+	public void write(final String text) {
 	}
 
 	@Override
-	public void writeStacktracetoLogFile(final Exception e) {
+	public void write(final Exception e) {
 	}
 
 	@Override

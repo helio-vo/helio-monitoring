@@ -64,6 +64,7 @@ public final class MonitoringServiceImpl implements MonitoringService {
 
 	// TODO extract update methods to a new class
 	// TODO abstract from component type, just have a list of components and iterate through them and call the methods
+	// TODO introduce interface MonitoringComponent and let AbstractComponent implement it
 	/**
 	 * This method is called regularly from Spring to update the available services using the Scheduled annotation.
 	 */

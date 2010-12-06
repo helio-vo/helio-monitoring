@@ -2,15 +2,15 @@ package eu.heliovo.monitoring.test.util;
 
 import static eu.heliovo.monitoring.model.ServiceFactory.newService;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.net.*;
+import java.util.*;
+
+import org.junit.Ignore;
 
 import eu.heliovo.monitoring.model.Service;
 import eu.heliovo.monitoring.statics.Services;
 
+@Ignore
 public final class TestServices {
 
 	public static final List<Service> LIST;

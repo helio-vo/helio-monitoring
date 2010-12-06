@@ -2,27 +2,18 @@ package eu.heliovo.monitoring.component;
 
 import static eu.heliovo.monitoring.model.ServiceFactory.newServiceStatusDetails;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-import org.apache.log4j.Logger;
 import org.apache.xmlbeans.XmlException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.Component;
 
-import com.eviware.soapui.impl.wsdl.WsdlInterface;
-import com.eviware.soapui.impl.wsdl.WsdlOperation;
-import com.eviware.soapui.impl.wsdl.WsdlRequest;
+import com.eviware.soapui.impl.wsdl.*;
 import com.eviware.soapui.impl.wsdl.submit.transports.http.WsdlResponse;
 import com.eviware.soapui.model.testsuite.AssertionError;
 
-import eu.heliovo.monitoring.logging.LogFileWriter;
-import eu.heliovo.monitoring.logging.LoggingFactory;
-import eu.heliovo.monitoring.logging.LoggingHelper;
-import eu.heliovo.monitoring.model.Service;
-import eu.heliovo.monitoring.model.ServiceStatusDetails;
-import eu.heliovo.monitoring.model.ServiceStatus;
+import eu.heliovo.monitoring.logging.*;
+import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.util.WsdlValidationUtils;
 /**
  * Just calls one method of every service to see that it is working.
@@ -33,25 +24,22 @@ import eu.heliovo.monitoring.util.WsdlValidationUtils;
 @Component
 public final class MethodCallComponent extends AbstractComponent {
 
-	// TODO unite logging and logfilewriter to reduce code amount
-	private final Logger logger = Logger.getLogger(this.getClass());
-
 	private final ComponentHelper componentHelper;
-	private final String logFilesDirectory;
-	private final String logFilesUrl;
+	private final LoggingFactory loggingFactory;
+	private final String logFilesUrl; // TODO should be moved somewhere in the logging classes
 	// private final ExecutorService executor;
 
 	private static final String LOG_FILE_SUFFIX = "_method-call_";
 	private static final boolean TEST_FOR_SOAP_FAULT = false;
 
 	@Autowired
-	public MethodCallComponent(ComponentHelper componentHelper, @Value("${logging.filePath}") String logFilesDirectory,
+	public MethodCallComponent(ComponentHelper componentHelper, LoggingFactory loggingFactory,
 			@Value("${monitoringService.logUrl}") String logFilesUrl /* , ExecutorService executor */) {
 
 		super(" -method call-");
 
 		this.componentHelper = componentHelper;
-		this.logFilesDirectory = logFilesDirectory;
+		this.loggingFactory = loggingFactory;
 		this.logFilesUrl = logFilesUrl;
 		// this.executor = executor;
 	}
@@ -70,7 +58,7 @@ public final class MethodCallComponent extends AbstractComponent {
 			String serviceName = service.getName() + super.getServiceNameSuffix();
 			String serviceUrlAsString = service.getUrl().toString();
 			String logFileWriterName = service.getName() + LOG_FILE_SUFFIX;
-			LogFileWriter logFileWriter = LoggingFactory.newLogFileWriter(logFilesDirectory, logFileWriterName);
+			LogFileWriter logFileWriter = loggingFactory.newLogFileWriter(logFileWriterName);
 
 			try {
 
@@ -123,8 +111,7 @@ public final class MethodCallComponent extends AbstractComponent {
 			final WsdlOperation operation = response.getRequest().getOperation();
 			if (WsdlValidationUtils.isSoapFault(response.getContentAsString(), operation)) {
 				stringBuffer.append(", but the response is a SOAP fault");
-				logger.debug("The response is a SOAP fault!");
-				logFileWriter.writeToLogFile("The response is a SOAP fault!");
+				logFileWriter.write("The response is a SOAP fault!");
 				status = ServiceStatus.WARNING;
 			}
 		}

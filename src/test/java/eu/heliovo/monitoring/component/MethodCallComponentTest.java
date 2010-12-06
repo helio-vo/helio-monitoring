@@ -1,5 +1,6 @@
 package eu.heliovo.monitoring.component;
 
+import static eu.heliovo.monitoring.logging.LoggingUtils.getLoggingFactory;
 import static eu.heliovo.monitoring.test.util.TestUtils.getComponentHelper;
 import static eu.heliovo.monitoring.test.util.TestUtils.logFilesUrl;
 
@@ -9,11 +10,8 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import eu.heliovo.monitoring.model.Service;
-import eu.heliovo.monitoring.model.ServiceStatus;
-import eu.heliovo.monitoring.model.ServiceStatusDetails;
+import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.test.util.TestServices;
-
 public class MethodCallComponentTest extends Assert {
 
 	@Test
@@ -21,7 +19,7 @@ public class MethodCallComponentTest extends Assert {
 
 		// TODO test individual methods of MethodCallComponent
 
-		MethodCallComponent component = new MethodCallComponent(getComponentHelper(), "mainlog", logFilesUrl);
+		MethodCallComponent component = new MethodCallComponent(getComponentHelper(), getLoggingFactory(), logFilesUrl);
 		component.setServices(TestServices.LIST);
 		component.refreshCache();
 

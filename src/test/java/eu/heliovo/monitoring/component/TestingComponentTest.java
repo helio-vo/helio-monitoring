@@ -1,5 +1,6 @@
 package eu.heliovo.monitoring.component;
 
+import static eu.heliovo.monitoring.logging.LoggingUtils.getLoggingFactory;
 import static eu.heliovo.monitoring.test.util.TestUtils.getComponentHelper;
 import static eu.heliovo.monitoring.test.util.TestUtils.logFilesUrl;
 import static org.junit.Assert.assertNotNull;
@@ -9,17 +10,14 @@ import java.util.List;
 
 import org.junit.Test;
 
-import eu.heliovo.monitoring.model.Service;
-import eu.heliovo.monitoring.model.ServiceStatus;
-import eu.heliovo.monitoring.model.ServiceStatusDetails;
+import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.test.util.TestServices;
-
 public class TestingComponentTest {
 
 	@Test
 	public final void testRefreshCache() throws Exception {
 
-		final TestingComponent component = new TestingComponent(getComponentHelper(), "mainlog", logFilesUrl);
+		final TestingComponent component = new TestingComponent(getComponentHelper(), getLoggingFactory(), logFilesUrl);
 		component.setServices(TestServices.LIST);
 		component.refreshCache();
 
