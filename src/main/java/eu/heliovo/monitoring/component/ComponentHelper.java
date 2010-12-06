@@ -98,6 +98,8 @@ public final class ComponentHelper {
 
 		} catch (TimeoutException e) {
 			throw new IllegalStateException("Waiting for response timed out (timeout: " + RESPONSE_TIMEOUT + " s)");
+		} finally {
+			future.cancel(true);
 		}
 	}
 

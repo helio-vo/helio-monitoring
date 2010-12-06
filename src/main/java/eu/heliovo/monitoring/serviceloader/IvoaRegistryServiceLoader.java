@@ -4,30 +4,15 @@ import static eu.heliovo.monitoring.model.ServiceFactory.newService;
 import static org.springframework.util.StringUtils.hasText;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.net.*;
+import java.util.*;
+import java.util.concurrent.*;
 
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.Component;
 
-import uk.ac.starlink.registry.BasicCapability;
-import uk.ac.starlink.registry.BasicRegistryClient;
-import uk.ac.starlink.registry.BasicResource;
-import uk.ac.starlink.registry.RegistryRequestFactory;
-import uk.ac.starlink.registry.SoapClient;
-import uk.ac.starlink.registry.SoapRequest;
+import uk.ac.starlink.registry.*;
 import eu.heliovo.monitoring.model.Service;
 
 /**
@@ -63,6 +48,7 @@ public final class IvoaRegistryServiceLoader implements ServiceLoader {
 	/**
 	 * Reads the actual services from the Registry Service.
 	 */
+	@Override
 	public List<Service> loadServices() {
 
 		// TODO get services from registry, if registry down => no services, if services successfully retrived in the
@@ -100,6 +86,7 @@ public final class IvoaRegistryServiceLoader implements ServiceLoader {
 			final SoapRequest soapRequest) throws InterruptedException, ExecutionException, TimeoutException {
 
 		Future<Iterator<BasicResource>> future = executor.submit(new Callable<Iterator<BasicResource>>() {
+			@Override
 			public Iterator<BasicResource> call() throws IOException {
 				return registryClient.getResourceIterator(soapRequest);
 			}
@@ -108,7 +95,11 @@ public final class IvoaRegistryServiceLoader implements ServiceLoader {
 		// TODO automatically determine timeout
 		// TODO registryClient.getResourceIterator(soapRequest) creates another thread which opens a URLConnection which
 		// cannot be interupted and stays open till default connection timeout occurs. how to interrupt this one?
-		return future.get(RESPONSE_TIMEOUT, TimeUnit.SECONDS);
+		try {
+			return future.get(RESPONSE_TIMEOUT, TimeUnit.SECONDS);
+		} finally {
+			future.cancel(true);
+		}
 	}
 
 	private Service readService(BasicResource registryResource) throws MalformedURLException {
