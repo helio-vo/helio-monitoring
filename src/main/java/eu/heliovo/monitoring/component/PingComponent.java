@@ -1,22 +1,18 @@
 package eu.heliovo.monitoring.component;
 
-import static eu.heliovo.monitoring.model.ServiceFactory.newServiceStatusDetails;
+import static eu.heliovo.monitoring.model.ModelFactory.newServiceStatusDetails;
 
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.List;
+import java.net.*;
+import java.util.*;
 
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
-import eu.heliovo.monitoring.model.Service;
-import eu.heliovo.monitoring.model.ServiceStatus;
-import eu.heliovo.monitoring.model.ServiceStatusDetails;
+import eu.heliovo.monitoring.model.*;
 
 /**
- * Just gets the WSDL file to see that the service is not offline. By convention the file is on the same host as the
- * service.
+ * Gets the WSDL file to see that the service is not offline. By convention the file is on the same host as the service.
+ * Therefore it is not needed to search the WSDL file to find the service address.
  * 
  * @author Kevin Seidler
  * 
@@ -24,7 +20,7 @@ import eu.heliovo.monitoring.model.ServiceStatusDetails;
 @Component
 public final class PingComponent extends AbstractComponent {
 
-	private static final int TIMEOUT_IN_SECONDS = 300;
+	private static final int TIMEOUT_IN_MILLIS = 300;
 
 	public PingComponent() {
 		super(" -ping-");
@@ -49,7 +45,7 @@ public final class PingComponent extends AbstractComponent {
 			try {
 
 				URLConnection connection = url.openConnection();
-				connection.setConnectTimeout(TIMEOUT_IN_SECONDS);
+				connection.setConnectTimeout(TIMEOUT_IN_MILLIS);
 				watch.start();
 				connection.connect();
 				watch.stop();

@@ -1,17 +1,12 @@
 package eu.heliovo.monitoring.statics;
 
-import static eu.heliovo.monitoring.model.ServiceFactory.newOperationTest;
-import static eu.heliovo.monitoring.model.ServiceFactory.newService;
+import static eu.heliovo.monitoring.model.ModelFactory.newOperationTest;
+import static eu.heliovo.monitoring.model.ModelFactory.newService;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.net.*;
+import java.util.*;
 
-import eu.heliovo.monitoring.model.OperationTest;
-import eu.heliovo.monitoring.model.Service;
+import eu.heliovo.monitoring.model.*;
 
 /**
  * 
@@ -68,7 +63,7 @@ public final class Services {
 		return Arrays.asList(newOperationTest("Query", request1.toString()));
 	}
 
-	// TODO get service URLs or do the equivalent for the above
+	// TODO add working operation tests
 	// private static List<OperationTest> createHelioWorkFlowSampleOperationTests() {
 	//
 	// final StringBuffer buffer = new StringBuffer();

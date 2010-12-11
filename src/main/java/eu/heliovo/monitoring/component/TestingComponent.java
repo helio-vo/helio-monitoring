@@ -1,6 +1,6 @@
 package eu.heliovo.monitoring.component;
 
-import static eu.heliovo.monitoring.model.ServiceFactory.newServiceStatusDetails;
+import static eu.heliovo.monitoring.model.ModelFactory.newServiceStatusDetails;
 import static eu.heliovo.monitoring.util.ReflectionUtils.implementsInterface;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;

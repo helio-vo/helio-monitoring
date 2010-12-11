@@ -1,6 +1,6 @@
 package eu.heliovo.monitoring.exporter;
 
-import static eu.heliovo.monitoring.model.ServiceFactory.newServiceStatusDetails;
+import static eu.heliovo.monitoring.model.ModelFactory.newServiceStatusDetails;
 
 import java.net.URL;
 import java.util.ArrayList;

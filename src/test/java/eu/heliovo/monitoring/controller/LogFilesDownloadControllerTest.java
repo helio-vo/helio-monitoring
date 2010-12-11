@@ -47,6 +47,8 @@ public class LogFilesDownloadControllerTest extends Assert {
 		String responseOutputFileContentAsString = String.valueOf(responseOutputFileContent);
 		System.out.println(responseOutputFileContentAsString);
 		assertTrue(responseOutputFileContentAsString.contains("created"));
+
+		fileReader.close();
 	}
 
 	@Test

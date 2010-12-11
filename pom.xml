@@ -206,7 +206,6 @@
     		<groupId>commons-math</groupId>
     		<artifactId>commons-math</artifactId>
     		<version>1.2</version>
-    		<scope>test</scope>
 		</dependency>
 		
 	</dependencies>

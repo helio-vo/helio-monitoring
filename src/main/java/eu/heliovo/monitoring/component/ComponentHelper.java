@@ -1,6 +1,6 @@
 package eu.heliovo.monitoring.component;
 
-import static eu.heliovo.monitoring.model.ServiceFactory.newServiceStatusDetails;
+import static eu.heliovo.monitoring.model.ModelFactory.newServiceStatusDetails;
 
 import java.io.IOException;
 import java.util.List;

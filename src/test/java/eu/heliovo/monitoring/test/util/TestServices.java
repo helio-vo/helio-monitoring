@@ -1,6 +1,6 @@
 package eu.heliovo.monitoring.test.util;
 
-import static eu.heliovo.monitoring.model.ServiceFactory.newService;
+import static eu.heliovo.monitoring.model.ModelFactory.newService;
 
 import java.net.*;
 import java.util.*;
@@ -19,9 +19,9 @@ public final class TestServices {
 	}
 
 	static {
-
 		try {
-			List<Service> services = new ArrayList<Service>(Services.LIST);
+			List<Service> services = new ArrayList<Service>();
+			services.addAll(Services.LIST);
 
 			// just for testing purposes
 			services.add(newService("FakeOfflineService", new URL("http://123.43.121.11/")));

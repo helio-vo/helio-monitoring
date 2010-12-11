@@ -5,9 +5,20 @@ import java.util.List;
 
 import org.springframework.util.StringUtils;
 
-public final class ServiceFactory {
+/**
+ * Only with this factory instances of the model package should be created to be able to easily replace the
+ * implementations (factory method pattern). Implementations should be immutable to garantee robustness.
+ * 
+ * @author Kevin Seidler
+ * 
+ */
+public final class ModelFactory {
 
-	private ServiceFactory() {
+	private ModelFactory() {
+	}
+
+	public static Host newHost(URL url, List<Service> services) {
+		return new HostImpl(url, services);
 	}
 
 	public static Service newService(final String name, final URL url) {
@@ -19,11 +30,11 @@ public final class ServiceFactory {
 	}
 
 	public static OperationTest newOperationTest(final String operationName, final String requestContent) {
-		return ServiceFactory.newOperationTest(operationName, requestContent, null);
+		return ModelFactory.newOperationTest(operationName, requestContent, null);
 	}
 
 	public static OperationTest newOperationTestWithoutRequest(final String operationName, final String responseContent) {
-		return ServiceFactory.newOperationTest(operationName, null, responseContent);
+		return ModelFactory.newOperationTest(operationName, null, responseContent);
 	}
 
 	public static OperationTest newOperationTest(final String operationName, final String requestContent,

@@ -11,7 +11,8 @@ public final class ServiceStatusDetailsImpl implements ServiceStatusDetails {
 	private final long responseTimeInMillis;
 	private final String message;
 
-	public ServiceStatusDetailsImpl(String id, URL url, ServiceStatus status, long responseTimeInMillis, String message) {
+	protected ServiceStatusDetailsImpl(String id, URL url, ServiceStatus status, long responseTimeInMillis,
+			String message) {
 
 		this.id = id;
 		this.url = url;

@@ -1,6 +1,6 @@
 package eu.heliovo.monitoring.serviceloader;
 
-import static eu.heliovo.monitoring.model.ServiceFactory.newService;
+import static eu.heliovo.monitoring.model.ModelFactory.newService;
 import static org.springframework.util.StringUtils.hasText;
 
 import java.io.IOException;
