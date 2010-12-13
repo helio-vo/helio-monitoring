@@ -11,16 +11,11 @@ import org.junit.Test;
 
 import eu.heliovo.monitoring.component.*;
 import eu.heliovo.monitoring.exporter.ServiceStatusDetailsExporter;
-import eu.heliovo.monitoring.logging.LoggingUtils;
+import eu.heliovo.monitoring.failuredetector.*;
+import eu.heliovo.monitoring.logging.LoggingTestUtils;
 import eu.heliovo.monitoring.model.ServiceStatusDetails;
 import eu.heliovo.monitoring.serviceloader.*;
 
-/**
- * Tests the MonitoringService.
- * 
- * @author Kevin Seidler
- * 
- */
 public class MonitoringServiceTest extends Assert {
 
 	private final PingComponent pingComponent;
@@ -33,9 +28,10 @@ public class MonitoringServiceTest extends Assert {
 
 		ComponentHelper componentHelper = getComponentHelper();
 
-		pingComponent = new PingComponent();
-		methodCallComponent = new MethodCallComponent(componentHelper, LoggingUtils.getLoggingFactory(), logFilesUrl);
-		testingComponent = new TestingComponent(componentHelper, LoggingUtils.getLoggingFactory(), logFilesUrl);
+		ServiceFailureDetector failureDetector = FailureDetectorTestUtils.getServiceFailureDetector();
+		pingComponent = new PingComponent(failureDetector);
+		methodCallComponent = new MethodCallComponent(componentHelper, LoggingTestUtils.getLoggingFactory(), logFilesUrl);
+		testingComponent = new TestingComponent(componentHelper, LoggingTestUtils.getLoggingFactory(), logFilesUrl);
 
 		ServiceLoader serviceLoader = new StaticServiceLoader();
 
@@ -60,7 +56,7 @@ public class MonitoringServiceTest extends Assert {
 		List<ServiceStatusDetails> result = monitoringService.getPingStatus();
 		assertFalse(result.isEmpty());
 		for (final ServiceStatusDetails serviceStatusDetails : result) {
-			System.out.println("service: " + serviceStatusDetails.getId() + " status: "
+			System.out.println("service: " + serviceStatusDetails.getName() + " status: "
 					+ serviceStatusDetails.getStatus().toString() + " response time: "
 					+ serviceStatusDetails.getResponseTimeInMillis() + " ms");
 		}
@@ -68,7 +64,7 @@ public class MonitoringServiceTest extends Assert {
 		result = monitoringService.getMethodCallStatus();
 		assertFalse(result.isEmpty());
 		for (final ServiceStatusDetails serviceStatusDetails : result) {
-			System.out.println("service: " + serviceStatusDetails.getId() + " status: "
+			System.out.println("service: " + serviceStatusDetails.getName() + " status: "
 					+ serviceStatusDetails.getStatus().toString() + " response time: "
 					+ serviceStatusDetails.getResponseTimeInMillis() + " ms");
 		}
@@ -76,7 +72,7 @@ public class MonitoringServiceTest extends Assert {
 		result = monitoringService.getTestingStatus();
 		assertFalse(result.isEmpty());
 		for (final ServiceStatusDetails serviceStatusDetails : result) {
-			System.out.println("service: " + serviceStatusDetails.getId() + " status: "
+			System.out.println("service: " + serviceStatusDetails.getName() + " status: "
 					+ serviceStatusDetails.getStatus().toString() + " response time: "
 					+ serviceStatusDetails.getResponseTimeInMillis() + " ms");
 		}

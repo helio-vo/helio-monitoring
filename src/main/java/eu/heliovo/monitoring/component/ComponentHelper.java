@@ -16,7 +16,7 @@ import com.eviware.soapui.model.iface.Request.SubmitException;
 import com.eviware.soapui.model.testsuite.AssertionError;
 import com.eviware.soapui.support.SoapUIException;
 
-import eu.heliovo.monitoring.command.ImportWsdlCommand;
+import eu.heliovo.monitoring.command.ImportWsdlAction;
 import eu.heliovo.monitoring.logging.*;
 import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.util.WsdlValidationUtils;
@@ -46,7 +46,7 @@ public final class ComponentHelper {
 	protected WsdlInterface importWsdl(LogFileWriter logFileWriter, final String wsdlUrl) throws XmlException,
 			IOException, SoapUIException, ExecutionException, InterruptedException {
 
-		return new ImportWsdlCommand(logFileWriter, wsdlUrl, executor).execute();
+		return new ImportWsdlAction(logFileWriter, wsdlUrl, executor).getResult();
 	}
 
 	protected WsdlRequest createRequest(WsdlInterface wsdlInterface, LogFileWriter logFileWriter,

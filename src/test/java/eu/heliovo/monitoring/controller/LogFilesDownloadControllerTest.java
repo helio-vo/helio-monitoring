@@ -17,7 +17,7 @@ public class LogFilesDownloadControllerTest extends Assert {
 	@Test
 	public void testDownloadLogFileWithExistingFile() throws Exception {
 
-		LogFileWriter logFileWriter = LoggingUtils.getLoggingFactory().newLogFileWriter("FooBarService");
+		LogFileWriter logFileWriter = LoggingTestUtils.getLoggingFactory().newLogFileWriter("FooBarService");
 		logFileWriter.write("created");
 
 		String logFileName = logFileWriter.getFileName();

@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.net.URL;
 
 /**
- * Service status details are made up by an identifier, a URL, the actual status (e.g. OK or CRITICAL), the response
- * time if OK and a message.
+ * Service status details are made up by a name, a URL, the actual status (e.g. OK or CRITICAL), the response time if OK
+ * and a message.
  * 
  * @author Kevin Seidler
  * 
@@ -16,7 +16,7 @@ public interface ServiceStatusDetails extends Serializable {
 
 	long getResponseTimeInMillis();
 
-	String getId();
+	String getName();
 
 	URL getUrl();
 

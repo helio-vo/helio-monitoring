@@ -74,13 +74,16 @@ public class ServiceToHostAdapterTest extends Assert {
 		ServiceToHostAdapter adapter = new ServiceToHostAdapter(mockFailureDetector);
 		adapter.updateServices(TestServices.LIST);
 		
-		List<ServiceStatusDetails> status = adapter.getServiceStatus();
+		String serviceNameSuffix = "serviceNameSuffix";
+		List<ServiceStatusDetails> status = adapter.getServicesStatus("serviceNameSuffix");
 		
 		assertEquals(TestServices.LIST.size(), status.size());
 		
 		for (ServiceStatusDetails serviceStatusDetails : status) {
 
 			System.out.println(serviceStatusDetails);
+
+			assertTrue(serviceStatusDetails.getName().endsWith(serviceNameSuffix));
 
 			if (serviceStatusDetails.getStatus().equals(ServiceStatus.CRITICAL)) {
 

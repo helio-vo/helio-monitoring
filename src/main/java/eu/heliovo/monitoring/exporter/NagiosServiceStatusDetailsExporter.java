@@ -70,7 +70,7 @@ public final class NagiosServiceStatusDetailsExporter implements ServiceStatusDe
 
 			NagiosCommand command = NagiosCommand.PROCESS_SERVICE_CHECK_RESULT;
 			String hostName = actualServiceStatusDetails.getUrl().getHost();
-			String serviceName = actualServiceStatusDetails.getId();
+			String serviceName = actualServiceStatusDetails.getName();
 
 			NagiosServiceStatus nagiosStatus;
 			ServiceStatus serviceStatus = actualServiceStatusDetails.getStatus();

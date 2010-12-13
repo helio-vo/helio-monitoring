@@ -11,7 +11,7 @@ import com.eviware.soapui.support.SoapUIException;
 
 import eu.heliovo.monitoring.logging.LogFileWriter;
 
-public final class ImportWsdlCommand {
+public final class ImportWsdlAction implements Action<WsdlInterface> {
 
 	private static final int IMPORT_WSDL_TIMEOUT = 10;
 	private static final int FIRST_WSDL_INTERFACE = 0;
@@ -20,13 +20,14 @@ public final class ImportWsdlCommand {
 	private final String wsdlUrl;
 	private final ExecutorService executor;
 
-	public ImportWsdlCommand(LogFileWriter logFileWriter, String wsdlUrl, ExecutorService executor) {
+	public ImportWsdlAction(LogFileWriter logFileWriter, String wsdlUrl, ExecutorService executor) {
 		this.logFileWriter = logFileWriter;
 		this.wsdlUrl = wsdlUrl;
 		this.executor = executor;
 	}
 
-	public WsdlInterface execute() throws XmlException, IOException, SoapUIException, InterruptedException,
+	@Override
+	public WsdlInterface getResult() throws XmlException, IOException, SoapUIException, InterruptedException,
 			ExecutionException {
 
 		final WsdlProject project = new WsdlProject();

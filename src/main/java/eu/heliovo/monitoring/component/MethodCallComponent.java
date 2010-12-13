@@ -22,21 +22,23 @@ import eu.heliovo.monitoring.util.WsdlValidationUtils;
  * 
  */
 @Component
-public final class MethodCallComponent extends AbstractComponent {
+public final class MethodCallComponent implements MonitoringComponent {
+
+	protected static final String SERVICE_NAME_SUFFIX = " -method call-";
+	private static final String LOG_FILE_SUFFIX = "_method-call_";
+	private static final boolean TEST_FOR_SOAP_FAULT = false;
 
 	private final ComponentHelper componentHelper;
 	private final LoggingFactory loggingFactory;
 	private final String logFilesUrl; // TODO should be moved somewhere in the logging classes
 	// private final ExecutorService executor;
 
-	private static final String LOG_FILE_SUFFIX = "_method-call_";
-	private static final boolean TEST_FOR_SOAP_FAULT = false;
+	private List<Service> services = Collections.emptyList();
+	private List<ServiceStatusDetails> servicesStatus = Collections.emptyList();
 
 	@Autowired
 	public MethodCallComponent(ComponentHelper componentHelper, LoggingFactory loggingFactory,
 			@Value("${monitoringService.logUrl}") String logFilesUrl /* , ExecutorService executor */) {
-
-		super(" -method call-");
 
 		this.componentHelper = componentHelper;
 		this.loggingFactory = loggingFactory;
@@ -49,13 +51,13 @@ public final class MethodCallComponent extends AbstractComponent {
 	// see http://www.soapui.org/userguide/functional/response-assertions.html, download source of soapUI &
 	// search for files containing "assertion"
 	@Override
-	public void refreshCache() {
+	public synchronized void updateStatus() {
 
-		final List<ServiceStatusDetails> newCache = new ArrayList<ServiceStatusDetails>();
+		final List<ServiceStatusDetails> servicesStatus = new ArrayList<ServiceStatusDetails>();
 
-		for (Service service : super.getServices()) {
+		for (Service service : services) {
 
-			String serviceName = service.getName() + super.getServiceNameSuffix();
+			String serviceName = service.getName() + SERVICE_NAME_SUFFIX;
 			String serviceUrlAsString = service.getUrl().toString();
 			String logFileWriterName = service.getName() + LOG_FILE_SUFFIX;
 			LogFileWriter logFileWriter = loggingFactory.newLogFileWriter(logFileWriterName);
@@ -70,15 +72,15 @@ public final class MethodCallComponent extends AbstractComponent {
 				componentHelper.processResponse(response, serviceName, service, logFileWriter);
 				ServiceStatusDetails serviceStatus = buildServiceStatus(response, serviceName, service, logFileWriter);
 
-				newCache.add(serviceStatus);
+				servicesStatus.add(serviceStatus);
 				wsdlInterface.getProject().release();
 
 			} catch (Exception e) {
-				componentHelper.handleException(e, logFileWriter, serviceName, service, newCache);
+				componentHelper.handleException(e, logFileWriter, serviceName, service, servicesStatus);
 			}
 			logFileWriter.close();
 		}
-		super.setCache(newCache);
+		this.servicesStatus = servicesStatus;
 	}
 
 	// private WsdlInterface importWsdl(LogFileWriter logFileWriter, final String wsdlUrl) throws XmlException,
@@ -122,5 +124,15 @@ public final class MethodCallComponent extends AbstractComponent {
 		final String message = stringBuffer.toString();
 
 		return newServiceStatusDetails(serviceName, service.getUrl(), status, responseTime, message);
+	}
+
+	@Override
+	public synchronized void setServices(List<Service> services) {
+		this.services = services;
+	}
+
+	@Override
+	public List<ServiceStatusDetails> getServicesStatus() {
+		return servicesStatus;
 	}
 }

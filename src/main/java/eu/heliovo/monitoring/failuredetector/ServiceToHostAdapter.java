@@ -39,9 +39,9 @@ public final class ServiceToHostAdapter implements ServiceFailureDetector {
 	}
 
 	@Override
-	public List<ServiceStatusDetails> getServiceStatus() {
+	public List<ServiceStatusDetails> getServicesStatus(String serviceNameSuffix) {
 
-		List<ServiceStatusDetails> serviceStatus = new ArrayList<ServiceStatusDetails>();
+		List<ServiceStatusDetails> servicesStatus = new ArrayList<ServiceStatusDetails>();
 
 		for (Host host : hosts) {
 
@@ -50,7 +50,7 @@ public final class ServiceToHostAdapter implements ServiceFailureDetector {
 
 			for (Service service : host.getServices()) {
 
-				String serviceName = service.getName();
+				String serviceName = service.getName() + serviceNameSuffix;
 				URL serviceUrl = service.getUrl();
 				ServiceStatusDetails details;
 
@@ -66,11 +66,11 @@ public final class ServiceToHostAdapter implements ServiceFailureDetector {
 					details = newServiceStatusDetails(serviceName, serviceUrl, CRITICAL, responseTimeInMillis, message);
 				}
 
-				serviceStatus.add(details);
+				servicesStatus.add(details);
 			}
 		}
 
-		return serviceStatus;
+		return servicesStatus;
 	}
 
 	protected List<Host> getHostsFromServices(List<Service> newServices) {

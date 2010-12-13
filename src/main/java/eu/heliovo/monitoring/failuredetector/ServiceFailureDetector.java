@@ -18,7 +18,7 @@ public interface ServiceFailureDetector {
 	void updateServices(List<Service> newServices);
 
 	/**
-	 * Returns detailed information about all monitored services.
+	 * Returns detailed information about all monitored services adding a servce name suffix to every service name.
 	 */
-	List<ServiceStatusDetails> getServiceStatus();
+	List<ServiceStatusDetails> getServicesStatus(String serviceNameSuffix);
 }

@@ -32,7 +32,7 @@ public final class ServiceStatusDetailsImpl implements ServiceStatusDetails {
 	}
 
 	@Override
-	public String getId() {
+	public String getName() {
 		return id;
 	}
 

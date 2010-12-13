@@ -1,6 +1,6 @@
 package eu.heliovo.monitoring.component;
 
-import static eu.heliovo.monitoring.logging.LoggingUtils.getLoggingFactory;
+import static eu.heliovo.monitoring.logging.LoggingTestUtils.getLoggingFactory;
 import static eu.heliovo.monitoring.test.util.TestUtils.getComponentHelper;
 import static eu.heliovo.monitoring.test.util.TestUtils.logFilesUrl;
 
@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.test.util.TestServices;
+
 public class MethodCallComponentTest extends Assert {
 
 	@Test
@@ -21,21 +22,25 @@ public class MethodCallComponentTest extends Assert {
 
 		MethodCallComponent component = new MethodCallComponent(getComponentHelper(), getLoggingFactory(), logFilesUrl);
 		component.setServices(TestServices.LIST);
-		component.refreshCache();
+		component.updateStatus();
 
-		final List<ServiceStatusDetails> serviceStatus = component.getStatus();
+		final List<ServiceStatusDetails> serviceStatus = component.getServicesStatus();
 
 		assertNotNull(serviceStatus);
 		assertTrue(serviceStatus.size() == TestServices.LIST.size());
 
 		boolean testedFakeService = false;
 		boolean testedNoWsdlService = false;
+
+		String fakeOfflineServiceName = "FakeOfflineService" + MethodCallComponent.SERVICE_NAME_SUFFIX;
+		String noWsdlOfflineServiceName = "NoWsdlOfflineService" + MethodCallComponent.SERVICE_NAME_SUFFIX;
+
 		for (final ServiceStatusDetails actualServiceStatusDetails : serviceStatus) {
-			if (actualServiceStatusDetails.getId().equals("FakeOfflineService" + component.getServiceNameSuffix())) {
+			if (actualServiceStatusDetails.getName().equals(fakeOfflineServiceName)) {
 				testedFakeService = true;
 				assertTrue(actualServiceStatusDetails.getStatus().equals(ServiceStatus.CRITICAL));
 			}
-			if (actualServiceStatusDetails.getId().equals("NoWsdlOfflineService" + component.getServiceNameSuffix())) {
+			if (actualServiceStatusDetails.getName().equals(noWsdlOfflineServiceName)) {
 				testedNoWsdlService = true;
 				assertTrue(actualServiceStatusDetails.getStatus().equals(ServiceStatus.CRITICAL));
 			}
@@ -49,7 +54,7 @@ public class MethodCallComponentTest extends Assert {
 		}
 
 		System.out.println("=== testing results");
-		for (final ServiceStatusDetails serviceStatusDetails : component.getStatus()) {
+		for (final ServiceStatusDetails serviceStatusDetails : component.getServicesStatus()) {
 			System.out.println(serviceStatusDetails.toString());
 		}
 	}

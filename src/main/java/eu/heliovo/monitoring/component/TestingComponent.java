@@ -29,34 +29,37 @@ import eu.heliovo.monitoring.util.WsdlValidationUtils;
  * 
  */
 @Component
-public final class TestingComponent extends AbstractComponent {
+public final class TestingComponent implements MonitoringComponent {
 
-	private final Logger logger = Logger.getLogger(this.getClass());
+	protected static final String SERVICE_NAME_SUFFIX = " -testing-";
+	private static final String LOG_FILE_SUFFIX = "_testing_";
 
 	private final ComponentHelper componentHelper;
 	private final LoggingFactory loggingFactory;
 	private final String logFilesUrl;
 
-	private static final String LOG_FILE_SUFFIX = "_testing_";
+	private final Logger logger = Logger.getLogger(this.getClass());
+
+	private List<Service> services = Collections.emptyList();
+	private List<ServiceStatusDetails> servicesStatus = Collections.emptyList();
 
 	@Autowired
 	public TestingComponent(ComponentHelper componentHelper, LoggingFactory loggingFactory,
 			@Value("${monitoringService.logUrl}") String logFilesUrl) {
 
-		super(" -testing-");
 		this.componentHelper = componentHelper;
 		this.loggingFactory = loggingFactory;
 		this.logFilesUrl = logFilesUrl;
 	}
 
 	@Override
-	public void refreshCache() {
+	public synchronized void updateStatus() {
 
 		List<ServiceStatusDetails> newCache = new ArrayList<ServiceStatusDetails>();
 
-		for (Service service : super.getServices()) {
+		for (Service service : services) {
 
-			String serviceName = service.getName() + super.getServiceNameSuffix();
+			String serviceName = service.getName() + SERVICE_NAME_SUFFIX;
 			String logFileWriterName = service.getName() + LOG_FILE_SUFFIX;
 			LogFileWriter logFileWriter = loggingFactory.newLogFileWriter(logFileWriterName);
 
@@ -84,7 +87,7 @@ public final class TestingComponent extends AbstractComponent {
 			}
 			logFileWriter.close();
 		}
-		super.setCache(newCache);
+		this.servicesStatus = newCache;
 	}
 
 	// TODO refactor, too many nested blocks
@@ -368,5 +371,15 @@ public final class TestingComponent extends AbstractComponent {
 			}
 			return status;
 		}
+	}
+
+	@Override
+	public synchronized void setServices(List<Service> services) {
+		this.services = services;
+	}
+
+	@Override
+	public List<ServiceStatusDetails> getServicesStatus() {
+		return servicesStatus;
 	}
 }

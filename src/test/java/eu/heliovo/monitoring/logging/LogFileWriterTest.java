@@ -9,7 +9,7 @@ import org.junit.Test;
 
 public class LogFileWriterTest {
 
-	private final LoggingFactory loggingFactory = LoggingUtils.getLoggingFactory();
+	private final LoggingFactory loggingFactory = LoggingTestUtils.getLoggingFactory();
 
 	@Test
 	public void testLogFileWriter() throws Exception {

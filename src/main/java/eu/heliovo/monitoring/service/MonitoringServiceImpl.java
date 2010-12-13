@@ -3,18 +3,13 @@ package eu.heliovo.monitoring.service;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.Assert;
 
-import eu.heliovo.monitoring.component.AbstractComponent;
-import eu.heliovo.monitoring.component.MethodCallComponent;
-import eu.heliovo.monitoring.component.PingComponent;
-import eu.heliovo.monitoring.component.TestingComponent;
+import eu.heliovo.monitoring.component.*;
 import eu.heliovo.monitoring.exporter.ServiceStatusDetailsExporter;
-import eu.heliovo.monitoring.model.Service;
-import eu.heliovo.monitoring.model.ServiceStatusDetails;
+import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.serviceloader.ServiceLoader;
 
 /**
@@ -64,7 +59,6 @@ public final class MonitoringServiceImpl implements MonitoringService {
 
 	// TODO extract update methods to a new class
 	// TODO abstract from component type, just have a list of components and iterate through them and call the methods
-	// TODO introduce interface MonitoringComponent and let AbstractComponent implement it
 	/**
 	 * This method is called regularly from Spring to update the available services using the Scheduled annotation.
 	 */
@@ -81,30 +75,34 @@ public final class MonitoringServiceImpl implements MonitoringService {
 
 	@Scheduled(cron = "${pingComponent.updateInterval.cronValue}")
 	protected void updatePingStatusAndExport() {
-		updateStatusAndExport(pingComponent, serviceStatusDetailsExporter);
+		updateAndExportStatus(pingComponent);
 	}
 
 	@Scheduled(cron = "${methodCallComponent.updateInterval.cronValue}")
 	protected void updateMethodCallStatusAndExport() {
-		updateStatusAndExport(methodCallComponent, serviceStatusDetailsExporter);
+		updateAndExportStatus(methodCallComponent);
 	}
 
 	@Scheduled(cron = "${testingComponent.updateInterval.cronValue}")
 	protected void updateTestingStatusAndExport() {
-		updateStatusAndExport(testingComponent, serviceStatusDetailsExporter);
+		updateAndExportStatus(testingComponent);
 	}
 
-	private void updateStatusAndExport(AbstractComponent component, ServiceStatusDetailsExporter monitoringDaemon) {
+	private void updateAndExportStatus(MonitoringComponent component) {
 
-		component.refreshCache();
+		component.updateStatus();
 
-		List<ServiceStatusDetails> result = component.getStatus();
-		monitoringDaemon.exportServiceStatusDetails(result);
+		List<ServiceStatusDetails> status = component.getServicesStatus();
+		serviceStatusDetailsExporter.exportServiceStatusDetails(status);
 
+		logExport(status);
+	}
+
+	private void logExport(List<ServiceStatusDetails> result) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("refreshed component's cache");
-			for (final ServiceStatusDetails serviceStatusDetails : result) {
-				logger.debug("service: " + serviceStatusDetails.getId() + " status: "
+			for (ServiceStatusDetails serviceStatusDetails : result) {
+				logger.debug("service: " + serviceStatusDetails.getName() + " status: "
 						+ serviceStatusDetails.getStatus().toString() + " response time: "
 						+ serviceStatusDetails.getResponseTimeInMillis() + " ms");
 			}
@@ -113,16 +111,16 @@ public final class MonitoringServiceImpl implements MonitoringService {
 
 	@Override
 	public List<ServiceStatusDetails> getPingStatus() {
-		return pingComponent.getStatus();
+		return pingComponent.getServicesStatus();
 	}
 
 	@Override
 	public List<ServiceStatusDetails> getMethodCallStatus() {
-		return methodCallComponent.getStatus();
+		return methodCallComponent.getServicesStatus();
 	}
 
 	@Override
 	public List<ServiceStatusDetails> getTestingStatus() {
-		return testingComponent.getStatus();
+		return testingComponent.getServicesStatus();
 	}
 }
