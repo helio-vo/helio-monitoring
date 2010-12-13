@@ -1,4 +1,4 @@
-package eu.heliovo.monitoring.command;
+package eu.heliovo.monitoring.action;
 
 /**
  * TODO DOCUMENT ME

@@ -1,26 +1,25 @@
-package eu.heliovo.monitoring.component;
+package eu.heliovo.monitoring.stage;
 
 import static eu.heliovo.monitoring.logging.LoggingTestUtils.getLoggingFactory;
 import static eu.heliovo.monitoring.test.util.TestUtils.getComponentHelper;
 import static eu.heliovo.monitoring.test.util.TestUtils.logFilesUrl;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
-
-import junit.framework.Assert;
 
 import org.junit.Test;
 
 import eu.heliovo.monitoring.model.*;
+import eu.heliovo.monitoring.stage.TestingStage;
 import eu.heliovo.monitoring.test.util.TestServices;
 
-public class MethodCallComponentTest extends Assert {
+public class TestingStageTest {
 
 	@Test
-	public void testMethodCallComponent() throws Exception {
+	public final void testRefreshCache() throws Exception {
 
-		// TODO test individual methods of MethodCallComponent
-
-		MethodCallComponent component = new MethodCallComponent(getComponentHelper(), getLoggingFactory(), logFilesUrl);
+		final TestingStage component = new TestingStage(getComponentHelper(), getLoggingFactory(), logFilesUrl);
 		component.setServices(TestServices.LIST);
 		component.updateStatus();
 
@@ -32,8 +31,8 @@ public class MethodCallComponentTest extends Assert {
 		boolean testedFakeService = false;
 		boolean testedNoWsdlService = false;
 
-		String fakeOfflineServiceName = "FakeOfflineService" + MethodCallComponent.SERVICE_NAME_SUFFIX;
-		String noWsdlOfflineServiceName = "NoWsdlOfflineService" + MethodCallComponent.SERVICE_NAME_SUFFIX;
+		String fakeOfflineServiceName = "FakeOfflineService" + TestingStage.SERVICE_NAME_SUFFIX;
+		String noWsdlOfflineServiceName = "NoWsdlOfflineService" + TestingStage.SERVICE_NAME_SUFFIX;
 
 		for (final ServiceStatusDetails actualServiceStatusDetails : serviceStatus) {
 			if (actualServiceStatusDetails.getName().equals(fakeOfflineServiceName)) {
@@ -57,5 +56,7 @@ public class MethodCallComponentTest extends Assert {
 		for (final ServiceStatusDetails serviceStatusDetails : component.getServicesStatus()) {
 			System.out.println(serviceStatusDetails.toString());
 		}
+
 	}
+
 }

@@ -1,4 +1,4 @@
-package eu.heliovo.monitoring.component;
+package eu.heliovo.monitoring.stage;
 
 import static eu.heliovo.monitoring.model.ModelFactory.newServiceStatusDetails;
 
@@ -16,7 +16,7 @@ import com.eviware.soapui.model.iface.Request.SubmitException;
 import com.eviware.soapui.model.testsuite.AssertionError;
 import com.eviware.soapui.support.SoapUIException;
 
-import eu.heliovo.monitoring.command.ImportWsdlAction;
+import eu.heliovo.monitoring.action.ImportWsdlAction;
 import eu.heliovo.monitoring.logging.*;
 import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.util.WsdlValidationUtils;
@@ -28,7 +28,7 @@ import eu.heliovo.monitoring.util.WsdlValidationUtils;
  * 
  */
 @Component
-public final class ComponentHelper {
+public final class StageHelper {
 
 	private static final boolean GENERATE_OPTINAL_PARAMS = false;
 	private static final boolean SUBMIT_ASYNC = false;
@@ -38,7 +38,7 @@ public final class ComponentHelper {
 	private final String logFilesUrl;
 
 	@Autowired
-	public ComponentHelper(ExecutorService executor, @Value("${monitoringService.logUrl}") String logFilesUrl) {
+	public StageHelper(ExecutorService executor, @Value("${monitoringService.logUrl}") String logFilesUrl) {
 		this.executor = executor;
 		this.logFilesUrl = logFilesUrl;
 	}

@@ -1,4 +1,4 @@
-package eu.heliovo.monitoring.component;
+package eu.heliovo.monitoring.stage;
 
 import java.util.List;
 
@@ -17,13 +17,13 @@ import eu.heliovo.monitoring.model.*;
  * 
  */
 @Component
-public final class PingComponent implements MonitoringComponent {
+public final class PingStage implements MonitoringStage {
 
 	protected static final String SERVICE_NAME_SUFFIX = " -ping-";
 
 	private final ServiceFailureDetector failureDetector;
 
-	public PingComponent(ServiceFailureDetector failureDetector) {
+	public PingStage(ServiceFailureDetector failureDetector) {
 		this.failureDetector = failureDetector;
 	}
 

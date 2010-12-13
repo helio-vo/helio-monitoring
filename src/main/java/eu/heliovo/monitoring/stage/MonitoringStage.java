@@ -1,4 +1,4 @@
-package eu.heliovo.monitoring.component;
+package eu.heliovo.monitoring.stage;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ import eu.heliovo.monitoring.model.*;
  * @author Kevin Seidler
  * 
  */
-public interface MonitoringComponent {
+public interface MonitoringStage {
 
 	void setServices(List<Service> services);
 

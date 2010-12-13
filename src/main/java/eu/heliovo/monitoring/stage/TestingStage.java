@@ -1,4 +1,4 @@
-package eu.heliovo.monitoring.component;
+package eu.heliovo.monitoring.stage;
 
 import static eu.heliovo.monitoring.model.ModelFactory.newServiceStatusDetails;
 import static eu.heliovo.monitoring.util.ReflectionUtils.implementsInterface;
@@ -29,12 +29,12 @@ import eu.heliovo.monitoring.util.WsdlValidationUtils;
  * 
  */
 @Component
-public final class TestingComponent implements MonitoringComponent {
+public final class TestingStage implements MonitoringStage {
 
 	protected static final String SERVICE_NAME_SUFFIX = " -testing-";
 	private static final String LOG_FILE_SUFFIX = "_testing_";
 
-	private final ComponentHelper componentHelper;
+	private final StageHelper stageHelper;
 	private final LoggingFactory loggingFactory;
 	private final String logFilesUrl;
 
@@ -44,10 +44,10 @@ public final class TestingComponent implements MonitoringComponent {
 	private List<ServiceStatusDetails> servicesStatus = Collections.emptyList();
 
 	@Autowired
-	public TestingComponent(ComponentHelper componentHelper, LoggingFactory loggingFactory,
+	public TestingStage(StageHelper stageHelper, LoggingFactory loggingFactory,
 			@Value("${monitoringService.logUrl}") String logFilesUrl) {
 
-		this.componentHelper = componentHelper;
+		this.stageHelper = stageHelper;
 		this.loggingFactory = loggingFactory;
 		this.logFilesUrl = logFilesUrl;
 	}
@@ -65,7 +65,7 @@ public final class TestingComponent implements MonitoringComponent {
 
 			try {
 
-				WsdlInterface wsdlInterface = componentHelper.importWsdl(logFileWriter, service.getUrl().toString());
+				WsdlInterface wsdlInterface = stageHelper.importWsdl(logFileWriter, service.getUrl().toString());
 				Statistic statistic = new Statistic(serviceName, service.getUrl());
 
 				monitorPredefinedOperations(logFileWriter, service, serviceName, wsdlInterface, statistic);
@@ -83,7 +83,7 @@ public final class TestingComponent implements MonitoringComponent {
 				wsdlInterface.getProject().release();
 
 			} catch (Exception e) {
-				componentHelper.handleException(e, logFileWriter, serviceName, service, newCache);
+				stageHelper.handleException(e, logFileWriter, serviceName, service, newCache);
 			}
 			logFileWriter.close();
 		}
@@ -113,13 +113,13 @@ public final class TestingComponent implements MonitoringComponent {
 						String requestContent = operationTest.getRequestContent();
 						WsdlRequest request;
 						if (hasText(requestContent)) {
-							request = componentHelper.createRequest(wsdlInterface, logFileWriter, wsdlOperation,
+							request = stageHelper.createRequest(wsdlInterface, logFileWriter, wsdlOperation,
 									requestContent);
 						} else {
-							request = componentHelper.createRequest(wsdlInterface, logFileWriter, wsdlOperation);
+							request = stageHelper.createRequest(wsdlInterface, logFileWriter, wsdlOperation);
 						}
 
-						WsdlResponse response = componentHelper.submitRequest(request, logFileWriter);
+						WsdlResponse response = stageHelper.submitRequest(request, logFileWriter);
 						processResponse(response, statistic, service, serviceName, logFileWriter);
 
 						String actualResponseContent = response.getContentAsString();
@@ -176,8 +176,8 @@ public final class TestingComponent implements MonitoringComponent {
 				try {
 
 					WsdlOperation wsdlOperation = (WsdlOperation) operation;
-					WsdlRequest request = componentHelper.createRequest(wsdlInterface, logFileWriter, wsdlOperation);
-					WsdlResponse response = componentHelper.submitRequest(request, logFileWriter);
+					WsdlRequest request = stageHelper.createRequest(wsdlInterface, logFileWriter, wsdlOperation);
+					WsdlResponse response = stageHelper.submitRequest(request, logFileWriter);
 					processResponse(response, statistic, service, serviceName, logFileWriter);
 
 				} catch (Exception e) {
@@ -194,7 +194,7 @@ public final class TestingComponent implements MonitoringComponent {
 	private void processResponse(WsdlResponse response, Statistic statistic, Service service, String serviceName,
 			LogFileWriter logFileWriter) throws XmlException {
 
-		componentHelper.processResponse(response, serviceName, service, logFileWriter);
+		stageHelper.processResponse(response, serviceName, service, logFileWriter);
 
 		// response validation
 		WsdlOperation operation = response.getRequest().getOperation();

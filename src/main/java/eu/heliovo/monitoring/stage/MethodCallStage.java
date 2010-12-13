@@ -1,4 +1,4 @@
-package eu.heliovo.monitoring.component;
+package eu.heliovo.monitoring.stage;
 
 import static eu.heliovo.monitoring.model.ModelFactory.newServiceStatusDetails;
 
@@ -22,13 +22,13 @@ import eu.heliovo.monitoring.util.WsdlValidationUtils;
  * 
  */
 @Component
-public final class MethodCallComponent implements MonitoringComponent {
+public final class MethodCallStage implements MonitoringStage {
 
 	protected static final String SERVICE_NAME_SUFFIX = " -method call-";
 	private static final String LOG_FILE_SUFFIX = "_method-call_";
 	private static final boolean TEST_FOR_SOAP_FAULT = false;
 
-	private final ComponentHelper componentHelper;
+	private final StageHelper stageHelper;
 	private final LoggingFactory loggingFactory;
 	private final String logFilesUrl; // TODO should be moved somewhere in the logging classes
 	// private final ExecutorService executor;
@@ -37,10 +37,10 @@ public final class MethodCallComponent implements MonitoringComponent {
 	private List<ServiceStatusDetails> servicesStatus = Collections.emptyList();
 
 	@Autowired
-	public MethodCallComponent(ComponentHelper componentHelper, LoggingFactory loggingFactory,
+	public MethodCallStage(StageHelper stageHelper, LoggingFactory loggingFactory,
 			@Value("${monitoringService.logUrl}") String logFilesUrl /* , ExecutorService executor */) {
 
-		this.componentHelper = componentHelper;
+		this.stageHelper = stageHelper;
 		this.loggingFactory = loggingFactory;
 		this.logFilesUrl = logFilesUrl;
 		// this.executor = executor;
@@ -65,18 +65,18 @@ public final class MethodCallComponent implements MonitoringComponent {
 			try {
 
 				// WsdlInterface wsdlInterface = importWsdl(logFileWriter, serviceUrlAsString);
-				WsdlInterface wsdlInterface = componentHelper.importWsdl(logFileWriter, serviceUrlAsString);
+				WsdlInterface wsdlInterface = stageHelper.importWsdl(logFileWriter, serviceUrlAsString);
 				WsdlOperation operation = selectOperation(wsdlInterface);
-				WsdlRequest request = componentHelper.createRequest(wsdlInterface, logFileWriter, operation);
-				WsdlResponse response = componentHelper.submitRequest(request, logFileWriter);
-				componentHelper.processResponse(response, serviceName, service, logFileWriter);
+				WsdlRequest request = stageHelper.createRequest(wsdlInterface, logFileWriter, operation);
+				WsdlResponse response = stageHelper.submitRequest(request, logFileWriter);
+				stageHelper.processResponse(response, serviceName, service, logFileWriter);
 				ServiceStatusDetails serviceStatus = buildServiceStatus(response, serviceName, service, logFileWriter);
 
 				servicesStatus.add(serviceStatus);
 				wsdlInterface.getProject().release();
 
 			} catch (Exception e) {
-				componentHelper.handleException(e, logFileWriter, serviceName, service, servicesStatus);
+				stageHelper.handleException(e, logFileWriter, serviceName, service, servicesStatus);
 			}
 			logFileWriter.close();
 		}

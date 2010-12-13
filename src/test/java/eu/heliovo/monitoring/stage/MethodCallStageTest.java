@@ -1,24 +1,27 @@
-package eu.heliovo.monitoring.component;
+package eu.heliovo.monitoring.stage;
 
 import static eu.heliovo.monitoring.logging.LoggingTestUtils.getLoggingFactory;
 import static eu.heliovo.monitoring.test.util.TestUtils.getComponentHelper;
 import static eu.heliovo.monitoring.test.util.TestUtils.logFilesUrl;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+
+import junit.framework.Assert;
 
 import org.junit.Test;
 
 import eu.heliovo.monitoring.model.*;
+import eu.heliovo.monitoring.stage.MethodCallStage;
 import eu.heliovo.monitoring.test.util.TestServices;
 
-public class TestingComponentTest {
+public class MethodCallStageTest extends Assert {
 
 	@Test
-	public final void testRefreshCache() throws Exception {
+	public void testMethodCallComponent() throws Exception {
 
-		final TestingComponent component = new TestingComponent(getComponentHelper(), getLoggingFactory(), logFilesUrl);
+		// TODO test individual methods of MethodCallComponent
+
+		MethodCallStage component = new MethodCallStage(getComponentHelper(), getLoggingFactory(), logFilesUrl);
 		component.setServices(TestServices.LIST);
 		component.updateStatus();
 
@@ -30,8 +33,8 @@ public class TestingComponentTest {
 		boolean testedFakeService = false;
 		boolean testedNoWsdlService = false;
 
-		String fakeOfflineServiceName = "FakeOfflineService" + TestingComponent.SERVICE_NAME_SUFFIX;
-		String noWsdlOfflineServiceName = "NoWsdlOfflineService" + TestingComponent.SERVICE_NAME_SUFFIX;
+		String fakeOfflineServiceName = "FakeOfflineService" + MethodCallStage.SERVICE_NAME_SUFFIX;
+		String noWsdlOfflineServiceName = "NoWsdlOfflineService" + MethodCallStage.SERVICE_NAME_SUFFIX;
 
 		for (final ServiceStatusDetails actualServiceStatusDetails : serviceStatus) {
 			if (actualServiceStatusDetails.getName().equals(fakeOfflineServiceName)) {
@@ -55,7 +58,5 @@ public class TestingComponentTest {
 		for (final ServiceStatusDetails serviceStatusDetails : component.getServicesStatus()) {
 			System.out.println(serviceStatusDetails.toString());
 		}
-
 	}
-
 }

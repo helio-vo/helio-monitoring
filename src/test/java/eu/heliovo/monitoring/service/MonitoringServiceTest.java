@@ -9,29 +9,29 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import eu.heliovo.monitoring.component.*;
 import eu.heliovo.monitoring.exporter.ServiceStatusDetailsExporter;
 import eu.heliovo.monitoring.failuredetector.*;
 import eu.heliovo.monitoring.logging.LoggingTestUtils;
 import eu.heliovo.monitoring.model.ServiceStatusDetails;
 import eu.heliovo.monitoring.serviceloader.*;
+import eu.heliovo.monitoring.stage.*;
 
 public class MonitoringServiceTest extends Assert {
 
-	private final PingComponent pingComponent;
-	private final MethodCallComponent methodCallComponent;
-	private final TestingComponent testingComponent;
+	private final PingStage pingComponent;
+	private final MethodCallStage methodCallComponent;
+	private final TestingStage testingComponent;
 
 	private final MonitoringServiceImpl monitoringService;
 
 	public MonitoringServiceTest() throws Exception {
 
-		ComponentHelper componentHelper = getComponentHelper();
+		StageHelper componentHelper = getComponentHelper();
 
 		ServiceFailureDetector failureDetector = FailureDetectorTestUtils.getServiceFailureDetector();
-		pingComponent = new PingComponent(failureDetector);
-		methodCallComponent = new MethodCallComponent(componentHelper, LoggingTestUtils.getLoggingFactory(), logFilesUrl);
-		testingComponent = new TestingComponent(componentHelper, LoggingTestUtils.getLoggingFactory(), logFilesUrl);
+		pingComponent = new PingStage(failureDetector);
+		methodCallComponent = new MethodCallStage(componentHelper, LoggingTestUtils.getLoggingFactory(), logFilesUrl);
+		testingComponent = new TestingStage(componentHelper, LoggingTestUtils.getLoggingFactory(), logFilesUrl);
 
 		ServiceLoader serviceLoader = new StaticServiceLoader();
 

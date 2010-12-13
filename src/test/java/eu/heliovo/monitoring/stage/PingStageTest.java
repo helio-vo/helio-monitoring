@@ -1,4 +1,4 @@
-package eu.heliovo.monitoring.component;
+package eu.heliovo.monitoring.stage;
 
 import java.util.List;
 
@@ -8,14 +8,15 @@ import org.junit.Test;
 
 import eu.heliovo.monitoring.failuredetector.FailureDetectorTestUtils;
 import eu.heliovo.monitoring.model.*;
+import eu.heliovo.monitoring.stage.PingStage;
 import eu.heliovo.monitoring.test.util.TestServices;
 
-public class PingComponentTest extends Assert {
+public class PingStageTest extends Assert {
 
 	@Test
 	public void testPingComponent() throws Exception {
 
-		final PingComponent pingComponent = new PingComponent(FailureDetectorTestUtils.getServiceFailureDetector());
+		final PingStage pingComponent = new PingStage(FailureDetectorTestUtils.getServiceFailureDetector());
 		pingComponent.setServices(TestServices.LIST);
 		pingComponent.updateStatus();
 
@@ -25,7 +26,7 @@ public class PingComponentTest extends Assert {
 
 		boolean testedFakeService = false;
 		for (final ServiceStatusDetails actualServiceStatusDetails : serviceStatusDetails) {
-			if (actualServiceStatusDetails.getName().equals("FakeOfflineService" + PingComponent.SERVICE_NAME_SUFFIX)) {
+			if (actualServiceStatusDetails.getName().equals("FakeOfflineService" + PingStage.SERVICE_NAME_SUFFIX)) {
 				testedFakeService = true;
 				assertTrue(actualServiceStatusDetails.getStatus().equals(ServiceStatus.CRITICAL));
 			}

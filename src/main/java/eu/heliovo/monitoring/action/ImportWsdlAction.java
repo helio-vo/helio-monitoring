@@ -1,4 +1,4 @@
-package eu.heliovo.monitoring.command;
+package eu.heliovo.monitoring.action;
 
 import java.io.IOException;
 import java.util.concurrent.*;

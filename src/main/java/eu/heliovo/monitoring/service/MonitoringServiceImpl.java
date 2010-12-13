@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.Assert;
 
-import eu.heliovo.monitoring.component.*;
 import eu.heliovo.monitoring.exporter.ServiceStatusDetailsExporter;
 import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.serviceloader.ServiceLoader;
+import eu.heliovo.monitoring.stage.*;
 
 /**
  * The MonitoringService instatiated as web service. Does only provide getStatus with services, their status (up or
@@ -24,9 +24,9 @@ public final class MonitoringServiceImpl implements MonitoringService {
 
 	private final Logger logger = Logger.getLogger(this.getClass());
 
-	private final PingComponent pingComponent;
-	private final MethodCallComponent methodCallComponent;
-	private final TestingComponent testingComponent;
+	private final PingStage pingStage;
+	private final MethodCallStage methodCallStage;
+	private final TestingStage testingStage;
 
 	private final ServiceLoader serviceLoader;
 
@@ -34,15 +34,15 @@ public final class MonitoringServiceImpl implements MonitoringService {
 
 	@Autowired
 	public MonitoringServiceImpl(
-			PingComponent pingComponent,
-			MethodCallComponent methodCallComponent,
-			TestingComponent testingComponent,
+			PingStage pingStage,
+			MethodCallStage methodCallStage,
+			TestingStage testingStage,
 			@Qualifier("staticServiceLoader") ServiceLoader serviceLoader,
 			@Qualifier("compositeServiceStatusDetailsExporter") ServiceStatusDetailsExporter serviceStatusDetailsExporter) {
 
-		this.pingComponent = pingComponent;
-		this.methodCallComponent = methodCallComponent;
-		this.testingComponent = testingComponent;
+		this.pingStage = pingStage;
+		this.methodCallStage = methodCallStage;
+		this.testingStage = testingStage;
 		this.serviceLoader = serviceLoader;
 		this.serviceStatusDetailsExporter = serviceStatusDetailsExporter;
 
@@ -52,13 +52,13 @@ public final class MonitoringServiceImpl implements MonitoringService {
 
 	private void validateState() {
 
-		Assert.notNull(pingComponent, "the pingComponent must not be null");
-		Assert.notNull(methodCallComponent, "the methodCallComponent must not be null");
-		Assert.notNull(testingComponent, "the testingComponent must not be null");
+		Assert.notNull(pingStage, "the pingStage must not be null");
+		Assert.notNull(methodCallStage, "the methodCallStage must not be null");
+		Assert.notNull(testingStage, "the testingStage must not be null");
 	}
 
 	// TODO extract update methods to a new class
-	// TODO abstract from component type, just have a list of components and iterate through them and call the methods
+	// TODO abstract from stage type, just have a list of stages and iterate through them and call the methods
 	/**
 	 * This method is called regularly from Spring to update the available services using the Scheduled annotation.
 	 */
@@ -68,31 +68,31 @@ public final class MonitoringServiceImpl implements MonitoringService {
 		// TODO automatic nagios config generation needed, static service definition used till implemented
 		List<Service> services = serviceLoader.loadServices();
 
-		pingComponent.setServices(services);
-		methodCallComponent.setServices(services);
-		testingComponent.setServices(services);
+		pingStage.setServices(services);
+		methodCallStage.setServices(services);
+		testingStage.setServices(services);
 	}
 
-	@Scheduled(cron = "${pingComponent.updateInterval.cronValue}")
+	@Scheduled(cron = "${pingStage.updateInterval.cronValue}")
 	protected void updatePingStatusAndExport() {
-		updateAndExportStatus(pingComponent);
+		updateAndExportStatus(pingStage);
 	}
 
-	@Scheduled(cron = "${methodCallComponent.updateInterval.cronValue}")
+	@Scheduled(cron = "${methodCallStage.updateInterval.cronValue}")
 	protected void updateMethodCallStatusAndExport() {
-		updateAndExportStatus(methodCallComponent);
+		updateAndExportStatus(methodCallStage);
 	}
 
-	@Scheduled(cron = "${testingComponent.updateInterval.cronValue}")
+	@Scheduled(cron = "${testingStage.updateInterval.cronValue}")
 	protected void updateTestingStatusAndExport() {
-		updateAndExportStatus(testingComponent);
+		updateAndExportStatus(testingStage);
 	}
 
-	private void updateAndExportStatus(MonitoringComponent component) {
+	private void updateAndExportStatus(MonitoringStage stage) {
 
-		component.updateStatus();
+		stage.updateStatus();
 
-		List<ServiceStatusDetails> status = component.getServicesStatus();
+		List<ServiceStatusDetails> status = stage.getServicesStatus();
 		serviceStatusDetailsExporter.exportServiceStatusDetails(status);
 
 		logExport(status);
@@ -100,7 +100,7 @@ public final class MonitoringServiceImpl implements MonitoringService {
 
 	private void logExport(List<ServiceStatusDetails> result) {
 		if (logger.isDebugEnabled()) {
-			logger.debug("refreshed component's cache");
+			logger.debug("refreshed stage's cache");
 			for (ServiceStatusDetails serviceStatusDetails : result) {
 				logger.debug("service: " + serviceStatusDetails.getName() + " status: "
 						+ serviceStatusDetails.getStatus().toString() + " response time: "
@@ -111,16 +111,16 @@ public final class MonitoringServiceImpl implements MonitoringService {
 
 	@Override
 	public List<ServiceStatusDetails> getPingStatus() {
-		return pingComponent.getServicesStatus();
+		return pingStage.getServicesStatus();
 	}
 
 	@Override
 	public List<ServiceStatusDetails> getMethodCallStatus() {
-		return methodCallComponent.getServicesStatus();
+		return methodCallStage.getServicesStatus();
 	}
 
 	@Override
 	public List<ServiceStatusDetails> getTestingStatus() {
-		return testingComponent.getServicesStatus();
+		return testingStage.getServicesStatus();
 	}
 }
