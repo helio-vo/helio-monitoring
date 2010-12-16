@@ -11,7 +11,11 @@
 	<context:component-scan base-package="eu.heliovo.monitoring" />
 	<context:property-placeholder location="classpath:helio-monitoring.properties" />
 
-	<task:annotation-driven executor="executor" />
+	<task:annotation-driven executor="executor" scheduler="scheduler" />
+
+	<!-- for Scheduled annotation, 3 threads for the stages, 1 for updating the services, 1 for the failure detector's detect 
+		method -->
+	<task:scheduler id="scheduler" pool-size="4" />
 
 	<!-- The failure detector needs one thread for every monitored service. It is important that threads are starting immediately. 
 		Therefore enough threads must be in the core pool, otherwise they are queued and the failure detectors time measurement goes 
