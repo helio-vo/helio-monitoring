@@ -1,7 +1,7 @@
 package eu.heliovo.monitoring.stage;
 
 import static eu.heliovo.monitoring.logging.LoggingTestUtils.getLoggingFactory;
-import static eu.heliovo.monitoring.test.util.TestUtils.getComponentHelper;
+import static eu.heliovo.monitoring.test.util.TestUtils.getStageHelper;
 import static eu.heliovo.monitoring.test.util.TestUtils.logFilesUrl;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -11,19 +11,18 @@ import java.util.List;
 import org.junit.Test;
 
 import eu.heliovo.monitoring.model.*;
-import eu.heliovo.monitoring.stage.TestingStage;
 import eu.heliovo.monitoring.test.util.TestServices;
 
 public class TestingStageTest {
 
 	@Test
-	public final void testRefreshCache() throws Exception {
+	public final void testTestStage() throws Exception {
 
-		final TestingStage component = new TestingStage(getComponentHelper(), getLoggingFactory(), logFilesUrl);
-		component.setServices(TestServices.LIST);
-		component.updateStatus();
+		final TestingStage stage = new TestingStage(getStageHelper(), getLoggingFactory(), logFilesUrl);
+		stage.setServices(TestServices.LIST);
+		stage.updateStatus();
 
-		final List<ServiceStatusDetails> serviceStatus = component.getServicesStatus();
+		final List<ServiceStatusDetails> serviceStatus = stage.getServicesStatus();
 
 		assertNotNull(serviceStatus);
 		assertTrue(serviceStatus.size() == TestServices.LIST.size());
@@ -53,7 +52,7 @@ public class TestingStageTest {
 		}
 
 		System.out.println("=== testing results");
-		for (final ServiceStatusDetails serviceStatusDetails : component.getServicesStatus()) {
+		for (final ServiceStatusDetails serviceStatusDetails : stage.getServicesStatus()) {
 			System.out.println(serviceStatusDetails.toString());
 		}
 

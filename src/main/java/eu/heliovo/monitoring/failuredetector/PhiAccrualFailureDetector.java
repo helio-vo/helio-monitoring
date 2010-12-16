@@ -8,6 +8,7 @@ import java.util.concurrent.*;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import eu.heliovo.monitoring.model.Host;
@@ -18,7 +19,7 @@ import eu.heliovo.monitoring.model.Host;
  * pull-mechanism. This is proposed in "A Hybrid Approach for Building Eventually Accurate Failure Detectors" by
  * Mostefaoui et al. The original Detector by Hayashibara uses a heartbeat- or pull meachanism, which means the
  * monitored processes are sending a heartbeat message to the monitor. With the query-response-mechanism the monitor
- * sends a query message to every monitored processe and awaits a response.
+ * sends a query message to every monitored process and awaits a response.
  * 
  * Please see the papers for more details.
  * 
@@ -63,7 +64,7 @@ public final class PhiAccrualFailureDetector implements FailureDetector {
 		}
 	}
 
-	// TODO call this method every 1 second, use @Scheduled?
+	@Scheduled(cron = "${phiAccrualFailureDetector.updateInterval.cronValue}")
 	protected void detect() {
 
 		for (Entry<Host, SamplingWindow> serviceStatistics : statistics.entrySet()) {

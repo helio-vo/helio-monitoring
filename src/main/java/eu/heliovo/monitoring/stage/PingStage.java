@@ -2,6 +2,7 @@ package eu.heliovo.monitoring.stage;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import eu.heliovo.monitoring.failuredetector.ServiceFailureDetector;
@@ -23,6 +24,7 @@ public final class PingStage implements MonitoringStage {
 
 	private final ServiceFailureDetector failureDetector;
 
+	@Autowired
 	public PingStage(ServiceFailureDetector failureDetector) {
 		this.failureDetector = failureDetector;
 	}

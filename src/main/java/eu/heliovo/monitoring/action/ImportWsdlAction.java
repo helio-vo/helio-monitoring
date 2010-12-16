@@ -11,6 +11,12 @@ import com.eviware.soapui.support.SoapUIException;
 
 import eu.heliovo.monitoring.logging.LogFileWriter;
 
+/**
+ * TODO DOCUMENT ME
+ * 
+ * @author Kevin Seidler
+ * 
+ */
 public final class ImportWsdlAction implements Action<WsdlInterface> {
 
 	private static final int IMPORT_WSDL_TIMEOUT = 10;

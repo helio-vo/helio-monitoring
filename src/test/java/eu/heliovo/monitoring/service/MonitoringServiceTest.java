@@ -1,6 +1,6 @@
 package eu.heliovo.monitoring.service;
 
-import static eu.heliovo.monitoring.test.util.TestUtils.getComponentHelper;
+import static eu.heliovo.monitoring.test.util.TestUtils.getStageHelper;
 import static eu.heliovo.monitoring.test.util.TestUtils.logFilesUrl;
 
 import java.util.List;
@@ -18,20 +18,20 @@ import eu.heliovo.monitoring.stage.*;
 
 public class MonitoringServiceTest extends Assert {
 
-	private final PingStage pingComponent;
-	private final MethodCallStage methodCallComponent;
-	private final TestingStage testingComponent;
+	private final PingStage pingStage;
+	private final MethodCallStage methodCallStage;
+	private final TestingStage testingStage;
 
 	private final MonitoringServiceImpl monitoringService;
 
 	public MonitoringServiceTest() throws Exception {
 
-		StageHelper componentHelper = getComponentHelper();
+		StageHelper stageHelper = getStageHelper();
 
 		ServiceFailureDetector failureDetector = FailureDetectorTestUtils.getServiceFailureDetector();
-		pingComponent = new PingStage(failureDetector);
-		methodCallComponent = new MethodCallStage(componentHelper, LoggingTestUtils.getLoggingFactory(), logFilesUrl);
-		testingComponent = new TestingStage(componentHelper, LoggingTestUtils.getLoggingFactory(), logFilesUrl);
+		pingStage = new PingStage(failureDetector);
+		methodCallStage = new MethodCallStage(stageHelper, LoggingTestUtils.getLoggingFactory(), logFilesUrl);
+		testingStage = new TestingStage(stageHelper, LoggingTestUtils.getLoggingFactory(), logFilesUrl);
 
 		ServiceLoader serviceLoader = new StaticServiceLoader();
 
@@ -41,7 +41,7 @@ public class MonitoringServiceTest extends Assert {
 			}
 		};
 
-		monitoringService = new MonitoringServiceImpl(pingComponent, methodCallComponent, testingComponent,
+		monitoringService = new MonitoringServiceImpl(pingStage, methodCallStage, testingStage,
 				serviceLoader, exporter);
 	}
 

@@ -1,7 +1,7 @@
 package eu.heliovo.monitoring.stage;
 
 import static eu.heliovo.monitoring.logging.LoggingTestUtils.getLoggingFactory;
-import static eu.heliovo.monitoring.test.util.TestUtils.getComponentHelper;
+import static eu.heliovo.monitoring.test.util.TestUtils.getStageHelper;
 import static eu.heliovo.monitoring.test.util.TestUtils.logFilesUrl;
 
 import java.util.List;
@@ -11,21 +11,20 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import eu.heliovo.monitoring.model.*;
-import eu.heliovo.monitoring.stage.MethodCallStage;
 import eu.heliovo.monitoring.test.util.TestServices;
 
 public class MethodCallStageTest extends Assert {
 
 	@Test
-	public void testMethodCallComponent() throws Exception {
+	public void testMethodCallStage() throws Exception {
 
-		// TODO test individual methods of MethodCallComponent
+		// TODO test individual methods of MethodCallStage
 
-		MethodCallStage component = new MethodCallStage(getComponentHelper(), getLoggingFactory(), logFilesUrl);
-		component.setServices(TestServices.LIST);
-		component.updateStatus();
+		MethodCallStage stage = new MethodCallStage(getStageHelper(), getLoggingFactory(), logFilesUrl);
+		stage.setServices(TestServices.LIST);
+		stage.updateStatus();
 
-		final List<ServiceStatusDetails> serviceStatus = component.getServicesStatus();
+		final List<ServiceStatusDetails> serviceStatus = stage.getServicesStatus();
 
 		assertNotNull(serviceStatus);
 		assertTrue(serviceStatus.size() == TestServices.LIST.size());
@@ -55,7 +54,7 @@ public class MethodCallStageTest extends Assert {
 		}
 
 		System.out.println("=== testing results");
-		for (final ServiceStatusDetails serviceStatusDetails : component.getServicesStatus()) {
+		for (final ServiceStatusDetails serviceStatusDetails : stage.getServicesStatus()) {
 			System.out.println(serviceStatusDetails.toString());
 		}
 	}

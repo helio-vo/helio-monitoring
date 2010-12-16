@@ -31,7 +31,7 @@ public final class TestUtils {
 		return factory.getObject();
 	}
 
-	public static StageHelper getComponentHelper() throws Exception {
+	public static StageHelper getStageHelper() throws Exception {
 		return new StageHelper(getExecutor(), logFilesUrl);
 	}
 

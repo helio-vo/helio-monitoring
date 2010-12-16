@@ -8,24 +8,26 @@ import org.junit.Test;
 
 import eu.heliovo.monitoring.failuredetector.FailureDetectorTestUtils;
 import eu.heliovo.monitoring.model.*;
-import eu.heliovo.monitoring.stage.PingStage;
 import eu.heliovo.monitoring.test.util.TestServices;
 
 public class PingStageTest extends Assert {
 
 	@Test
-	public void testPingComponent() throws Exception {
+	public void testPingStage() throws Exception {
 
-		final PingStage pingComponent = new PingStage(FailureDetectorTestUtils.getServiceFailureDetector());
-		pingComponent.setServices(TestServices.LIST);
-		pingComponent.updateStatus();
+		// FIXME returns status CRITICAL for every service
 
-		final List<ServiceStatusDetails> serviceStatusDetails = pingComponent.getServicesStatus();
+		final PingStage pingStage = new PingStage(FailureDetectorTestUtils.getServiceFailureDetector());
+		pingStage.setServices(TestServices.LIST);
+		pingStage.updateStatus();
+
+		final List<ServiceStatusDetails> serviceStatusDetails = pingStage.getServicesStatus();
 		assertNotNull(serviceStatusDetails);
 		assertTrue(serviceStatusDetails.size() == TestServices.LIST.size());
 
 		boolean testedFakeService = false;
 		for (final ServiceStatusDetails actualServiceStatusDetails : serviceStatusDetails) {
+			System.out.println(actualServiceStatusDetails);
 			if (actualServiceStatusDetails.getName().equals("FakeOfflineService" + PingStage.SERVICE_NAME_SUFFIX)) {
 				testedFakeService = true;
 				assertTrue(actualServiceStatusDetails.getStatus().equals(ServiceStatus.CRITICAL));

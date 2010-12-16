@@ -1,22 +1,18 @@
 package eu.heliovo.monitoring.exporter;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.Component;
 
-import eu.heliovo.monitoring.model.ServiceStatus;
-import eu.heliovo.monitoring.model.ServiceStatusDetails;
+import eu.heliovo.monitoring.model.*;
 
 /**
  * TODO document me!<br/>
- * TODO generate nagios service configs (e.g. with XSLT) and restart nagios daemon (see
- * http://nagios.sourceforge.net/docs/1_0/extcommands.html Command: RESTART_PROGRAM)
+ * TODO generate nagios service configs (e.g. with XSLT), validate maybe with command file command and restart nagios
+ * daemon (see http://nagios.sourceforge.net/docs/1_0/extcommands.html Command: RESTART_PROGRAM)
  * 
  * @author Kevin Seidler
  * 
@@ -64,6 +60,7 @@ public final class NagiosServiceStatusDetailsExporter implements ServiceStatusDe
 		}
 	}
 
+	@Override
 	public void exportServiceStatusDetails(List<ServiceStatusDetails> serviceStatusDetails) {
 
 		for (ServiceStatusDetails actualServiceStatusDetails : serviceStatusDetails) {
