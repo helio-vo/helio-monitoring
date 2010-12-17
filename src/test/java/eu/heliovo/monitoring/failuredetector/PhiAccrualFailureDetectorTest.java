@@ -8,15 +8,18 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import eu.heliovo.monitoring.listener.HostUpdateListener;
 import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.test.util.*;
 
 public class PhiAccrualFailureDetectorTest extends Assert {
 
 	private final ScheduledExecutorService executor = TestUtils.getScheduledExecutor();
-	private final PhiAccrualFailureDetector failureDetector = new PhiAccrualFailureDetector(TestUtils.getExecutor());
+	private final PhiAccrualFailureDetector failureDetector;
 
 	public PhiAccrualFailureDetectorTest() throws Exception {
+		HostStatisticsRecorder recorder = FailureDetectorTestUtils.getEmptyStatisticsRecorder();
+		failureDetector = new PhiAccrualFailureDetector(TestUtils.getExecutor(), recorder);
 	}
 
 	@Test
@@ -30,13 +33,14 @@ public class PhiAccrualFailureDetectorTest extends Assert {
 		outputResults(monitoredHosts);
 
 		testHostNotMonitored();
-		
+
 		executor.shutdown();
 		executor.awaitTermination(60, TimeUnit.SECONDS);
 	}
 
 	private List<Host> getHostsToBeMonitored() {
-		ServiceToHostAdapter serviceToHostAdapter = new ServiceToHostAdapter(null);
+		List<HostUpdateListener> listeners = Collections.emptyList();
+		ServiceToHostAdapter serviceToHostAdapter = new ServiceToHostAdapter(null, listeners);
 		return serviceToHostAdapter.getHostsFromServices(TestServices.LIST);
 	}
 

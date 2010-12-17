@@ -1,6 +1,6 @@
 package eu.heliovo.monitoring.service;
 
-import java.util.List;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.*;
@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.Assert;
 
 import eu.heliovo.monitoring.exporter.ServiceStatusDetailsExporter;
+import eu.heliovo.monitoring.listener.ServiceUpdateListener;
 import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.serviceloader.ServiceLoader;
 import eu.heliovo.monitoring.stage.*;
@@ -29,6 +30,7 @@ public final class MonitoringServiceImpl implements MonitoringService {
 	private final TestingStage testingStage;
 
 	private final ServiceLoader serviceLoader;
+	private final List<ServiceUpdateListener> serviceUpdateListeners;
 
 	private final ServiceStatusDetailsExporter serviceStatusDetailsExporter;
 
@@ -38,13 +40,15 @@ public final class MonitoringServiceImpl implements MonitoringService {
 			MethodCallStage methodCallStage,
 			TestingStage testingStage,
 			@Qualifier("staticServiceLoader") ServiceLoader serviceLoader,
-			@Qualifier("compositeServiceStatusDetailsExporter") ServiceStatusDetailsExporter serviceStatusDetailsExporter) {
-
+			@Qualifier("compositeServiceStatusDetailsExporter") ServiceStatusDetailsExporter serviceStatusDetailsExporter,
+			List<ServiceUpdateListener> serviceUpdateListeners) { // Spring automatically injects all components of
+																	// those listeners
 		this.pingStage = pingStage;
 		this.methodCallStage = methodCallStage;
 		this.testingStage = testingStage;
 		this.serviceLoader = serviceLoader;
 		this.serviceStatusDetailsExporter = serviceStatusDetailsExporter;
+		this.serviceUpdateListeners = Collections.unmodifiableList(serviceUpdateListeners);
 
 		this.validateState();
 		this.updateServices();
@@ -58,7 +62,6 @@ public final class MonitoringServiceImpl implements MonitoringService {
 	}
 
 	// TODO extract update methods to a new class
-	// TODO abstract from stage type, just have a list of stages and iterate through them and call the methods
 	/**
 	 * This method is called regularly from Spring to update the available services using the Scheduled annotation.
 	 */
@@ -66,11 +69,14 @@ public final class MonitoringServiceImpl implements MonitoringService {
 	protected void updateServices() {
 
 		// TODO automatic nagios config generation needed, static service definition used till implemented
-		List<Service> services = serviceLoader.loadServices();
+		List<Service> newServices = serviceLoader.loadServices();
+		updateServiceUpdateListeners(newServices);
+	}
 
-		pingStage.setServices(services);
-		methodCallStage.setServices(services);
-		testingStage.setServices(services);
+	private void updateServiceUpdateListeners(List<Service> newServices) {
+		for (ServiceUpdateListener listener : serviceUpdateListeners) {
+			listener.updateServices(newServices);
+		}
 	}
 
 	@Scheduled(cron = "${pingStage.updateInterval.cronValue}")

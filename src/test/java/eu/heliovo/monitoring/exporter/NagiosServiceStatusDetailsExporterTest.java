@@ -4,22 +4,15 @@ import static eu.heliovo.monitoring.model.ModelFactory.newServiceStatusDetails;
 
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.*;
 
-import eu.heliovo.monitoring.exporter.NagiosCommand;
-import eu.heliovo.monitoring.exporter.NagiosServiceStatus;
-import eu.heliovo.monitoring.exporter.NagiosServiceStatusDetailsExporter;
-import eu.heliovo.monitoring.exporter.ServiceStatusDetailsExporter;
-import eu.heliovo.monitoring.model.ServiceStatus;
-import eu.heliovo.monitoring.model.ServiceStatusDetails;
+import eu.heliovo.monitoring.model.*;
 
 public class NagiosServiceStatusDetailsExporterTest extends Assert {
 
@@ -117,6 +110,7 @@ public class NagiosServiceStatusDetailsExporterTest extends Assert {
 
 		assertTrue(nagiosExternalCommandFile.exists());
 
+		@SuppressWarnings("unchecked")
 		List<String> lines = FileUtils.readLines(nagiosExternalCommandFile, NagiosServiceStatusDetailsExporter.FILE_ENCODING);
 
 		assertNotNull(lines);
@@ -161,6 +155,7 @@ public class NagiosServiceStatusDetailsExporterTest extends Assert {
 
 		daemon.exportServiceStatusDetails(serviceStatus);
 
+		@SuppressWarnings("unchecked")
 		final List<String> lines = FileUtils.readLines(nagiosExternalCommandFile, NagiosServiceStatusDetailsExporter.FILE_ENCODING);
 
 		assertTrue(lines.size() == 3);

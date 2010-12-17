@@ -36,10 +36,12 @@ public final class PhiAccrualFailureDetector implements FailureDetector {
 	private final Logger logger = Logger.getLogger(this.getClass());
 	private final ExecutorService executor;
 	private final Map<Host, SamplingWindow> statistics = new ConcurrentHashMap<Host, SamplingWindow>();
+	private final HostStatisticsRecorder hostStatisticsRecorder;
 
 	@Autowired
-	protected PhiAccrualFailureDetector(ExecutorService executor) {
+	protected PhiAccrualFailureDetector(ExecutorService executor, HostStatisticsRecorder hostStatisticsRecorder) {
 		this.executor = executor;
+		this.hostStatisticsRecorder = hostStatisticsRecorder;
 	}
 
 	@Override
@@ -48,18 +50,18 @@ public final class PhiAccrualFailureDetector implements FailureDetector {
 		addNewServices(newHosts);
 	}
 
-	private void addNewServices(List<Host> newHosts) {
-		for (Host newHost : newHosts) {
-			if (!statistics.containsKey(newHost)) {
-				statistics.put(newHost, new SamplingWindow(NUMBER_MONITORED_MEASURES, INTERVAL_TIME_IN_MILLIES));
-			}
-		}
-	}
-
 	private void removeOldServices(List<Host> newHosts) {
 		for (Host hostFromStatistics : statistics.keySet()) {
 			if (!newHosts.contains(hostFromStatistics)) {
 				statistics.remove(hostFromStatistics);
+			}
+		}
+	}
+
+	private void addNewServices(List<Host> newHosts) {
+		for (Host newHost : newHosts) {
+			if (!statistics.containsKey(newHost)) {
+				statistics.put(newHost, new SamplingWindow(NUMBER_MONITORED_MEASURES, INTERVAL_TIME_IN_MILLIES));
 			}
 		}
 	}
@@ -77,6 +79,10 @@ public final class PhiAccrualFailureDetector implements FailureDetector {
 	}
 
 	private void recordMeasuresInSeparateThread(final Host host, final SamplingWindow statistic) {
+
+		final long entryId = hostStatisticsRecorder.getNextEntryId(host);
+		hostStatisticsRecorder.record(host, entryId, System.currentTimeMillis()); // starting time
+
 		executor.submit(new Runnable() {
 			@Override
 			public void run() {
@@ -84,6 +90,10 @@ public final class PhiAccrualFailureDetector implements FailureDetector {
 					long responseTimeInMillis = measureResponseTimeInMillies(host);
 					statistic.addValue(System.currentTimeMillis());
 					statistic.setLatestResponseTime(responseTimeInMillis);
+
+					hostStatisticsRecorder.record(host, entryId, System.currentTimeMillis());
+					hostStatisticsRecorder.record(host, entryId, responseTimeInMillis);
+
 				} catch (Exception e) { // if an error occurs while measure the response time, no value is added
 					logger.debug(e.getMessage(), e);
 				}

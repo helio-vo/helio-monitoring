@@ -21,7 +21,7 @@ public class MethodCallStageTest extends Assert {
 		// TODO test individual methods of MethodCallStage
 
 		MethodCallStage stage = new MethodCallStage(getStageHelper(), getLoggingFactory(), logFilesUrl);
-		stage.setServices(TestServices.LIST);
+		stage.updateServices(TestServices.LIST);
 		stage.updateStatus();
 
 		final List<ServiceStatusDetails> serviceStatus = stage.getServicesStatus();

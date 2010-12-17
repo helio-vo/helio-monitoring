@@ -11,31 +11,40 @@ import java.util.Map.Entry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import eu.heliovo.monitoring.listener.*;
 import eu.heliovo.monitoring.model.*;
 
 /**
- * This Adapter wraps the PhiAccrualFailureDetector which only handles single hosts. Many services can be running on the
- * same host. This would lead to parallel connection attempts not needed, but wasting ressources.
+ * This Adapter wraps the {@link PhiAccrualFailureDetector} which only handles single hosts. Many services can be
+ * running on the same host. This would lead to parallel connection attempts not needed, but wasting resources.
  * 
  * @author Kevin Seidler
  * 
  */
 @Component
-public final class ServiceToHostAdapter implements ServiceFailureDetector {
+public final class ServiceToHostAdapter implements ServiceFailureDetector, ServiceUpdateListener {
 
 	private final FailureDetector failureDetector;
+	private final List<HostUpdateListener> hostUpdateListeners;
 
 	private List<Host> hosts = Collections.emptyList();
 
 	@Autowired
-	public ServiceToHostAdapter(FailureDetector failureDetector) {
+	public ServiceToHostAdapter(FailureDetector failureDetector, List<HostUpdateListener> hostUpdateListeners) {
 		this.failureDetector = failureDetector;
+		this.hostUpdateListeners = Collections.unmodifiableList(hostUpdateListeners);
 	}
 
 	@Override
 	public void updateServices(List<Service> newServices) {
 		this.hosts = getHostsFromServices(newServices);
-		failureDetector.updateHosts(hosts);
+		updateHostUpdateListeners();
+	}
+
+	private void updateHostUpdateListeners() {
+		for (HostUpdateListener listener : hostUpdateListeners) {
+			listener.updateHosts(hosts);
+		}
 	}
 
 	@Override

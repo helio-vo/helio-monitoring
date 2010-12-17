@@ -19,7 +19,7 @@ public class TestingStageTest {
 	public final void testTestStage() throws Exception {
 
 		final TestingStage stage = new TestingStage(getStageHelper(), getLoggingFactory(), logFilesUrl);
-		stage.setServices(TestServices.LIST);
+		stage.updateServices(TestServices.LIST);
 		stage.updateStatus();
 
 		final List<ServiceStatusDetails> serviceStatus = stage.getServicesStatus();

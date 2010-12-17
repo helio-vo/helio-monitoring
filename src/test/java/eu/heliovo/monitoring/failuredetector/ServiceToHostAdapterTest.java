@@ -6,6 +6,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import eu.heliovo.monitoring.listener.HostUpdateListener;
 import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.test.util.TestServices;
 
@@ -37,7 +38,8 @@ public class ServiceToHostAdapterTest extends Assert {
 	@Test
 	public void testGetHostsFromServices() throws Exception {
 
-		ServiceToHostAdapter adapter = new ServiceToHostAdapter(null);
+		List<HostUpdateListener> listeners = Collections.emptyList();
+		ServiceToHostAdapter adapter = new ServiceToHostAdapter(null, listeners);
 		List<Host> hosts = adapter.getHostsFromServices(TestServices.LIST);
 
 		List<Service> allServicesOfAllHosts = new ArrayList<Service>();
@@ -58,7 +60,8 @@ public class ServiceToHostAdapterTest extends Assert {
 	@Test
 	public void testUpdateServices() {
 
-		ServiceToHostAdapter adapter = new ServiceToHostAdapter(mockFailureDetector);
+		List<HostUpdateListener> listeners = Arrays.asList(new HostUpdateListener[] { mockFailureDetector });
+		ServiceToHostAdapter adapter = new ServiceToHostAdapter(mockFailureDetector, listeners);
 		adapter.updateServices(TestServices.LIST);
 
 		List<Host> hostsFromServices = adapter.getHostsFromServices(TestServices.LIST);
@@ -71,7 +74,8 @@ public class ServiceToHostAdapterTest extends Assert {
 	@Test
 	public void testGetServiceStatus() {
 
-		ServiceToHostAdapter adapter = new ServiceToHostAdapter(mockFailureDetector);
+		List<HostUpdateListener> listeners = Arrays.asList(new HostUpdateListener[] { mockFailureDetector });
+		ServiceToHostAdapter adapter = new ServiceToHostAdapter(mockFailureDetector, listeners);
 		adapter.updateServices(TestServices.LIST);
 		
 		String serviceNameSuffix = "serviceNameSuffix";

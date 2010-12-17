@@ -2,7 +2,8 @@ package eu.heliovo.monitoring.failuredetector;
 
 import java.util.List;
 
-import eu.heliovo.monitoring.model.*;
+import eu.heliovo.monitoring.listener.ServiceUpdateListener;
+import eu.heliovo.monitoring.model.ServiceStatusDetails;
 
 /**
  * Detects the service status (OK or CRITICAL) of monitored services.
@@ -10,12 +11,7 @@ import eu.heliovo.monitoring.model.*;
  * @author Kevin Seidler
  * 
  */
-public interface ServiceFailureDetector {
-
-	/**
-	 * Update the services to be monitored.
-	 */
-	void updateServices(List<Service> newServices);
+public interface ServiceFailureDetector extends ServiceUpdateListener {
 
 	/**
 	 * Returns detailed information about all monitored services adding a servce name suffix to every service name.

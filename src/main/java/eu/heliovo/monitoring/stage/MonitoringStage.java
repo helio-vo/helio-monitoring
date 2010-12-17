@@ -2,7 +2,7 @@ package eu.heliovo.monitoring.stage;
 
 import java.util.List;
 
-import eu.heliovo.monitoring.model.*;
+import eu.heliovo.monitoring.model.ServiceStatusDetails;
 
 /**
  * TODO DOCUMENT ME
@@ -11,8 +11,6 @@ import eu.heliovo.monitoring.model.*;
  * 
  */
 public interface MonitoringStage {
-
-	void setServices(List<Service> services);
 
 	void updateStatus();
 

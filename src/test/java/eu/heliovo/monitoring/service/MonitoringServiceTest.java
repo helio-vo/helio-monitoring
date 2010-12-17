@@ -3,7 +3,7 @@ package eu.heliovo.monitoring.service;
 import static eu.heliovo.monitoring.test.util.TestUtils.getStageHelper;
 import static eu.heliovo.monitoring.test.util.TestUtils.logFilesUrl;
 
-import java.util.List;
+import java.util.*;
 
 import junit.framework.Assert;
 
@@ -11,9 +11,11 @@ import org.junit.Test;
 
 import eu.heliovo.monitoring.exporter.ServiceStatusDetailsExporter;
 import eu.heliovo.monitoring.failuredetector.*;
+import eu.heliovo.monitoring.listener.ServiceUpdateListener;
 import eu.heliovo.monitoring.logging.LoggingTestUtils;
 import eu.heliovo.monitoring.model.ServiceStatusDetails;
 import eu.heliovo.monitoring.serviceloader.*;
+import eu.heliovo.monitoring.serviceloader.ServiceLoader;
 import eu.heliovo.monitoring.stage.*;
 
 public class MonitoringServiceTest extends Assert {
@@ -41,12 +43,17 @@ public class MonitoringServiceTest extends Assert {
 			}
 		};
 
-		monitoringService = new MonitoringServiceImpl(pingStage, methodCallStage, testingStage,
-				serviceLoader, exporter);
+		List<ServiceUpdateListener> listener = Arrays.asList(new ServiceUpdateListener[] { failureDetector,
+				methodCallStage, testingStage, });
+
+		monitoringService = new MonitoringServiceImpl(pingStage, methodCallStage, testingStage, serviceLoader,
+				exporter, listener);
 	}
 
 	@Test
 	public void testService() throws Exception {
+
+		monitoringService.updateServices();
 
 		// these lines are automatically called by spring
 		monitoringService.updatePingStatusAndExport();

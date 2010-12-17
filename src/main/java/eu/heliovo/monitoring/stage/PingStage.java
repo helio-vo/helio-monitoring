@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import eu.heliovo.monitoring.failuredetector.ServiceFailureDetector;
-import eu.heliovo.monitoring.model.*;
+import eu.heliovo.monitoring.model.ServiceStatusDetails;
 
 /**
  * The ping stage uses a failure detector which continuously detects failures of the services hosts. The WSDL file url
@@ -32,11 +32,6 @@ public final class PingStage implements MonitoringStage {
 	@Override
 	public void updateStatus() {
 		// no manual update needed, the failure detector continuously detects failures and returns latest results
-	}
-
-	@Override
-	public void setServices(List<Service> services) {
-		failureDetector.updateServices(services);
 	}
 
 	@Override

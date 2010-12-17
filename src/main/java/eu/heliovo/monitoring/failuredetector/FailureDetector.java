@@ -1,7 +1,6 @@
 package eu.heliovo.monitoring.failuredetector;
 
-import java.util.List;
-
+import eu.heliovo.monitoring.listener.HostUpdateListener;
 import eu.heliovo.monitoring.model.Host;
 
 /**
@@ -10,12 +9,7 @@ import eu.heliovo.monitoring.model.Host;
  * @author Kevin Seidler
  * 
  */
-public interface FailureDetector {
-
-	/**
-	 * Updates the list of monitored hosts.
-	 */
-	void updateHosts(List<Host> hosts);
+public interface FailureDetector extends HostUpdateListener {
 
 	boolean isAlive(Host host);
 

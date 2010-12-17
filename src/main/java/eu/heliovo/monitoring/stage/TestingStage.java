@@ -18,6 +18,7 @@ import com.eviware.soapui.impl.wsdl.submit.transports.http.WsdlResponse;
 import com.eviware.soapui.model.iface.Operation;
 import com.eviware.soapui.model.testsuite.AssertionError;
 
+import eu.heliovo.monitoring.listener.ServiceUpdateListener;
 import eu.heliovo.monitoring.logging.*;
 import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.util.WsdlValidationUtils;
@@ -29,7 +30,7 @@ import eu.heliovo.monitoring.util.WsdlValidationUtils;
  * 
  */
 @Component
-public final class TestingStage implements MonitoringStage {
+public final class TestingStage implements MonitoringStage, ServiceUpdateListener {
 
 	protected static final String SERVICE_NAME_SUFFIX = " -testing-";
 	private static final String LOG_FILE_SUFFIX = "_testing_";
@@ -374,12 +375,12 @@ public final class TestingStage implements MonitoringStage {
 	}
 
 	@Override
-	public synchronized void setServices(List<Service> services) {
-		this.services = services;
+	public List<ServiceStatusDetails> getServicesStatus() {
+		return servicesStatus;
 	}
 
 	@Override
-	public List<ServiceStatusDetails> getServicesStatus() {
-		return servicesStatus;
+	public synchronized void updateServices(List<Service> newServices) {
+		this.services = newServices;
 	}
 }
