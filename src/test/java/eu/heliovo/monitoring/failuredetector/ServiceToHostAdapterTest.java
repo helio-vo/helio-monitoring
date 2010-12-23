@@ -19,7 +19,7 @@ public class ServiceToHostAdapterTest extends Assert {
 		private boolean alive = false;
 
 		@Override
-		public void updateHosts(List<Host> hosts) {
+		public void updateHosts(Set<Host> hosts) {
 			updatedHosts.addAll(hosts);
 		}
 
@@ -37,24 +37,7 @@ public class ServiceToHostAdapterTest extends Assert {
 
 	@Test
 	public void testGetHostsFromServices() throws Exception {
-
-		List<HostUpdateListener> listeners = Collections.emptyList();
-		ServiceToHostAdapter adapter = new ServiceToHostAdapter(null, listeners);
-		List<Host> hosts = adapter.getHostsFromServices(TestServices.LIST);
-
-		List<Service> allServicesOfAllHosts = new ArrayList<Service>();
-
-		for (Host host : hosts) {
-			System.out.println("host: " + host.getName() + " url: " + host.getUrl());
-			for (Service service : host.getServices()) {
-				assertEquals(host.getName(), service.getUrl().getHost());
-				allServicesOfAllHosts.add(service);
-				System.out.println("service: " + service.getName() + " url: " + service.getUrl());
-			}
-			System.out.println();
-		}
-
-		assertEquals(TestServices.LIST.size(), allServicesOfAllHosts.size());
+		// just calling ServiceHostUtils.getHostsFromServices which has its own test
 	}
 
 	@Test
@@ -64,8 +47,7 @@ public class ServiceToHostAdapterTest extends Assert {
 		ServiceToHostAdapter adapter = new ServiceToHostAdapter(mockFailureDetector, listeners);
 		adapter.updateServices(TestServices.LIST);
 
-		List<Host> hostsFromServices = adapter.getHostsFromServices(TestServices.LIST);
-
+		List<Host> hostsFromServices = new ArrayList<Host>(adapter.getHostsFromServices(TestServices.LIST));
 		for (int i = 0; i < hostsFromServices.size(); i++) {
 			assertEquals(hostsFromServices.get(i).getName(), updatedHosts.get(i).getName());
 		}

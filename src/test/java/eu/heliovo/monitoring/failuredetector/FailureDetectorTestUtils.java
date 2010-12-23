@@ -17,7 +17,7 @@ public final class FailureDetectorTestUtils {
 	public static HostStatisticsRecorder getEmptyStatisticsRecorder() {
 		return new HostStatisticsRecorder() {
 			@Override
-			public void updateHosts(List<Host> newHosts) {
+			public void updateHosts(Set<Host> newHosts) {
 			}
 
 			@Override
@@ -27,6 +27,10 @@ public final class FailureDetectorTestUtils {
 
 			@Override
 			public void record(Host host, long entryId, long measure) {
+			}
+
+			@Override
+			public void record(Host host, long entryId, Exception error) {
 			}
 		};
 	}

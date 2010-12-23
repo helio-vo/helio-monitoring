@@ -1,7 +1,7 @@
 package eu.heliovo.monitoring.model;
 
 import java.net.URL;
-import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a host running services that have to be monitored.
@@ -19,7 +19,7 @@ public interface Host {
 	URL getUrl();
 
 	/**
-	 * Returns a list of Services the host is running.
+	 * Returns a set of Services the host is running.
 	 */
-	List<Service> getServices();
+	Set<Service> getServices();
 }

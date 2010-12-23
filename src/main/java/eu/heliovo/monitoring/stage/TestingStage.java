@@ -41,7 +41,7 @@ public final class TestingStage implements MonitoringStage, ServiceUpdateListene
 
 	private final Logger logger = Logger.getLogger(this.getClass());
 
-	private List<Service> services = Collections.emptyList();
+	private Set<Service> services = Collections.emptySet();
 	private List<ServiceStatusDetails> servicesStatus = Collections.emptyList();
 
 	@Autowired
@@ -380,7 +380,7 @@ public final class TestingStage implements MonitoringStage, ServiceUpdateListene
 	}
 
 	@Override
-	public synchronized void updateServices(List<Service> newServices) {
+	public synchronized void updateServices(Set<Service> newServices) {
 		this.services = newServices;
 	}
 }

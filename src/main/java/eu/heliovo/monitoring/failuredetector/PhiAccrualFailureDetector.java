@@ -1,7 +1,7 @@
 package eu.heliovo.monitoring.failuredetector;
 
 import java.io.IOException;
-import java.net.URLConnection;
+import java.net.*;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
@@ -45,12 +45,12 @@ public final class PhiAccrualFailureDetector implements FailureDetector {
 	}
 
 	@Override
-	public void updateHosts(List<Host> newHosts) {
+	public void updateHosts(Set<Host> newHosts) {
 		removeOldServices(newHosts);
 		addNewServices(newHosts);
 	}
 
-	private void removeOldServices(List<Host> newHosts) {
+	private void removeOldServices(Set<Host> newHosts) {
 		for (Host hostFromStatistics : statistics.keySet()) {
 			if (!newHosts.contains(hostFromStatistics)) {
 				statistics.remove(hostFromStatistics);
@@ -58,7 +58,7 @@ public final class PhiAccrualFailureDetector implements FailureDetector {
 		}
 	}
 
-	private void addNewServices(List<Host> newHosts) {
+	private void addNewServices(Set<Host> newHosts) {
 		for (Host newHost : newHosts) {
 			if (!statistics.containsKey(newHost)) {
 				statistics.put(newHost, new SamplingWindow(NUMBER_MONITORED_MEASURES, INTERVAL_TIME_IN_MILLIES));
@@ -94,8 +94,9 @@ public final class PhiAccrualFailureDetector implements FailureDetector {
 					hostStatisticsRecorder.record(host, entryId, System.currentTimeMillis());
 					hostStatisticsRecorder.record(host, entryId, responseTimeInMillis);
 
-				} catch (Exception e) { // if an error occurs while measure the response time, no value is added
-					logger.debug(e.getMessage(), e);
+				} catch (Exception error) { // if an error occurs while measure the response time, no value is added
+					hostStatisticsRecorder.record(host, entryId, error);
+					logger.debug(error.getMessage(), error);
 				}
 			}
 		});
@@ -107,8 +108,29 @@ public final class PhiAccrualFailureDetector implements FailureDetector {
 		URLConnection connection = host.getUrl().openConnection();
 		connection.connect();
 		long milliesAfter = System.currentTimeMillis();
+		closeConnection(connection);
 
 		return milliesAfter - millisBefore;
+	}
+
+	/**
+	 * If the {@link URLConnection} is a {@link HttpURLConnection} it can be easily closed by calling
+	 * {@link HttpURLConnection#disconnect()}. If it is any other connection, we try to get the input stream. Closing
+	 * this stream will close the connection, but erros can occur, e.g. if the resource is not available. Errors will be
+	 * catched and logged, so the measurement and the detection can continue. If some connections could not be closed,
+	 * this can lead to an "too many open connections"-error and prevent the failure detector to get the next
+	 * measurements.
+	 */
+	private void closeConnection(URLConnection connection) {
+		try {
+			if (connection instanceof HttpURLConnection) {
+				((HttpURLConnection) connection).disconnect();
+			} else {
+				connection.getInputStream().close();
+			}
+		} catch (Exception error) {
+			logger.error(error.getMessage(), error);
+		}
 	}
 
 	@Override

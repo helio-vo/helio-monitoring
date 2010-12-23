@@ -19,9 +19,19 @@ public interface HostStatisticsRecorder extends HostUpdateListener {
 
 	/**
 	 * Records a measure for a certain host given the entryId.
+	 * 
 	 * @param host the host to record a measure for
 	 * @param entryId many measures can be grouped to one entry
 	 * @param measure the measured value
 	 */
 	void record(Host host, long entryId, long measure);
+
+	/**
+	 * Records an error occured while measuring.
+	 * 
+	 * @param host the host to record an error for
+	 * @param entryId many measures/errors can be grouped to one entry
+	 * @param error the occored exception
+	 */
+	void record(Host host, long entryId, Exception error);
 }

@@ -34,7 +34,7 @@ public final class MethodCallStage implements MonitoringStage, ServiceUpdateList
 	private final String logFilesUrl; // TODO should be moved somewhere in the logging classes
 	// private final ExecutorService executor;
 
-	private List<Service> services = Collections.emptyList();
+	private Set<Service> services = Collections.emptySet();
 	private List<ServiceStatusDetails> servicesStatus = Collections.emptyList();
 
 	@Autowired
@@ -133,7 +133,7 @@ public final class MethodCallStage implements MonitoringStage, ServiceUpdateList
 	}
 
 	@Override
-	public synchronized void updateServices(List<Service> newServices) {
+	public synchronized void updateServices(Set<Service> newServices) {
 		this.services = newServices;
 	}
 }

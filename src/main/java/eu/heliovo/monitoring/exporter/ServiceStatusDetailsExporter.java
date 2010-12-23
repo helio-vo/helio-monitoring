@@ -13,5 +13,4 @@ import eu.heliovo.monitoring.model.ServiceStatusDetails;
 public interface ServiceStatusDetailsExporter {
 
 	void exportServiceStatusDetails(List<ServiceStatusDetails> serviceStatusDetails);
-
 }

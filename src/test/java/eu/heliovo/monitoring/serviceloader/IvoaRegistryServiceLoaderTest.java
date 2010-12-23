@@ -1,6 +1,6 @@
 package eu.heliovo.monitoring.serviceloader;
 
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import junit.framework.Assert;
@@ -24,7 +24,7 @@ public class IvoaRegistryServiceLoaderTest extends Assert {
 	public void testRegistryClient() throws Exception {
 		
 		ServiceLoader serviceloader = new IvoaRegistryServiceLoader(registryUrl, executor);
-		List<Service> services = serviceloader.loadServices();
+		Set<Service> services = serviceloader.loadServices();
 		for (Service service : services) {
 			System.out.println(service.getName() + " " + service.getUrl());
 		}

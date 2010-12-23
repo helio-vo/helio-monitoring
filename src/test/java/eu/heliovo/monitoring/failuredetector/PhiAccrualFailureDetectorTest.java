@@ -25,7 +25,7 @@ public class PhiAccrualFailureDetectorTest extends Assert {
 	@Test
 	public void testFailureDetector() throws Exception {
 
-		List<Host> monitoredHosts = getHostsToBeMonitored();
+		Set<Host> monitoredHosts = getHostsToBeMonitored();
 		failureDetector.updateHosts(monitoredHosts);
 
 		startRegularlyFailureDetection();
@@ -38,7 +38,7 @@ public class PhiAccrualFailureDetectorTest extends Assert {
 		executor.awaitTermination(60, TimeUnit.SECONDS);
 	}
 
-	private List<Host> getHostsToBeMonitored() {
+	private Set<Host> getHostsToBeMonitored() {
 		List<HostUpdateListener> listeners = Collections.emptyList();
 		ServiceToHostAdapter serviceToHostAdapter = new ServiceToHostAdapter(null, listeners);
 		return serviceToHostAdapter.getHostsFromServices(TestServices.LIST);
@@ -58,7 +58,7 @@ public class PhiAccrualFailureDetectorTest extends Assert {
 		Thread.sleep(4500);
 	}
 
-	private void outputResults(List<Host> hosts) {
+	private void outputResults(Collection<Host> hosts) {
 		for (Host host : hosts) {
 			System.out.print("host: " + host.getName());
 			System.out.print(" isAlive: " + failureDetector.isAlive(host));
@@ -68,7 +68,8 @@ public class PhiAccrualFailureDetectorTest extends Assert {
 
 	private void testHostNotMonitored() throws Exception {
 
-		Host noMonitoredHost = ModelFactory.newHost(new URL("http://www.google.com"), new ArrayList<Service>());
+		Set<Service> emptyServices = Collections.emptySet();
+		Host noMonitoredHost = ModelFactory.newHost(new URL("http://www.google.com"), emptyServices);
 
 		boolean exceptionThrown = false;
 		try {

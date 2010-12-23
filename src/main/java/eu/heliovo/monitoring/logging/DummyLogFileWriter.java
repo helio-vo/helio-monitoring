@@ -9,6 +9,12 @@ package eu.heliovo.monitoring.logging;
  */
 public final class DummyLogFileWriter implements LogFileWriter {
 
+	private final String errorMessage;
+
+	public DummyLogFileWriter(String errorMessage) {
+		this.errorMessage = errorMessage;
+	}
+
 	@Override
 	public void write(final String text) {
 	}
@@ -27,4 +33,7 @@ public final class DummyLogFileWriter implements LogFileWriter {
 		return "";
 	}
 
+	protected String getErrorMessage() {
+		return errorMessage;
+	}
 }

@@ -55,7 +55,8 @@ public final class LoggingHelper {
 	public static String getLogFileText(LogFileWriter logFileWriter, String logFilesUrl) {
 
 		if (DummyLogFileWriter.class.equals(logFileWriter.getClass())) {
-			return "";
+			DummyLogFileWriter dummyLogFileWriter = (DummyLogFileWriter) logFileWriter;
+			return ", no log file available, an error occured creating it: " + dummyLogFileWriter.getErrorMessage();
 		}
 
 		final StringBuffer buffer = new StringBuffer();

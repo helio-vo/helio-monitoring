@@ -1,6 +1,6 @@
 package eu.heliovo.monitoring.serviceloader;
 
-import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ import eu.heliovo.monitoring.statics.Services;
 public final class StaticServiceLoader implements ServiceLoader {
 
 	@Override
-	public List<Service> loadServices() {
+	public Set<Service> loadServices() {
 		return Services.LIST;
 	}
 }

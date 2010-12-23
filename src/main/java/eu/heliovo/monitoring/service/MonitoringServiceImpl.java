@@ -5,7 +5,6 @@ import java.util.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.util.Assert;
 
 import eu.heliovo.monitoring.exporter.ServiceStatusDetailsExporter;
 import eu.heliovo.monitoring.listener.ServiceUpdateListener;
@@ -31,18 +30,19 @@ public final class MonitoringServiceImpl implements MonitoringService {
 
 	private final ServiceLoader serviceLoader;
 	private final List<ServiceUpdateListener> serviceUpdateListeners;
-
 	private final ServiceStatusDetailsExporter serviceStatusDetailsExporter;
 
+	private int currentServicesHashCode = 0;
+
+	// for manual service definition, please use "staticServiceLoader" as qualifier and define services in Services.java
 	@Autowired
-	public MonitoringServiceImpl(
-			PingStage pingStage,
-			MethodCallStage methodCallStage,
+	public MonitoringServiceImpl(PingStage pingStage, MethodCallStage methodCallStage,
 			TestingStage testingStage,
-			@Qualifier("staticServiceLoader") ServiceLoader serviceLoader,
-			@Qualifier("compositeServiceStatusDetailsExporter") ServiceStatusDetailsExporter serviceStatusDetailsExporter,
-			List<ServiceUpdateListener> serviceUpdateListeners) { // Spring automatically injects all components of
-																	// those listeners
+			@Qualifier("ivoaRegistryServiceLoader") ServiceLoader serviceLoader,
+			ServiceStatusDetailsExporter serviceStatusDetailsExporter,
+			List<ServiceUpdateListener> serviceUpdateListeners) { // Spring automatically injects all components
+																	// implementing the ServiceUpdateListener interface
+
 		this.pingStage = pingStage;
 		this.methodCallStage = methodCallStage;
 		this.testingStage = testingStage;
@@ -50,30 +50,29 @@ public final class MonitoringServiceImpl implements MonitoringService {
 		this.serviceStatusDetailsExporter = serviceStatusDetailsExporter;
 		this.serviceUpdateListeners = Collections.unmodifiableList(serviceUpdateListeners);
 
-		this.validateState();
 		this.updateServices();
+		// TODO dont update here when services are fetched from the registry, deployment/starting of the service could
+		// take too much time, or use a start delay, but what to do without services? persist the last list somewhere?
 	}
 
-	private void validateState() {
-
-		Assert.notNull(pingStage, "the pingStage must not be null");
-		Assert.notNull(methodCallStage, "the methodCallStage must not be null");
-		Assert.notNull(testingStage, "the testingStage must not be null");
-	}
-
-	// TODO extract update methods to a new class
 	/**
 	 * This method is called regularly from Spring to update the available services using the Scheduled annotation.
 	 */
 	@Scheduled(cron = "${registry.updateInterval.cronValue}")
 	protected void updateServices() {
 
-		// TODO automatic nagios config generation needed, static service definition used till implemented
-		List<Service> newServices = serviceLoader.loadServices();
-		updateServiceUpdateListeners(newServices);
+		Set<Service> newServices = serviceLoader.loadServices();
+		updateServiceUpdateListenersOnChange(newServices);
 	}
 
-	private void updateServiceUpdateListeners(List<Service> newServices) {
+	private void updateServiceUpdateListenersOnChange(Set<Service> newServices) {
+		if (newServices.hashCode() != currentServicesHashCode) {
+			updateServiceUpdateListeners(newServices);
+			currentServicesHashCode = newServices.hashCode();
+		}
+	}
+
+	private void updateServiceUpdateListeners(Set<Service> newServices) {
 		for (ServiceUpdateListener listener : serviceUpdateListeners) {
 			listener.updateServices(newServices);
 		}

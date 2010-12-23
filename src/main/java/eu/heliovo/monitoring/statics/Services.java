@@ -10,14 +10,14 @@ import eu.heliovo.monitoring.model.*;
 
 /**
  * 
- * Contains a static list of all monitored services with optional predefined requests and responses.
+ * Contains a static set of all monitored services with optional predefined requests and responses.
  * 
  * @author Kevin Seidler
  * 
  */
 public final class Services {
 
-	public static final List<Service> LIST;
+	public static final Set<Service> LIST;
 
 	private static final String MSSL_URL = "http://msslxw.mssl.ucl.ac.uk:8080/";
 
@@ -27,7 +27,7 @@ public final class Services {
 	static {
 
 		try {
-			List<Service> services = new ArrayList<Service>();
+			Set<Service> services = new HashSet<Service>();
 
 			// taken from https://grid.ie/helio/wiki/HelioServicesDetails
 			URL hecUrl = new URL("http://140.105.77.30:8080/helio-hec-r3/HelioService?wsdl");
@@ -39,7 +39,7 @@ public final class Services {
 			services.add(newService("HRS", new URL(MSSL_URL + "helio_registry/HelioService?wsdl")));
 			services.add(newService("HFC", new URL("http://helio-fc1.obspm.fr:8080/helio-hfc/HelioService?wsdl")));
 
-			LIST = Collections.unmodifiableList(services);
+			LIST = Collections.unmodifiableSet(services);
 
 		} catch (final MalformedURLException e) {
 			throw new IllegalArgumentException(e.getMessage(), e);

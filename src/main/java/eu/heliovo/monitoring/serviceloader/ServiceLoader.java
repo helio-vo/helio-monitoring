@@ -1,6 +1,6 @@
 package eu.heliovo.monitoring.serviceloader;
 
-import java.util.List;
+import java.util.Set;
 
 import eu.heliovo.monitoring.model.Service;
 
@@ -12,5 +12,5 @@ import eu.heliovo.monitoring.model.Service;
  */
 public interface ServiceLoader {
 
-	List<Service> loadServices();
+	Set<Service> loadServices();
 }

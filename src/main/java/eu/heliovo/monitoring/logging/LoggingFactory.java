@@ -32,7 +32,7 @@ public final class LoggingFactory {
 		} catch (RuntimeException e) {
 			Logger logger = Logger.getLogger(LoggingFactory.class);
 			logger.warn("LogFileWriter could not be created: " + e.getMessage() + " using Dummy", e);
-			return new DummyLogFileWriter();
+			return new DummyLogFileWriter(e.getMessage());
 		}
 	}
 }

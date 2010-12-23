@@ -1,233 +1,83 @@
 package eu.heliovo.monitoring.exporter;
 
 import static eu.heliovo.monitoring.model.ModelFactory.newServiceStatusDetails;
+import static eu.heliovo.monitoring.model.ServiceStatus.CRITICAL;
+import static eu.heliovo.monitoring.model.ServiceStatus.OK;
 
-import java.io.File;
 import java.net.URL;
 import java.util.*;
 
 import junit.framework.Assert;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.junit.*;
 
-import eu.heliovo.monitoring.model.*;
+import eu.heliovo.monitoring.model.ServiceStatusDetails;
 
 public class NagiosServiceStatusDetailsExporterTest extends Assert {
 
-	private final Logger logger = Logger.getLogger(this.getClass());
+	private final List<ServiceStatusDetails> serviceStatusDetails = new ArrayList<ServiceStatusDetails>();
 
-	@Test
-	public void testWriteToNagios() throws Exception {
+	private class TestNagiosCommandWriter implements NagiosCommandWriter {
 
-		long time = Long.MIN_VALUE;
-		NagiosCommand command = NagiosCommand.PROCESS_SERVICE_CHECK_RESULT;
-		String hostName = "";
-		String serviceName = "";
-		NagiosServiceStatus status = NagiosServiceStatus.WARNING;
-		String statusMessage = "";
+		@Override
+		public void write(NagiosCommand command, List<String> commandArguments) {
 
-		/*
-		 * test for failing file creation
-		 */
+			assertTrue(command.equals(NagiosCommand.PROCESS_SERVICE_CHECK_RESULT));
 
-		boolean illegalStateException = false;
-		try {
-			NagiosServiceStatusDetailsExporter daemon = new NagiosServiceStatusDetailsExporter("", true);
-			daemon.writeToNagiosExternalCommandFile(time, command, hostName, serviceName, status, statusMessage);
-		} catch (final IllegalStateException e) {
-			illegalStateException = true;
+			String serviceName = commandArguments.get(1);
+			boolean serviceNameFound = false;
+
+			for (ServiceStatusDetails details : serviceStatusDetails) {
+				if (details.getName().equals(serviceName)) {
+					serviceNameFound = true;
+
+					String hostName = commandArguments.get(0);
+					String status = commandArguments.get(2);
+					String statusMessage = commandArguments.get(3);
+
+					NagiosServiceStatus expectedNagiosStatus = NagiosServiceStatus.valueOf(details.getStatus().name());
+
+					assertEquals(details.getUrl().getHost(), hostName);
+					assertEquals(String.valueOf(expectedNagiosStatus.ordinal()), status);
+					assertEquals(details.getMessage(), statusMessage);
+
+					break;
+				}
+
+			}
+			assertTrue(serviceNameFound);
 		}
-		assertTrue(illegalStateException);
+	};
 
-		/*
-		 * test for forceNagiosExternalCommandFileCreation = false
-		 */
+	@Before
+	public void initTestServiceStatusDetails() throws Exception {
 
-		NagiosServiceStatusDetailsExporter daemon = new NagiosServiceStatusDetailsExporter("nagios", false);
-		// just a warning log message that this file does not exist and is not allowed to be created
+		String firstMessage = OK.name() + " - response time = " + 5 + " ms";
+		String firstUrl = "http://helio.i4ds.technik.fhnw.ch:8080/core/HECService?wsdl";
+		ServiceStatusDetails first = newServiceStatusDetails("HEC", new URL(firstUrl), OK, 5, firstMessage);
 
-		/*
-		 * test for file is not a file
-		 */
+		URL secondUrl = new URL("http://helio.i4ds.technik.fhnw.ch:8080/core/FrontendFacadeService?wsdl");
+		String secondMessage = CRITICAL.name() + " - response time = " + 10 + " ms";
+		ServiceStatusDetails second = newServiceStatusDetails("FrontendFacade", secondUrl, CRITICAL, 10, secondMessage);
 
-		File nagiosExternalCommandFile = new File("nagios");
-		if (!nagiosExternalCommandFile.exists() && !nagiosExternalCommandFile.mkdir()) {
-			throw new IllegalStateException("directory could not be created!");
-		}
-		daemon = new NagiosServiceStatusDetailsExporter("nagios", true);
+		URL thirdUrl = new URL("http://helio-dev.i4ds.technik.fhnw.ch/helio-wf/WorkflowsService?wsdl");
+		String thirdMessage = CRITICAL.name() + " - response time = " + 15 + " ms";
+		String thirdServiceName = "helio-dev WorkflowsService";
+		ServiceStatusDetails third = newServiceStatusDetails(thirdServiceName, thirdUrl, CRITICAL, 15, thirdMessage);
 
-		illegalStateException = false;
-		try {
-			daemon.writeToNagiosExternalCommandFile(time, command, hostName, serviceName, status, statusMessage);
-		} catch (final IllegalStateException e) {
-			illegalStateException = true;
-		}
-		assertTrue(illegalStateException);
+		serviceStatusDetails.add(first);
+		serviceStatusDetails.add(second);
+		serviceStatusDetails.add(third);
 
-		/*
-		 * test for canWrite?
-		 */
-
-		nagiosExternalCommandFile = new File("nagios.cmd");
-		if (!nagiosExternalCommandFile.exists() && !nagiosExternalCommandFile.createNewFile()) {
-			throw new IllegalStateException("nagiosExternalCommandFile could not be created!");
-		}
-		if (!nagiosExternalCommandFile.setReadOnly()) {
-			throw new IllegalStateException("readOnly cannot be set!");
-		}
-		// nagiosExternalCommandFile is now readOnly
-
-		illegalStateException = false;
-		try {
-			daemon = new NagiosServiceStatusDetailsExporter(nagiosExternalCommandFile.getPath(), true);
-			daemon.writeToNagiosExternalCommandFile(time, command, hostName, serviceName, status, statusMessage);
-		} catch (final IllegalStateException e) {
-			illegalStateException = true;
-		}
-		assertTrue(illegalStateException);
-
-		/*
-		 * test for written correctly
-		 */
-
-		if (nagiosExternalCommandFile.exists() && !nagiosExternalCommandFile.delete()) {
-			throw new IllegalStateException("file nagios.cmd could not be deleted!");
-		}
-
-		nagiosExternalCommandFile = new File("nagios.cmd");
-		daemon = new NagiosServiceStatusDetailsExporter("nagios.cmd", true);
-
-		time = System.currentTimeMillis() / 1000;
-		command = NagiosCommand.PROCESS_SERVICE_CHECK_RESULT;
-		hostName = "development";
-		serviceName = "someService";
-		status = NagiosServiceStatus.OK;
-		statusMessage = "someService is working as expected";
-
-		daemon.writeToNagiosExternalCommandFile(time, command, hostName, serviceName, status, statusMessage);
-
-		assertTrue(nagiosExternalCommandFile.exists());
-
-		@SuppressWarnings("unchecked")
-		List<String> lines = FileUtils.readLines(nagiosExternalCommandFile, NagiosServiceStatusDetailsExporter.FILE_ENCODING);
-
-		assertNotNull(lines);
-		assertTrue(lines.size() > 0);
-
-		final String actualLastLine = lines.get(lines.size() - 1);
-
-		final String expectedLastLine = buildCommandLine(time, hostName, serviceName, status, statusMessage);
-
-		logger.debug("expectedLastLine: " + expectedLastLine);
-		logger.debug("actualLastLine: " + actualLastLine);
-
-		assertEquals(expectedLastLine, actualLastLine);
-
-		// TODO test null Parameters etc.
+		assertEquals(3, serviceStatusDetails.size());
 	}
 
 	@Test
 	public void testWriteServiceStatusToNagios() throws Exception {
 
-		final File nagiosExternalCommandFile = new File("nagios2.cmd");
-		final ServiceStatusDetailsExporter daemon = new NagiosServiceStatusDetailsExporter("nagios2.cmd", true);
+		TestNagiosCommandWriter testCommandWriter = new TestNagiosCommandWriter();
+		ServiceStatusDetailsExporter exporter = new NagiosServiceStatusDetailsExporter(testCommandWriter);
 
-		final List<ServiceStatusDetails> serviceStatus = new ArrayList<ServiceStatusDetails>();
-
-		final String message = ServiceStatus.OK.name() + " - response time = " + 5 + " ms";
-		final String firstUrl = "http://helio.i4ds.technik.fhnw.ch:8080/core/HECService?wsdl";
-		final ServiceStatusDetails first = newServiceStatusDetails("HEC", new URL(firstUrl), ServiceStatus.OK, 5, message);
-		serviceStatus.add(first);
-
-		final ServiceStatusDetails second = newServiceStatusDetails("FrontendFacade", new URL(
-				"http://helio.i4ds.technik.fhnw.ch:8080/core/FrontendFacadeService?wsdl"), ServiceStatus.CRITICAL, 10,
-				ServiceStatus.CRITICAL.name() + " - response time = " + 10 + " ms");
-		serviceStatus.add(second);
-
-		final ServiceStatusDetails third = newServiceStatusDetails("helio-dev WorkflowsService", new URL(
-				"http://helio-dev.i4ds.technik.fhnw.ch/helio-wf/WorkflowsService?wsdl"), ServiceStatus.CRITICAL, 15,
-				ServiceStatus.CRITICAL.name() + " - response time = " + 15 + " ms");
-		serviceStatus.add(third);
-
-		assertTrue(serviceStatus.size() == 3);
-
-		daemon.exportServiceStatusDetails(serviceStatus);
-
-		@SuppressWarnings("unchecked")
-		final List<String> lines = FileUtils.readLines(nagiosExternalCommandFile, NagiosServiceStatusDetailsExporter.FILE_ENCODING);
-
-		assertTrue(lines.size() == 3);
-
-		logger.debug("=== lines: ===");
-		for (final String line : lines) {
-			logger.debug(line);
-		}
-		logger.debug("=== end lines ===");
-
-		final String actualFirstLine = lines.get(0);
-
-		long time = System.currentTimeMillis() / 1000;
-		String hostName = "helio.i4ds.technik.fhnw.ch";
-		String statusMessage = first.getStatus().name() + " - response time = " + first.getResponseTimeInMillis() + " ms";
-
-		final String expectedFirstLine = buildCommandLine(time, hostName, "HEC", NagiosServiceStatus.OK, statusMessage);
-
-		logger.debug("expectedFirstLine: " + expectedFirstLine);
-		logger.debug("actualFirstLine: " + actualFirstLine);
-
-		assertEquals(expectedFirstLine, actualFirstLine);
-
-		final String actualSecondLine = lines.get(1);
-
-		time = System.currentTimeMillis() / 1000;
-		hostName = "helio.i4ds.technik.fhnw.ch";
-		statusMessage = second.getStatus().name() + " - response time = " + second.getResponseTimeInMillis() + " ms";
-
-		final String expectedSecondLine = buildCommandLine(time, hostName, "FrontendFacade", NagiosServiceStatus.CRITICAL,
-				statusMessage);
-
-		logger.debug("expectedSecondLine: " + expectedSecondLine);
-		logger.debug("actualSecondLine: " + actualSecondLine);
-
-		assertEquals(expectedSecondLine, actualSecondLine);
-	}
-
-	private final static String buildCommandLine(final long time, final String hostName, final String serviceName,
-			final NagiosServiceStatus status, final String statusMessage) {
-
-		// building nagios command line, e.g.: [1268669735]
-		// PROCESS_SERVICE_CHECK_RESULT;development;HECWebService.sql;1;Hello
-		// World!
-
-		final StringBuffer buffer = new StringBuffer("[");
-		buffer.append(time);
-		buffer.append("]");
-		buffer.append(" ");
-		buffer.append(NagiosCommand.PROCESS_SERVICE_CHECK_RESULT.name());
-		buffer.append(";");
-		buffer.append(hostName);
-		buffer.append(";");
-		buffer.append(serviceName);
-		buffer.append(";");
-		buffer.append(status.ordinal());
-		buffer.append(";");
-		buffer.append(statusMessage);
-
-		return buffer.toString();
-	}
-
-	@AfterClass
-	public static void cleanUp() {
-		if (new File("nagios.cmd").exists() && !new File("nagios.cmd").delete()) {
-			throw new IllegalStateException("file nagios.cmd could not be deleted!");
-		}
-		if (new File("nagios2.cmd").exists() && !new File("nagios2.cmd").delete()) {
-			throw new IllegalStateException("file nagios.cmd could not be deleted!");
-		}
-		if (new File("nagios").exists() && !new File("nagios").delete()) {
-			throw new IllegalStateException("directory nagios could not be deleted!");
-		}
+		exporter.exportServiceStatusDetails(serviceStatusDetails);
 	}
 }

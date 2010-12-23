@@ -25,10 +25,4 @@
 		<property name="allowCoreThreadTimeOut" value="true" />
 	</bean>
 
-	<!-- remoting -->
-	<bean id="remoteServiceStatusDetailsExporter" class="org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean">
-		<property name="serviceUrl" value="${remoteServiceDetailsExporterUrl}" />
-		<property name="serviceInterface" value="eu.heliovo.monitoring.exporter.ServiceStatusDetailsExporter" />
-	</bean>
-
 </beans>

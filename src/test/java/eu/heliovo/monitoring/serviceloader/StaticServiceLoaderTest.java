@@ -1,6 +1,6 @@
 package eu.heliovo.monitoring.serviceloader;
 
-import java.util.List;
+import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -15,7 +15,7 @@ public class StaticServiceLoaderTest extends Assert {
 	public void testRegistryClient() throws Exception {
 		
 		ServiceLoader serviceLoader = new StaticServiceLoader();
-		List<Service> services = serviceLoader.loadServices();
+		Set<Service> services = serviceLoader.loadServices();
 		assertTrue(services == Services.LIST);
 	}
 }

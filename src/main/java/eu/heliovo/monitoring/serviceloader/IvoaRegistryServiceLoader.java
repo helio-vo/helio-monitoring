@@ -25,7 +25,7 @@ import eu.heliovo.monitoring.model.Service;
 public final class IvoaRegistryServiceLoader implements ServiceLoader {
 
 	private static final String ADQLS_QUERY = "capability/@standardID='ivo://helio-vo.eu/std/FullQuery/v0.2'";
-	private static final int SOAP_SERVICE = 1;
+	private static final int SOAP_SERVICE_INDEX = 1;
 	private static final String INTERFACE_NAME = "HelioService";
 	private static final String WSDL_SUFFIX = "?wsdl";
 	private static final int RESPONSE_TIMEOUT = 10;
@@ -49,7 +49,7 @@ public final class IvoaRegistryServiceLoader implements ServiceLoader {
 	 * Reads the actual services from the Registry Service.
 	 */
 	@Override
-	public List<Service> loadServices() {
+	public Set<Service> loadServices() {
 
 		// TODO get services from registry, if registry down => no services, if services successfully retrived in the
 		// past, use these old infos till registry on again and display offline/broken registry in nagios
@@ -61,7 +61,7 @@ public final class IvoaRegistryServiceLoader implements ServiceLoader {
 
 			Iterator<BasicResource> iterator = callRegistryAndGetIterator(registryClient, soapRequest);
 
-			List<Service> services = new ArrayList<Service>();
+			Set<Service> services = new HashSet<Service>();
 			while (iterator.hasNext()) {
 				
 				BasicResource registryResource = iterator.next();
@@ -72,14 +72,14 @@ public final class IvoaRegistryServiceLoader implements ServiceLoader {
 					logger.warn("service URL was malformed, service could not be added", e);
 				}
 			}
-			return Collections.unmodifiableList(services);
+			return Collections.unmodifiableSet(services);
 
 			// TODO write logs? derive registry status for monitoring? force registry check?
 		} catch (Exception e) {
 			logger.warn("services could not be retrieved from the registry", e);
 		}
 
-		return Collections.emptyList();
+		return Collections.emptySet();
 	}
 
 	private Iterator<BasicResource> callRegistryAndGetIterator(final BasicRegistryClient registryClient,
@@ -120,9 +120,9 @@ public final class IvoaRegistryServiceLoader implements ServiceLoader {
 
 	private String getServiceUrl(BasicCapability[] capabilities) {
 
-		if (capabilities.length > SOAP_SERVICE) {
+		if (capabilities.length > SOAP_SERVICE_INDEX) {
 
-			String serviceUrl = capabilities[SOAP_SERVICE].getAccessUrl();
+			String serviceUrl = capabilities[SOAP_SERVICE_INDEX].getAccessUrl();
 			if (hasText(serviceUrl) && serviceUrl.endsWith(INTERFACE_NAME)) {
 				return serviceUrl;
 			}

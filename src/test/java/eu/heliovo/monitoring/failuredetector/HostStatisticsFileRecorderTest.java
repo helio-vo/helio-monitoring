@@ -1,7 +1,9 @@
 package eu.heliovo.monitoring.failuredetector;
 
+import static eu.heliovo.monitoring.failuredetector.HostStatisticsFileRecorder.STATISTIC_FILE_SUFFIX;
+
 import java.io.*;
-import java.net.URL;
+import java.net.*;
 import java.util.*;
 
 import junit.framework.Assert;
@@ -26,11 +28,15 @@ public class HostStatisticsFileRecorderTest extends Assert {
 
 		HostStatisticsFileRecorder recorder = new HostStatisticsFileRecorder(statisticFilesDir.getPath());
 
-		List<Service> services = Collections.emptyList();
+		Set<Service> services = Collections.emptySet();
 		Host host1 = ModelFactory.newHost(new URL("http://host1.de:1234/"), services);
 		Host host2 = ModelFactory.newHost(new URL("http://host2.com:1234/"), services);
 
-		recorder.updateHosts(Arrays.asList(new Host[] { host1, host2 }));
+		Set<Host> newHosts = new HashSet<Host>();
+		newHosts.add(host1);
+		newHosts.add(host2);
+
+		recorder.updateHosts(newHosts);
 
 		long entryId = recorder.getNextEntryId(host1);
 		long entryId2 = recorder.getNextEntryId(host1);
@@ -42,32 +48,37 @@ public class HostStatisticsFileRecorderTest extends Assert {
 		
 		recorder.closeAllFileWriters(); // closing all internal fileWriters forces a flush, otherwise the files are empty
 
-		File[] statisticFiles = statisticFilesDir.listFiles();
-		assertEquals(2, statisticFiles.length);
+		List<String> statisticFiles = Arrays.asList(statisticFilesDir.list());
+		assertEquals(2, statisticFiles.size());
 
-		File statisticsFileHost1 = statisticFiles[0];
-		File statisticsFileHost2 = statisticFiles[1];
+		String expectedHost1FileName = host1.getName() + STATISTIC_FILE_SUFFIX;
+		String expectedHost2FileName = host2.getName() + STATISTIC_FILE_SUFFIX;
 
-		validateFileNames(host1, host2, statisticsFileHost1, statisticsFileHost2);
+		System.out.println("statisticFilesDir files:");
+		for (String string : statisticFiles) {
+			System.out.println(string);
+		}
+
+		assertTrue(statisticFiles.contains(expectedHost1FileName));
+		assertTrue(statisticFiles.contains(expectedHost2FileName));
+
+		File statisticsFileHost1 = new File(statisticFilesDir, expectedHost1FileName);
+		File statisticsFileHost2 = new File(statisticFilesDir, expectedHost2FileName);
 
 		List<String> linesHost1 = printContentStatisticsFileHost1(statisticsFileHost1);
-		validateStatisticsFileHost1(entryId, entryId2, linesHost1);
+		validateContentStatisticsFileHost1(entryId, entryId2, linesHost1);
 
 		List<String> linesHost2 = printContentStatisticsFileHost2(statisticsFileHost2);
-		validateStatisticsFileHost2(entryIdHost2, linesHost2);
+		validateContentStatisticsFileHost2(entryIdHost2, linesHost2);
 
 		cleanUp();
 	}
 
-	private void validateStatisticsFileHost2(long entryIdHost2, List<String> linesHost2) {
+	private void validateContentStatisticsFileHost2(long entryIdHost2, List<String> linesHost2) {
 		assertTrue(linesHost2.contains(entryIdHost2 + " " + 1225345));
 		assertTrue(linesHost2.contains(entryIdHost2 + " " + 23342));
 		assertTrue(linesHost2.contains(entryIdHost2 + " " + 87733));
-	}
-
-	private void validateFileNames(Host host1, Host host2, File statisticsFileHost1, File statisticsFileHost2) {
-		assertEquals(host1.getName() + HostStatisticsFileRecorder.STATISTIC_FILE_SUFFIX, statisticsFileHost1.getName());
-		assertEquals(host2.getName() + HostStatisticsFileRecorder.STATISTIC_FILE_SUFFIX, statisticsFileHost2.getName());
+		assertTrue(linesHost2.contains(entryIdHost2 + " " + "java.net.ConnectException: too many connections!"));
 	}
 
 	private List<String> printContentStatisticsFileHost2(File statisticsFileHost2) throws IOException {
@@ -90,7 +101,7 @@ public class HostStatisticsFileRecorderTest extends Assert {
 		return linesHost1;
 	}
 
-	private void validateStatisticsFileHost1(long entryId, long entryId2, List<String> linesHost1) {
+	private void validateContentStatisticsFileHost1(long entryId, long entryId2, List<String> linesHost1) {
 		assertTrue(linesHost1.contains(entryId + " " + 12345));
 		assertTrue(linesHost1.contains(entryId + " " + 232));
 		assertTrue(linesHost1.contains(entryId + " " + 122446467));
@@ -114,6 +125,8 @@ public class HostStatisticsFileRecorderTest extends Assert {
 		recorder.record(host2, entryIdHost2, 1225345);
 		recorder.record(host2, entryIdHost2, 23342);
 		recorder.record(host2, entryIdHost2, 87733);
+
+		recorder.record(host2, entryIdHost2, new ConnectException("too many connections!"));
 	}
 
 	private void cleanUp() {

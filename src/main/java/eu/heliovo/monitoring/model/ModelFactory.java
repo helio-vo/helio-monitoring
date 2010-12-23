@@ -1,7 +1,7 @@
 package eu.heliovo.monitoring.model;
 
 import java.net.URL;
-import java.util.List;
+import java.util.*;
 
 import org.springframework.util.StringUtils;
 
@@ -17,7 +17,7 @@ public final class ModelFactory {
 	private ModelFactory() {
 	}
 
-	public static Host newHost(URL url, List<Service> services) {
+	public static Host newHost(URL url, Set<Service> services) {
 		return new HostImpl(url, services);
 	}
 

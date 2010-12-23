@@ -46,22 +46,22 @@ public final class HostStatisticsFileRecorder implements HostStatisticsRecorder 
 		}
 		return statisticFilesDir;
 	}
-	
+
 	@Override
-	public void updateHosts(List<Host> newHosts) {
+	public void updateHosts(Set<Host> newHosts) {
 		removeOldFileWriters(newHosts);
 		addNewFileWriters(newHosts);
 	}
-	
-	private void removeOldFileWriters(List<Host> newHosts) {
+
+	private void removeOldFileWriters(Set<Host> newHosts) {
 		for (Host hostFromStatistics : fileWriters.keySet()) {
 			if (!newHosts.contains(hostFromStatistics)) {
 				fileWriters.remove(hostFromStatistics);
 			}
 		}
 	}
-	
-	private void addNewFileWriters(List<Host> newHosts) {
+
+	private void addNewFileWriters(Set<Host> newHosts) {
 		for (Host newHost : newHosts) {
 			if (!fileWriters.containsKey(newHost)) {
 				try {
@@ -73,7 +73,7 @@ public final class HostStatisticsFileRecorder implements HostStatisticsRecorder 
 			}
 		}
 	}
-	
+
 	protected void closeAllFileWriters() {
 		for (EntryIdFileWriter fileWriter : fileWriters.values()) {
 			try {
@@ -86,8 +86,18 @@ public final class HostStatisticsFileRecorder implements HostStatisticsRecorder 
 
 	@Override
 	public void record(Host host, long entryId, long measure) {
+		String text = entryId + " " + measure + "\n";
+		record(host, text);
+	}
+
+	@Override
+	public void record(Host host, long entryId, Exception error) {
+		String text = entryId + " " + error.getClass().getName() + ": " + error.getMessage() + "\n";
+		record(host, text);
+	}
+
+	private void record(Host host, String text) {
 		try {
-			String text = entryId + " " + measure + "\n";
 			EntryIdFileWriter fileWriter = fileWriters.get(host);
 			fileWriter.write(text);
 		} catch (IOException e) {

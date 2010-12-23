@@ -15,8 +15,6 @@ public class PingStageTest extends Assert {
 	@Test
 	public void testPingStage() throws Exception {
 
-		// FIXME returns status CRITICAL for every service
-
 		final PingStage pingStage = new PingStage(FailureDetectorTestUtils.getServiceFailureDetector());
 		pingStage.updateStatus();
 

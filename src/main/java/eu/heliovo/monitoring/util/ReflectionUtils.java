@@ -1,8 +1,13 @@
 package eu.heliovo.monitoring.util;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
+/**
+ * Utility methods in the context of reflection.
+ * 
+ * @author Kevin Seidler
+ * 
+ */
 public final class ReflectionUtils {
 
 	private ReflectionUtils() {

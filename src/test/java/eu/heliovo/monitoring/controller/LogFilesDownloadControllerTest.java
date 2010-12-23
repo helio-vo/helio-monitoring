@@ -17,12 +17,7 @@ public class LogFilesDownloadControllerTest extends Assert {
 	@Test
 	public void testDownloadLogFileWithExistingFile() throws Exception {
 
-		LogFileWriter logFileWriter = LoggingTestUtils.getLoggingFactory().newLogFileWriter("FooBarService");
-		logFileWriter.write("created");
-
-		String logFileName = logFileWriter.getFileName();
-
-		logFileWriter.close();
+		String logFileName = createLogFileForTesting();
 
 		LogFilesDownloadController controller = new LogFilesDownloadController(logDir);
 
@@ -35,8 +30,7 @@ public class LogFilesDownloadControllerTest extends Assert {
 		assertEquals(200, response.getStatus());
 
 		byte[] responseContent = response.getContentAsByteArray();
-		File responseOutputFile = new File(logDir, "responseOutput.txt");
-		FileCopyUtils.copy(responseContent, responseOutputFile);
+		File responseOutputFile = writeResponseContentToTempFile(responseContent);
 		FileReader fileReader = new FileReader(responseOutputFile);
 
 		char[] responseOutputFileContent = new char[1000];
@@ -49,6 +43,25 @@ public class LogFilesDownloadControllerTest extends Assert {
 		assertTrue(responseOutputFileContentAsString.contains("created"));
 
 		fileReader.close();
+	}
+
+	private File writeResponseContentToTempFile(byte[] responseContent) throws IOException {
+		File responseOutputFile = File.createTempFile("responseOutput", ".txt", new File(logDir));
+		responseOutputFile.deleteOnExit();
+
+		FileCopyUtils.copy(responseContent, responseOutputFile);
+		return responseOutputFile;
+	}
+
+	private String createLogFileForTesting() {
+
+		LogFileWriter logFileWriter = LoggingTestUtils.getLoggingFactory().newLogFileWriter("FooBarService");
+		logFileWriter.write("created");
+
+		String logFileName = logFileWriter.getFileName();
+
+		logFileWriter.close();
+		return logFileName;
 	}
 
 	@Test

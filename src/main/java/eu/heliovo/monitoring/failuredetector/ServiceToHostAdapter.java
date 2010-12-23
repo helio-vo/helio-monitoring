@@ -6,13 +6,13 @@ import static eu.heliovo.monitoring.model.ServiceStatus.OK;
 
 import java.net.URL;
 import java.util.*;
-import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import eu.heliovo.monitoring.listener.*;
 import eu.heliovo.monitoring.model.*;
+import eu.heliovo.monitoring.util.ServiceHostUtils;
 
 /**
  * This Adapter wraps the {@link PhiAccrualFailureDetector} which only handles single hosts. Many services can be
@@ -27,7 +27,7 @@ public final class ServiceToHostAdapter implements ServiceFailureDetector, Servi
 	private final FailureDetector failureDetector;
 	private final List<HostUpdateListener> hostUpdateListeners;
 
-	private List<Host> hosts = Collections.emptyList();
+	private Set<Host> hosts = Collections.emptySet();
 
 	@Autowired
 	public ServiceToHostAdapter(FailureDetector failureDetector, List<HostUpdateListener> hostUpdateListeners) {
@@ -36,7 +36,7 @@ public final class ServiceToHostAdapter implements ServiceFailureDetector, Servi
 	}
 
 	@Override
-	public void updateServices(List<Service> newServices) {
+	public void updateServices(Set<Service> newServices) {
 		this.hosts = getHostsFromServices(newServices);
 		updateHostUpdateListeners();
 	}
@@ -65,7 +65,7 @@ public final class ServiceToHostAdapter implements ServiceFailureDetector, Servi
 
 				if (hostIsAlive) {
 
-					String message = "Service host is reachable - response time = " + responseTimeInMillis + " ms";
+					String message = "Service host is reachable, response time = " + responseTimeInMillis + " ms";
 					details = newServiceStatusDetails(serviceName, serviceUrl, OK, responseTimeInMillis, message);
 				} else {
 
@@ -82,34 +82,7 @@ public final class ServiceToHostAdapter implements ServiceFailureDetector, Servi
 		return servicesStatus;
 	}
 
-	protected List<Host> getHostsFromServices(List<Service> newServices) {
-
-		Map<String, List<Service>> hostsWithServices = new HashMap<String, List<Service>>();
-
-		// assemble hosts and their services using a map, because instances implementing the Host interface can only be
-		// created with a complete list of services, which cannot be changed afterwards
-		for (Service service : newServices) {
-
-			URL serviceUrl = service.getUrl();
-			String host = serviceUrl.getHost();
-
-			if (hostsWithServices.containsKey(serviceUrl.getHost())) {
-				List<Service> hostsServices = hostsWithServices.get(host);
-				hostsServices.add(service);
-			} else {
-				List<Service> hostsServices = new ArrayList<Service>();
-				hostsServices.add(service);
-				hostsWithServices.put(host, hostsServices);
-			}
-		}
-
-		// create a List of hosts from the map hostsWithServices
-		List<Host> hosts = new ArrayList<Host>();
-		for (Entry<String, List<Service>> entry : hostsWithServices.entrySet()) {
-			List<Service> hostsServices = entry.getValue();
-			hosts.add(ModelFactory.newHost(hostsServices.get(0).getUrl(), hostsServices));
-		}
-
-		return hosts;
+	protected Set<Host> getHostsFromServices(Set<Service> newServices) {
+		return ServiceHostUtils.getHostsFromServices(newServices);
 	}
 }

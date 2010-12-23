@@ -14,13 +14,14 @@
 	<packaging>war</packaging>
 	<description>
 		This module provides the Helio Monitoring Service which offers monitoring information about the Helio services. 
-		It executes three phases (ping, method call, testing) which result in different testing data. These 
-		information are then delivered to Nagios a monitoring tool for IT infrastructures.
+		It executes three stages (ping, method call, testing) which result in different testing data. These 
+		information are then delivered to Nagios a monitoring tool for IT infrastructures to be displayed. The Helio 
+		Monitoring Service provides an interface to ask for these information.
 	</description>
 	<name>helio-monitoring</name>
 
 	<properties>
-		<!--  common version numbers of dependencies -->
+		<!-- common version numbers of dependencies -->
 		<spring.version>3.0.1.RELEASE</spring.version>
 		<commons-io.verion>1.4</commons-io.verion>
 		<quartz.version>1.6.3</quartz.version>
@@ -110,7 +111,7 @@
 			<artifactId>commons-codec</artifactId>
 			<version>1.4</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>xmlbeans</groupId>
 			<artifactId>xbean</artifactId>
@@ -127,16 +128,16 @@
 			<version>2.4.0</version>
 		</dependency>
 		<dependency>
-            <groupId>saxon</groupId>
-            <artifactId>saxon</artifactId>
-            <version>9.1.0.8j</version>
-        </dependency>
-        <dependency>
-            <groupId>saxon</groupId>
-            <artifactId>saxon-dom</artifactId>
-            <version>9.1.0.8j</version>
-        </dependency>
-		
+			<groupId>saxon</groupId>
+			<artifactId>saxon</artifactId>
+			<version>9.1.0.8j</version>
+		</dependency>
+		<dependency>
+			<groupId>saxon</groupId>
+			<artifactId>saxon-dom</artifactId>
+			<version>9.1.0.8j</version>
+		</dependency>
+
 		<dependency>
 			<groupId>bouncycastle</groupId>
 			<artifactId>bcprov-jdk16</artifactId>
@@ -158,7 +159,7 @@
 			<version>1.4.1</version>
 		</dependency>
 		<!-- end soapUI dependencies -->
-		
+
 		<!-- IVOA registry access -->
 		<dependency>
 			<groupId>starlink</groupId>
@@ -170,21 +171,21 @@
 			<artifactId>ivoaregistry</artifactId>
 			<version>1.0</version>
 		</dependency>
-		
+
 		<!-- used by phi accrual failure detector for statistics -->
 		<dependency>
-    		<groupId>commons-math</groupId>
-    		<artifactId>commons-math</artifactId>
-    		<version>1.2</version>
+			<groupId>commons-math</groupId>
+			<artifactId>commons-math</artifactId>
+			<version>1.2</version>
 		</dependency>
-		
+
 		<!-- for generating nagios configs with templates -->
 		<dependency>
-    		<groupId>antlr</groupId>
-    		<artifactId>stringtemplate</artifactId>
-    		<version>2.3b6</version>
+			<groupId>antlr</groupId>
+			<artifactId>stringtemplate</artifactId>
+			<version>2.3b6</version>
 		</dependency>
-		
+
 	</dependencies>
 
 </project>
