@@ -55,7 +55,6 @@ public class TestingStageTest {
 		for (final ServiceStatusDetails serviceStatusDetails : stage.getServicesStatus()) {
 			System.out.println(serviceStatusDetails.toString());
 		}
-
 	}
 
 }

@@ -23,9 +23,7 @@
 	<properties>
 		<!-- common version numbers of dependencies -->
 		<spring.version>3.0.1.RELEASE</spring.version>
-		<commons-io.verion>1.4</commons-io.verion>
-		<quartz.version>1.6.3</quartz.version>
-		<commons-collections.version>3.2.1</commons-collections.version>
+		<commons-io.verion>2.0</commons-io.verion>
 	</properties>
 
 	<repositories>
@@ -51,12 +49,13 @@
 			<artifactId>spring-webmvc</artifactId>
 			<version>${spring.version}</version>
 		</dependency>
-
+		
 		<!-- utils -->
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>${commons-io.verion}</version>
+			<scope>test</scope>
 		</dependency>
 
 		<!-- servlet api -->
@@ -79,12 +78,13 @@
 		<dependency>
 			<groupId>eviware</groupId>
 			<artifactId>soapui</artifactId>
-			<version>3.0.2</version>
+			<!--version>3.0.2</version-->
+			<version>3.6.1</version>
 		</dependency>
 		<dependency>
 			<groupId>eviware</groupId>
 			<artifactId>soapui-xmlbeans</artifactId>
-			<version>3.5.1</version>
+			<version>3.6.1</version>
 		</dependency>
 		<dependency>
 			<groupId>eviware</groupId>
@@ -99,7 +99,8 @@
 		<dependency>
 			<groupId>commons-httpclient</groupId>
 			<artifactId>commons-httpclient</artifactId>
-			<version>3.0.1-soapui</version>
+			<!--version>3.0.1-soapui</version-->
+			<version>3.1</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-cli</groupId>
@@ -110,6 +111,21 @@
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
 			<version>1.4</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-ssl</groupId>
+			<artifactId>not-yet-commons-ssl</artifactId>
+			<version>0.3.11</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId>
+			<version>1.8.3</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.5</version>
 		</dependency>
 
 		<dependency>
@@ -137,6 +153,11 @@
 			<artifactId>saxon-dom</artifactId>
 			<version>9.1.0.8j</version>
 		</dependency>
+		<dependency>
+			<groupId>xerces</groupId>
+			<artifactId>xerces</artifactId>
+			<version>2.4.0</version>
+		</dependency>
 
 		<dependency>
 			<groupId>bouncycastle</groupId>
@@ -144,19 +165,14 @@
 			<version>140</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-ssl</groupId>
-			<artifactId>not-yet-commons-ssl</artifactId>
-			<version>0.3.11</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-beanutils</groupId>
-			<artifactId>commons-beanutils</artifactId>
-			<version>1.8.3</version>
-		</dependency>
-		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
 			<version>1.4.1</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.jms</groupId>
+			<artifactId>jms</artifactId>
+			<version>1.1</version>
 		</dependency>
 		<!-- end soapUI dependencies -->
 

@@ -52,7 +52,6 @@ public final class ImportWsdlAction implements Action<WsdlInterface> {
 		try {
 			// TODO automatically determine timeout
 			WsdlInterface wsdlInterface = future.get(IMPORT_WSDL_TIMEOUT, TimeUnit.SECONDS);
-
 			logFileWriter.write("Importing finished");
 
 			return wsdlInterface;

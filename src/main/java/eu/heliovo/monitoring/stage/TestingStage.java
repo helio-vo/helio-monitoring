@@ -63,10 +63,11 @@ public final class TestingStage implements MonitoringStage, ServiceUpdateListene
 			String serviceName = service.getName() + SERVICE_NAME_SUFFIX;
 			String logFileWriterName = service.getName() + LOG_FILE_SUFFIX;
 			LogFileWriter logFileWriter = loggingFactory.newLogFileWriter(logFileWriterName);
+			WsdlInterface wsdlInterface = null;
 
 			try {
 
-				WsdlInterface wsdlInterface = stageHelper.importWsdl(logFileWriter, service.getUrl().toString());
+				wsdlInterface = stageHelper.importWsdl(logFileWriter, service.getUrl().toString());
 				Statistic statistic = new Statistic(serviceName, service.getUrl());
 
 				monitorPredefinedOperations(logFileWriter, service, serviceName, wsdlInterface, statistic);
@@ -79,14 +80,13 @@ public final class TestingStage implements MonitoringStage, ServiceUpdateListene
 				// predefined operations
 
 				ServiceStatusDetails serviceStatusDetails = buildServiceStatusDetails(statistic, logFileWriter);
-
 				newCache.add(serviceStatusDetails);
-				wsdlInterface.getProject().release();
 
 			} catch (Exception e) {
 				stageHelper.handleException(e, logFileWriter, serviceName, service, newCache);
+			} finally {
+				stageHelper.cleanUp(logFileWriter, wsdlInterface);
 			}
-			logFileWriter.close();
 		}
 		this.servicesStatus = newCache;
 	}
@@ -375,7 +375,7 @@ public final class TestingStage implements MonitoringStage, ServiceUpdateListene
 	}
 
 	@Override
-	public List<ServiceStatusDetails> getServicesStatus() {
+	public synchronized List<ServiceStatusDetails> getServicesStatus() {
 		return servicesStatus;
 	}
 

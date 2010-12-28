@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.eviware.soapui.impl.wsdl.*;
 import com.eviware.soapui.impl.wsdl.submit.transports.http.WsdlResponse;
+import com.eviware.soapui.impl.wsdl.support.http.HttpClientSupport;
 import com.eviware.soapui.model.iface.Request.SubmitException;
 import com.eviware.soapui.model.testsuite.AssertionError;
 import com.eviware.soapui.support.SoapUIException;
@@ -126,5 +127,14 @@ public final class StageHelper {
 		newCache.add(newServiceStatusDetails(serviceName, service.getUrl(), ServiceStatus.CRITICAL, 0, message));
 
 		logFileWriter.write(exception);
+	}
+
+	protected void cleanUp(LogFileWriter logFileWriter, WsdlInterface wsdlInterface) {
+		if (wsdlInterface != null) {
+			wsdlInterface.getProject().release();
+		}
+		logFileWriter.close();
+		// soapUI maintains a connection pool, they have to be closed for the failure detector to work correctly
+		HttpClientSupport.getHttpClient().getHttpConnectionManager().closeIdleConnections(0);
 	}
 }

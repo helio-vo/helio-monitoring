@@ -13,16 +13,16 @@ import eu.heliovo.monitoring.test.util.TestUtils;
 public class IvoaRegistryServiceLoaderTest extends Assert {
 
 	private static final String registryUrl = "http://msslxw.mssl.ucl.ac.uk:8080/helio_registry/services/RegistryQueryv1_0";
-	
+
 	private final ExecutorService executor;
 
 	public IvoaRegistryServiceLoaderTest() throws Exception {
 		executor = TestUtils.getExecutor();
 	}
-	
+
 	@Test
 	public void testRegistryClient() throws Exception {
-		
+
 		ServiceLoader serviceloader = new IvoaRegistryServiceLoader(registryUrl, executor);
 		Set<Service> services = serviceloader.loadServices();
 		for (Service service : services) {

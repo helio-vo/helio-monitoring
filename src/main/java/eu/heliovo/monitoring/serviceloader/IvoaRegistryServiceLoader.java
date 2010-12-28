@@ -63,7 +63,7 @@ public final class IvoaRegistryServiceLoader implements ServiceLoader {
 
 			Set<Service> services = new HashSet<Service>();
 			while (iterator.hasNext()) {
-				
+
 				BasicResource registryResource = iterator.next();
 				try {
 					Service service = readService(registryResource);
@@ -78,7 +78,6 @@ public final class IvoaRegistryServiceLoader implements ServiceLoader {
 		} catch (Exception e) {
 			logger.warn("services could not be retrieved from the registry", e);
 		}
-
 		return Collections.emptySet();
 	}
 

@@ -16,6 +16,7 @@ import eu.heliovo.monitoring.listener.ServiceUpdateListener;
 import eu.heliovo.monitoring.logging.*;
 import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.util.WsdlValidationUtils;
+
 /**
  * Just calls one method of every service to see that it is working.
  * 
@@ -54,7 +55,7 @@ public final class MethodCallStage implements MonitoringStage, ServiceUpdateList
 	@Override
 	public synchronized void updateStatus() {
 
-		final List<ServiceStatusDetails> servicesStatus = new ArrayList<ServiceStatusDetails>();
+		List<ServiceStatusDetails> servicesStatus = new ArrayList<ServiceStatusDetails>();
 
 		for (Service service : services) {
 
@@ -62,11 +63,12 @@ public final class MethodCallStage implements MonitoringStage, ServiceUpdateList
 			String serviceUrlAsString = service.getUrl().toString();
 			String logFileWriterName = service.getName() + LOG_FILE_SUFFIX;
 			LogFileWriter logFileWriter = loggingFactory.newLogFileWriter(logFileWriterName);
+			WsdlInterface wsdlInterface = null;
 
 			try {
 
 				// WsdlInterface wsdlInterface = importWsdl(logFileWriter, serviceUrlAsString);
-				WsdlInterface wsdlInterface = stageHelper.importWsdl(logFileWriter, serviceUrlAsString);
+				wsdlInterface = stageHelper.importWsdl(logFileWriter, serviceUrlAsString);
 				WsdlOperation operation = selectOperation(wsdlInterface);
 				WsdlRequest request = stageHelper.createRequest(wsdlInterface, logFileWriter, operation);
 				WsdlResponse response = stageHelper.submitRequest(request, logFileWriter);
@@ -74,12 +76,12 @@ public final class MethodCallStage implements MonitoringStage, ServiceUpdateList
 				ServiceStatusDetails serviceStatus = buildServiceStatus(response, serviceName, service, logFileWriter);
 
 				servicesStatus.add(serviceStatus);
-				wsdlInterface.getProject().release();
 
 			} catch (Exception e) {
 				stageHelper.handleException(e, logFileWriter, serviceName, service, servicesStatus);
+			} finally {
+				stageHelper.cleanUp(logFileWriter, wsdlInterface);
 			}
-			logFileWriter.close();
 		}
 		this.servicesStatus = servicesStatus;
 	}
@@ -128,7 +130,7 @@ public final class MethodCallStage implements MonitoringStage, ServiceUpdateList
 	}
 
 	@Override
-	public List<ServiceStatusDetails> getServicesStatus() {
+	public synchronized List<ServiceStatusDetails> getServicesStatus() {
 		return servicesStatus;
 	}
 

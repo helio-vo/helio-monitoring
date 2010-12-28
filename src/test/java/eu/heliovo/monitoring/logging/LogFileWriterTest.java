@@ -2,10 +2,10 @@ package eu.heliovo.monitoring.logging;
 
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
+import java.io.*;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Test;
+import org.springframework.util.FileCopyUtils;
 
 public class LogFileWriterTest {
 
@@ -25,7 +25,7 @@ public class LogFileWriterTest {
 		System.out.println("Log file: " + logFile);
 		System.out.println();
 
-		String logFileContent = FileUtils.readFileToString(logFile);
+		String logFileContent = FileCopyUtils.copyToString(new FileReader(logFile));
 
 		System.out.println("Log file content: ");
 		System.out.println(logFileContent);
