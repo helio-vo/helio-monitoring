@@ -6,9 +6,10 @@
 
 define host{
         use                     generic-host            ; Name of host template to use
-        host_name               localhost
-        alias                   localhost
-        address                 127.0.0.1
+        host_name               $hostName$
+        alias                   $hostName$
+        address                 $hostAddress$
+        check_command           check_http!-p 80
         }
 
 # Define a service to check the disk space of the root partition
@@ -17,7 +18,7 @@ define host{
 
 define service{
         use                             generic-service         ; Name of service template to use
-        host_name                       localhost
+        host_name                       $hostName$
         service_description             Disk Space
         check_command                   check_all_disks!20%!10%
         }
@@ -30,7 +31,7 @@ define service{
 
 define service{
         use                             generic-service         ; Name of service template to use
-        host_name                       localhost
+        host_name                       $hostName$
         service_description             Current Users
         check_command                   check_users!20!50
         }
@@ -42,7 +43,7 @@ define service{
 
 define service{
         use                             generic-service         ; Name of service template to use
-        host_name                       localhost
+        host_name                       $hostName$
         service_description             Total Processes
 		check_command                   check_procs!250!400
         }
@@ -53,7 +54,7 @@ define service{
 
 define service{
         use                             generic-service         ; Name of service template to use
-        host_name                       localhost
+        host_name                       $hostName$
         service_description             Current Load
 		check_command                   check_load!5.0!4.0!3.0!10.0!6.0!4.0
         }

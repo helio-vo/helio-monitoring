@@ -5,7 +5,7 @@ import static eu.heliovo.monitoring.exporter.NagiosServiceConfigUpdater.HOST_CON
 import static eu.heliovo.monitoring.exporter.NagiosServiceConfigUpdater.MAIN_CONFIG_RESOURCE_PATH;
 
 import java.io.*;
-import java.net.URL;
+import java.net.*;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -43,7 +43,7 @@ public class NagiosServiceConfigUpdaterTest extends Assert {
 
 		NagiosServiceConfigUpdater updater;
 		updater = new NagiosServiceConfigUpdater(NAGIOS_SERVICE_CONFIG_DIR.getPath(), NAGIOS_MAIN_CONFIG.getPath(),
-				mockCommandWriter);
+				"www.i4ds.ch", mockCommandWriter);
 
 		Set<Host> newHosts = ServiceHostUtils.getHostsFromServices(TestServices.LIST);
 
@@ -92,6 +92,7 @@ public class NagiosServiceConfigUpdaterTest extends Assert {
 
 	private void validateConfigCopyWithNonWritableFile(NagiosServiceConfigUpdater updater, Set<Host> newHosts,
 			Map<Host, File> tempConfigFiles) throws IOException {
+
 		Host hostFromNewHosts = selectAnyHost(newHosts);
 		File fakeExistingConfigFile = createFakeExistingFile(hostFromNewHosts.getName());
 
@@ -195,6 +196,12 @@ public class NagiosServiceConfigUpdaterTest extends Assert {
 			String template = entry.getValue().toString();
 
 			assertTrue(template.contains(host.getName()));
+			try {
+				assertTrue(template.contains(host.getAddress()));
+			} catch (UnknownHostException e) {
+				assertTrue(template.contains(NagiosServiceConfigUpdater.FAKE_HOST_ADDRESS));
+				e.printStackTrace();
+			}
 
 			for (Service service : host.getServices()) {
 				assertTrue(template.contains(service.getName() + " -ping-"));

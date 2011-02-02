@@ -5,12 +5,13 @@ import static eu.heliovo.monitoring.test.util.TestUtils.logFilesUrl;
 
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
 
 import junit.framework.Assert;
 
 import org.junit.Test;
 
-import eu.heliovo.monitoring.exporter.ServiceStatusDetailsExporter;
+import eu.heliovo.monitoring.exporter.StatusDetailsExporter;
 import eu.heliovo.monitoring.failuredetector.*;
 import eu.heliovo.monitoring.listener.ServiceUpdateListener;
 import eu.heliovo.monitoring.logging.LoggingTestUtils;
@@ -18,12 +19,16 @@ import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.serviceloader.*;
 import eu.heliovo.monitoring.serviceloader.ServiceLoader;
 import eu.heliovo.monitoring.stage.*;
-import eu.heliovo.monitoring.test.util.TestServices;
+import eu.heliovo.monitoring.test.util.*;
 
 public class MonitoringServiceTest extends Assert {
 
 	private Set<Service> testServices = new HashSet<Service>();
 	private int timesUpdateReceived = 0;
+	private final ExecutorService executor = TestUtils.getExecutor();
+
+	public MonitoringServiceTest() throws Exception {
+	}
 
 	@Test
 	public void testService() throws Exception {
@@ -32,7 +37,7 @@ public class MonitoringServiceTest extends Assert {
 
 		monitoringService.updateServices();
 
-		// these lines are automatically called by spring
+		// these lines are automatically called by spring through the @Scheduled annotation
 		monitoringService.updatePingStatusAndExport();
 		monitoringService.updateMethodCallStatusAndExport();
 		monitoringService.updateTestingStatusAndExport();
@@ -53,15 +58,22 @@ public class MonitoringServiceTest extends Assert {
 		ServiceFailureDetector failureDetector = FailureDetectorTestUtils.getServiceFailureDetector();
 
 		PingStage pingStage = new PingStage(failureDetector);
-		MethodCallStage methodCallStage = new MethodCallStage(stageHelper, LoggingTestUtils.getLoggingFactory(),
-				logFilesUrl);
-		TestingStage testingStage = new TestingStage(stageHelper, LoggingTestUtils.getLoggingFactory(), logFilesUrl);
+
+		MethodCallStage methodCallStage;
+		methodCallStage = new MethodCallStage(stageHelper, LoggingTestUtils.getLoggingFactory(), logFilesUrl, executor);
+
+		TestingStage testingStage;
+		testingStage = new TestingStage(stageHelper, LoggingTestUtils.getLoggingFactory(), logFilesUrl, executor);
 
 		ServiceLoader serviceLoader = new StaticServiceLoader();
 
-		ServiceStatusDetailsExporter exporter = new ServiceStatusDetailsExporter() {
+		StatusDetailsExporter exporter = new StatusDetailsExporter() {
 			@Override
 			public void exportServiceStatusDetails(List<ServiceStatusDetails> serviceStatus) {
+			}
+
+			@Override
+			public void exportHostStatusDetails(List<ServiceStatusDetails> serviceStatusDetails) {
 			}
 		};
 
@@ -93,6 +105,7 @@ public class MonitoringServiceTest extends Assert {
 		testPositionChange(monitoringService);
 		initExampleList(monitoringService);
 		testNewListWithSameServices(monitoringService);
+		testEmptyList(monitoringService);
 	}
 
 	private MonitoringServiceImpl initMonitoringServiceForUpdateServices() {
@@ -192,5 +205,19 @@ public class MonitoringServiceTest extends Assert {
 		testServices.add(ModelFactory.newService("SomeService", new URL("http://www.helio-vo.eu/")));
 		monitoringService.updateServices();
 		assertEquals(4, timesUpdateReceived);
+	}
+
+	private void testEmptyList(MonitoringServiceImpl monitoringService) {
+
+		// receiving an empty services list is probably an error, caused by communication issues with the registry
+		testServices = new HashSet<Service>();
+		testServices.addAll(TestServices.LIST);
+
+		monitoringService.updateServices();
+		assertEquals(5, timesUpdateReceived);
+
+		testServices = new HashSet<Service>();
+		monitoringService.updateServices();
+		assertEquals(5, timesUpdateReceived);
 	}
 }

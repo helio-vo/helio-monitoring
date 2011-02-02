@@ -1,6 +1,6 @@
 package eu.heliovo.monitoring.model;
 
-import java.net.URL;
+import java.net.*;
 import java.util.Set;
 
 /**
@@ -12,6 +12,13 @@ import java.util.Set;
 public interface Host {
 
 	String getName();
+
+	/**
+	 * Returns the IP address of this host.
+	 * 
+	 * @throws UnknownHostException if no IP address for the host could be found
+	 */
+	String getAddress() throws UnknownHostException;
 
 	/**
 	 * Returns a URL to get connected with the host.

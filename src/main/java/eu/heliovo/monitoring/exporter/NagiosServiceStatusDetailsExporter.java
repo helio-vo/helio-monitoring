@@ -15,13 +15,40 @@ import eu.heliovo.monitoring.model.*;
  * 
  */
 @Component
-public final class NagiosServiceStatusDetailsExporter implements ServiceStatusDetailsExporter {
+public final class NagiosServiceStatusDetailsExporter implements StatusDetailsExporter {
 
 	private final NagiosCommandWriter nagiosCommandWriter;
 
 	@Autowired
 	public NagiosServiceStatusDetailsExporter(NagiosCommandWriter nagiosCommandWriter) {
 		this.nagiosCommandWriter = nagiosCommandWriter;
+	}
+
+	@Override
+	public void exportHostStatusDetails(List<ServiceStatusDetails> serviceStatusDetails) {
+
+		for (ServiceStatusDetails currentStatusDetails : serviceStatusDetails) {
+
+			NagiosCommand command = NagiosCommand.PROCESS_HOST_CHECK_RESULT;
+			String hostName = currentStatusDetails.getUrl().getHost();
+
+			NagiosServiceStatus nagiosStatus = getNagiosServiceStatus(currentStatusDetails);
+
+			List<String> commandArguments = new ArrayList<String>();
+			commandArguments.add(hostName);
+			commandArguments.add(String.valueOf(nagiosStatus.ordinal()));
+			commandArguments.add(buildHostStatusMessage(currentStatusDetails, nagiosStatus));
+
+			nagiosCommandWriter.write(command, commandArguments);
+		}
+	}
+
+	private String buildHostStatusMessage(ServiceStatusDetails currentStatusDetails, NagiosServiceStatus nagiosStatus) {
+
+		long responseTime = currentStatusDetails.getResponseTimeInMillis();
+		String hostReachableMessage = "Host is reachable, response time = " + responseTime + " ms";
+
+		return nagiosStatus.equals(NagiosServiceStatus.OK) ? hostReachableMessage : "Host not reachable";
 	}
 
 	@Override

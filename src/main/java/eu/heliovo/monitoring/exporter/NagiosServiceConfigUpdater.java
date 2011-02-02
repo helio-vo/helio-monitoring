@@ -1,6 +1,7 @@
 package eu.heliovo.monitoring.exporter;
 
 import java.io.*;
+import java.net.*;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -30,6 +31,7 @@ public final class NagiosServiceConfigUpdater implements ServiceUpdateListener {
 	protected static final String MAIN_CONFIG_RESOURCE_PATH = CONFIG_RESOURCE_PATH + "nagios.cfg";
 	protected static final String CONFIG_FILE_SUFFIX = ".cfg";
 	private static final int TO_SECONDS_DIVISOR = 1000;
+	protected static final String FAKE_HOST_ADDRESS = "123.104.65.40";
 
 	protected final FilenameFilter configFilenameFilter = new FilenameFilter() {
 		@Override
@@ -40,24 +42,34 @@ public final class NagiosServiceConfigUpdater implements ServiceUpdateListener {
 
 	private final File nagiosServiceConfigDir;
 	private final File nagiosMainConfig;
+	private final Host monitoringServiceHost;
 	private final NagiosCommandWriter nagiosCommandWriter;
 
 	private final Logger logger = Logger.getLogger(this.getClass());
 
 	// these filename have to be updated if changed under src/main/resources/nagiosconfig
 	private final static String[] PREDEFINED_CONFIG_RESOURCE_FILENAMES = new String[] { "contacts_nagios2.cfg",
-			"generic-host_nagios2.cfg", "generic-service_nagios2.cfg", "localhost_nagios2.cfg",
-			"timeperiods_nagios2.cfg" };
+			"generic-host_nagios2.cfg", "generic-service_nagios2.cfg", "timeperiods_nagios2.cfg" };
 
 	@Autowired
 	public NagiosServiceConfigUpdater(@Value("${nagiosServiceConfigDir}") String nagiosServiceConfigDir,
-			@Value("${nagiosMainConfig}") String nagiosMainConfig, NagiosCommandWriter nagiosCommandWriter) {
+			@Value("${nagiosMainConfig}") String nagiosMainConfig,
+			@Value("${monitoringService.hostName}") String monitoringServiceHostName,
+			NagiosCommandWriter nagiosCommandWriter) throws MalformedURLException {
 
 		this.nagiosServiceConfigDir = new File(nagiosServiceConfigDir);
 		this.nagiosMainConfig = new File(nagiosMainConfig);
+		this.monitoringServiceHost = getMonitoringServiceHost(monitoringServiceHostName);
 		this.nagiosCommandWriter = nagiosCommandWriter;
 
 		DirectoryAccessValidator.validate(this.nagiosServiceConfigDir);
+	}
+
+	private Host getMonitoringServiceHost(String monitoringServiceHostName) throws MalformedURLException {
+
+		URL monitoringServiceHostUrl = new URL("http://" + monitoringServiceHostName + "/");
+		Set<Service> emptyServiceList = Collections.emptySet();
+		return ModelFactory.newHost(monitoringServiceHostUrl, emptyServiceList);
 	}
 
 	@Override
@@ -78,8 +90,10 @@ public final class NagiosServiceConfigUpdater implements ServiceUpdateListener {
 			return;
 		}
 
+		StringTemplateGroup templateGroup = new StringTemplateGroup("nagiosConfigs");
+
 		Map<Host, StringTemplate> hostConfigTemplates;
-		hostConfigTemplates = fillAllHostConfigTemplates(newHosts, new StringTemplateGroup("nagiosConfigs"));
+		hostConfigTemplates = fillAllHostConfigTemplates(newHosts, templateGroup);
 
 		Map<Host, File> tempConfigFiles;
 		try {
@@ -113,21 +127,42 @@ public final class NagiosServiceConfigUpdater implements ServiceUpdateListener {
 		Map<Host, StringTemplate> hostConfigTemplates = new HashMap<Host, StringTemplate>();
 		for (Host host : newHosts) {
 
-			StringTemplate hostTemplate = fillHostTemplate(templateGroup, host);
+			StringTemplate hostTemplate = fillHostTemplate(templateGroup, host, "templates/nagiosHost");
 			List<StringTemplate> serviceTemplates = fillServiceTemplates(templateGroup, host);
 			StringTemplate hostConfigTemplate = fillHostConfigTemplate(templateGroup, hostTemplate, serviceTemplates);
 
 			hostConfigTemplates.put(host, hostConfigTemplate);
 		}
+
+		// the monitorinServiceHost has a special Nagios host config
+		StringTemplate monitoringServiceHostTemplate = fillHostTemplate(templateGroup, monitoringServiceHost,
+				"templates/nagiosMonitoringServiceHostConfig");
+
+		hostConfigTemplates.put(monitoringServiceHost, monitoringServiceHostTemplate);
+
 		return hostConfigTemplates;
 	}
 
-	private StringTemplate fillHostTemplate(StringTemplateGroup templateGroup, Host host) {
+	private StringTemplate fillHostTemplate(StringTemplateGroup templateGroup, Host host, String templatePath) {
 
-		StringTemplate hostTemplate = templateGroup.getInstanceOf("templates/nagiosHost");
+		StringTemplate hostTemplate = templateGroup.getInstanceOf(templatePath);
 		hostTemplate.setAttribute("hostName", host.getName());
+		hostTemplate.setAttribute("hostAddress", getHostAdress(host));
 
 		return hostTemplate;
+	}
+
+	// the IP address of the host does not matter, but must be provided in the Nagios host config
+	// since an address like "127.0.0.1" is misleading in the GUI, using a fake address looks alright :)
+	private String getHostAdress(Host host) {
+		String hostAddress;
+		try {
+			hostAddress = host.getAddress();
+		} catch (UnknownHostException e) {
+			hostAddress = FAKE_HOST_ADDRESS;
+			logger.error(e.getMessage(), e);
+		}
+		return hostAddress;
 	}
 
 	private List<StringTemplate> fillServiceTemplates(StringTemplateGroup templateGroup, Host host) {

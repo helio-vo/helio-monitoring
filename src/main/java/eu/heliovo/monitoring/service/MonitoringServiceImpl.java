@@ -1,12 +1,14 @@
 package eu.heliovo.monitoring.service;
 
+import static org.springframework.util.CollectionUtils.isEmpty;
+
 import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import eu.heliovo.monitoring.exporter.ServiceStatusDetailsExporter;
+import eu.heliovo.monitoring.exporter.StatusDetailsExporter;
 import eu.heliovo.monitoring.listener.ServiceUpdateListener;
 import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.serviceloader.ServiceLoader;
@@ -30,24 +32,22 @@ public final class MonitoringServiceImpl implements MonitoringService {
 
 	private final ServiceLoader serviceLoader;
 	private final List<ServiceUpdateListener> serviceUpdateListeners;
-	private final ServiceStatusDetailsExporter serviceStatusDetailsExporter;
+	private final StatusDetailsExporter statusDetailsExporter;
 
 	private int currentServicesHashCode = 0;
 
 	// for manual service definition, please use "staticServiceLoader" as qualifier and define services in Services.java
+	// Spring automatically injects all components implementing the ServiceUpdateListener interface
 	@Autowired
-	public MonitoringServiceImpl(PingStage pingStage, MethodCallStage methodCallStage,
-			TestingStage testingStage,
+	public MonitoringServiceImpl(PingStage pingStage, MethodCallStage methodCallStage, TestingStage testingStage,
 			@Qualifier("ivoaRegistryServiceLoader") ServiceLoader serviceLoader,
-			ServiceStatusDetailsExporter serviceStatusDetailsExporter,
-			List<ServiceUpdateListener> serviceUpdateListeners) { // Spring automatically injects all components
-																	// implementing the ServiceUpdateListener interface
+			StatusDetailsExporter statusDetailsExporter, List<ServiceUpdateListener> serviceUpdateListeners) {
 
 		this.pingStage = pingStage;
 		this.methodCallStage = methodCallStage;
 		this.testingStage = testingStage;
 		this.serviceLoader = serviceLoader;
-		this.serviceStatusDetailsExporter = serviceStatusDetailsExporter;
+		this.statusDetailsExporter = statusDetailsExporter;
 		this.serviceUpdateListeners = Collections.unmodifiableList(serviceUpdateListeners);
 
 		this.updateServices();
@@ -66,10 +66,14 @@ public final class MonitoringServiceImpl implements MonitoringService {
 	}
 
 	private void updateServiceUpdateListenersOnChange(Set<Service> newServices) {
-		if (newServices.hashCode() != currentServicesHashCode) {
+		if (haveServicesChanged(newServices)) {
 			updateServiceUpdateListeners(newServices);
 			currentServicesHashCode = newServices.hashCode();
 		}
+	}
+
+	private boolean haveServicesChanged(Set<Service> newServices) {
+		return !isEmpty(newServices) && newServices.hashCode() != currentServicesHashCode;
 	}
 
 	private void updateServiceUpdateListeners(Set<Service> newServices) {
@@ -80,26 +84,41 @@ public final class MonitoringServiceImpl implements MonitoringService {
 
 	@Scheduled(cron = "${pingStage.updateInterval.cronValue}")
 	protected void updatePingStatusAndExport() {
-		updateAndExportStatus(pingStage);
+
+		pingStage.updateStatus();
+		exportHostStatus(pingStage);
+		exportServiceStatus(pingStage);
+	}
+
+	private void exportHostStatus(MonitoringStage stage) {
+
+		Map<String, ServiceStatusDetails> mappedHostStatusDetails = new HashMap<String, ServiceStatusDetails>();
+		for (ServiceStatusDetails serviceStatusDetails : stage.getServicesStatus()) {
+			mappedHostStatusDetails.put(serviceStatusDetails.getUrl().getHost(), serviceStatusDetails);
+		}
+
+		List<ServiceStatusDetails> hostStatusDetails;
+		hostStatusDetails = new ArrayList<ServiceStatusDetails>(mappedHostStatusDetails.values());
+
+		statusDetailsExporter.exportHostStatusDetails(hostStatusDetails);
 	}
 
 	@Scheduled(cron = "${methodCallStage.updateInterval.cronValue}")
 	protected void updateMethodCallStatusAndExport() {
-		updateAndExportStatus(methodCallStage);
+		methodCallStage.updateStatus();
+		exportServiceStatus(methodCallStage);
 	}
 
 	@Scheduled(cron = "${testingStage.updateInterval.cronValue}")
 	protected void updateTestingStatusAndExport() {
-		updateAndExportStatus(testingStage);
+		testingStage.updateStatus();
+		exportServiceStatus(testingStage);
 	}
 
-	private void updateAndExportStatus(MonitoringStage stage) {
-
-		stage.updateStatus();
+	private void exportServiceStatus(MonitoringStage stage) {
 
 		List<ServiceStatusDetails> status = stage.getServicesStatus();
-		serviceStatusDetailsExporter.exportServiceStatusDetails(status);
-
+		statusDetailsExporter.exportServiceStatusDetails(status);
 		logExport(status);
 	}
 

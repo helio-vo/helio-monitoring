@@ -2,6 +2,8 @@ package eu.heliovo.monitoring.model;
 
 import java.net.URL;
 
+import eu.heliovo.monitoring.util.StringUtils;
+
 public final class ServiceImpl implements Service {
 
 	private final String name;
@@ -15,6 +17,11 @@ public final class ServiceImpl implements Service {
 	@Override
 	public String getName() {
 		return name;
+	}
+
+	@Override
+	public String getCanonicalName() {
+		return StringUtils.getCanonicalString(this.name);
 	}
 
 	@Override

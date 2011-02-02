@@ -5,12 +5,14 @@ import java.util.List;
 import eu.heliovo.monitoring.model.ServiceStatusDetails;
 
 /**
- * Exports service status details to a destination.
+ * Exports status details to a destination.
  * 
  * @author Kevin Seidler
  * 
  */
-public interface ServiceStatusDetailsExporter {
+public interface StatusDetailsExporter {
+
+	void exportHostStatusDetails(List<ServiceStatusDetails> serviceStatusDetails);
 
 	void exportServiceStatusDetails(List<ServiceStatusDetails> serviceStatusDetails);
 }

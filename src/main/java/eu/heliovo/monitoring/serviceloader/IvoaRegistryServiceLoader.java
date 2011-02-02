@@ -16,7 +16,7 @@ import uk.ac.starlink.registry.*;
 import eu.heliovo.monitoring.model.Service;
 
 /**
- * For retrieving registered Services from a IVOA Registry.
+ * For retrieving registered Services from an IVOA Registry.
  * 
  * @author Kevin Seidler
  * 
@@ -51,7 +51,7 @@ public final class IvoaRegistryServiceLoader implements ServiceLoader {
 	@Override
 	public Set<Service> loadServices() {
 
-		// TODO get services from registry, if registry down => no services, if services successfully retrived in the
+		// TODO get services from registry, if registry down => no services, if services successfully retrieved in the
 		// past, use these old infos till registry on again and display offline/broken registry in nagios
 
 		BasicRegistryClient registryClient = new BasicRegistryClient(new SoapClient(registryUrl));
@@ -103,9 +103,7 @@ public final class IvoaRegistryServiceLoader implements ServiceLoader {
 
 	private Service readService(BasicResource registryResource) throws MalformedURLException {
 
-		String resourceShortName = registryResource.getShortName();
-		String identifier = registryResource.getIdentifier();
-		String serviceName = hasText(resourceShortName) ? resourceShortName : cleanIdentifier(identifier);
+		String serviceName = registryResource.getTitle();
 
 		BasicCapability[] capabilities = registryResource.getCapabilities();
 		String serviceUrl = getServiceUrl(capabilities);
@@ -139,9 +137,5 @@ public final class IvoaRegistryServiceLoader implements ServiceLoader {
 			}
 		}
 		return ""; // leading to a MalformedURLException and not adding this service
-	}
-
-	private String cleanIdentifier(String identifier) {
-		return identifier.substring(identifier.lastIndexOf('/') + 1, identifier.length());
 	}
 }

@@ -3,6 +3,7 @@ package eu.heliovo.monitoring.stage;
 import static eu.heliovo.monitoring.model.ModelFactory.newServiceStatusDetails;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.xmlbeans.XmlException;
 import org.springframework.beans.factory.annotation.*;
@@ -12,6 +13,7 @@ import com.eviware.soapui.impl.wsdl.*;
 import com.eviware.soapui.impl.wsdl.submit.transports.http.WsdlResponse;
 import com.eviware.soapui.model.testsuite.AssertionError;
 
+import eu.heliovo.monitoring.action.*;
 import eu.heliovo.monitoring.listener.ServiceUpdateListener;
 import eu.heliovo.monitoring.logging.*;
 import eu.heliovo.monitoring.model.*;
@@ -33,19 +35,19 @@ public final class MethodCallStage implements MonitoringStage, ServiceUpdateList
 	private final StageHelper stageHelper;
 	private final LoggingFactory loggingFactory;
 	private final String logFilesUrl; // TODO should be moved somewhere in the logging classes
-	// private final ExecutorService executor;
+	private final ExecutorService executor;
 
 	private Set<Service> services = Collections.emptySet();
 	private List<ServiceStatusDetails> servicesStatus = Collections.emptyList();
 
 	@Autowired
 	public MethodCallStage(StageHelper stageHelper, LoggingFactory loggingFactory,
-			@Value("${monitoringService.logUrl}") String logFilesUrl /* , ExecutorService executor */) {
+			@Value("${monitoringService.logUrl}") String logFilesUrl, ExecutorService executor) {
 
 		this.stageHelper = stageHelper;
 		this.loggingFactory = loggingFactory;
 		this.logFilesUrl = logFilesUrl;
-		// this.executor = executor;
+		this.executor = executor;
 	}
 
 	// TODO cache WSDL documents to avoid the import on every run
@@ -61,15 +63,14 @@ public final class MethodCallStage implements MonitoringStage, ServiceUpdateList
 
 			String serviceName = service.getName() + SERVICE_NAME_SUFFIX;
 			String serviceUrlAsString = service.getUrl().toString();
-			String logFileWriterName = service.getName() + LOG_FILE_SUFFIX;
+			String logFileWriterName = service.getCanonicalName() + LOG_FILE_SUFFIX;
 			LogFileWriter logFileWriter = loggingFactory.newLogFileWriter(logFileWriterName);
 			WsdlInterface wsdlInterface = null;
 
 			try {
 
-				// WsdlInterface wsdlInterface = importWsdl(logFileWriter, serviceUrlAsString);
-				wsdlInterface = stageHelper.importWsdl(logFileWriter, serviceUrlAsString);
-				WsdlOperation operation = selectOperation(wsdlInterface);
+				wsdlInterface = new ImportWsdlAction(logFileWriter, serviceUrlAsString, executor).getResult();
+				WsdlOperation operation = new SelectOperationAction(wsdlInterface).getResult();
 				WsdlRequest request = stageHelper.createRequest(wsdlInterface, logFileWriter, operation);
 				WsdlResponse response = stageHelper.submitRequest(request, logFileWriter);
 				stageHelper.processResponse(response, serviceName, service, logFileWriter);
@@ -86,24 +87,15 @@ public final class MethodCallStage implements MonitoringStage, ServiceUpdateList
 		this.servicesStatus = servicesStatus;
 	}
 
-	// private WsdlInterface importWsdl(LogFileWriter logFileWriter, final String wsdlUrl) throws XmlException,
-	// IOException, SoapUIException, InterruptedException, ExecutionException {
-	// return new ImportWsdlCommand(logFileWriter, wsdlUrl, executor).execute();
-	// }
-
-	private WsdlOperation selectOperation(final WsdlInterface wsdlInterface) {
-		return wsdlInterface.getOperationAt(0);
-	}
-
-	private ServiceStatusDetails buildServiceStatus(final WsdlResponse response, final String serviceName,
-			final Service service, final LogFileWriter logFileWriter) throws XmlException {
+	private ServiceStatusDetails buildServiceStatus(WsdlResponse response, String serviceName, Service service,
+			LogFileWriter logFileWriter) throws XmlException {
 
 		// build message
-		final StringBuffer stringBuffer = new StringBuffer("Service is working");
+		StringBuffer stringBuffer = new StringBuffer("Service is working");
 		ServiceStatus status = ServiceStatus.OK;
 
 		// response validation
-		final AssertionError[] responseAssertionErrors = WsdlValidationUtils.validateResponse(response);
+		AssertionError[] responseAssertionErrors = WsdlValidationUtils.validateResponse(response);
 		LoggingHelper.logResponseValidation(responseAssertionErrors, logFileWriter);
 
 		if (responseAssertionErrors != null && responseAssertionErrors.length > 0) {
@@ -113,7 +105,7 @@ public final class MethodCallStage implements MonitoringStage, ServiceUpdateList
 
 		} else if (TEST_FOR_SOAP_FAULT) {
 
-			final WsdlOperation operation = response.getRequest().getOperation();
+			WsdlOperation operation = response.getRequest().getOperation();
 			if (WsdlValidationUtils.isSoapFault(response.getContentAsString(), operation)) {
 				stringBuffer.append(", but the response is a SOAP fault");
 				logFileWriter.write("The response is a SOAP fault!");
@@ -121,10 +113,10 @@ public final class MethodCallStage implements MonitoringStage, ServiceUpdateList
 			}
 		}
 
-		final long responseTime = response.getTimeTaken();
+		long responseTime = response.getTimeTaken();
 		stringBuffer.append(", response time = " + responseTime + " ms");
 		stringBuffer.append(LoggingHelper.getLogFileText(logFileWriter, logFilesUrl));
-		final String message = stringBuffer.toString();
+		String message = stringBuffer.toString();
 
 		return newServiceStatusDetails(serviceName, service.getUrl(), status, responseTime, message);
 	}

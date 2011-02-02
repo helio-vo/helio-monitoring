@@ -1,6 +1,6 @@
 package eu.heliovo.monitoring.model;
 
-import java.net.URL;
+import java.net.*;
 import java.util.*;
 
 public final class HostImpl implements Host {
@@ -19,6 +19,11 @@ public final class HostImpl implements Host {
 	@Override
 	public String getName() {
 		return url.getHost();
+	}
+
+	@Override
+	public String getAddress() throws UnknownHostException {
+		return InetAddress.getByName(this.getName()).getHostAddress();
 	}
 
 	@Override

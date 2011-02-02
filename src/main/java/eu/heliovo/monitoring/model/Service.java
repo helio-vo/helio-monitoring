@@ -14,5 +14,11 @@ public interface Service {
 
 	String getName();
 
+	/**
+	 * Returns the canonical name of the service to use it in file names or any other cases where whitespaces and
+	 * special characters are not allowed.
+	 */
+	String getCanonicalName();
+
 	URL getUrl();
 }

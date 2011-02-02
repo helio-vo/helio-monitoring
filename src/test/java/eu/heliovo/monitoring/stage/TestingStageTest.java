@@ -7,18 +7,24 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import org.junit.Test;
 
 import eu.heliovo.monitoring.model.*;
-import eu.heliovo.monitoring.test.util.TestServices;
+import eu.heliovo.monitoring.test.util.*;
 
-public class TestingStageTest {
+public final class TestingStageTest {
+
+	private final ExecutorService executor = TestUtils.getExecutor();
+
+	public TestingStageTest() throws Exception {
+	}
 
 	@Test
-	public final void testTestStage() throws Exception {
+	public void testTestStage() throws Exception {
 
-		final TestingStage stage = new TestingStage(getStageHelper(), getLoggingFactory(), logFilesUrl);
+		final TestingStage stage = new TestingStage(getStageHelper(), getLoggingFactory(), logFilesUrl, executor);
 		stage.updateServices(TestServices.LIST);
 		stage.updateStatus();
 

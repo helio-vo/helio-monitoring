@@ -5,22 +5,28 @@ import static eu.heliovo.monitoring.test.util.TestUtils.getStageHelper;
 import static eu.heliovo.monitoring.test.util.TestUtils.logFilesUrl;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import junit.framework.Assert;
 
 import org.junit.Test;
 
 import eu.heliovo.monitoring.model.*;
-import eu.heliovo.monitoring.test.util.TestServices;
+import eu.heliovo.monitoring.test.util.*;
 
 public class MethodCallStageTest extends Assert {
+
+	private final ExecutorService executor = TestUtils.getExecutor();
+
+	public MethodCallStageTest() throws Exception {
+	}
 
 	@Test
 	public void testMethodCallStage() throws Exception {
 
 		// TODO test individual methods of MethodCallStage
 
-		MethodCallStage stage = new MethodCallStage(getStageHelper(), getLoggingFactory(), logFilesUrl);
+		MethodCallStage stage = new MethodCallStage(getStageHelper(), getLoggingFactory(), logFilesUrl, executor);
 		stage.updateServices(TestServices.LIST);
 		stage.updateStatus();
 

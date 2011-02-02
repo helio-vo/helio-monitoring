@@ -10,5 +10,5 @@ package eu.heliovo.monitoring.exporter;
  * 
  */
 public enum NagiosCommand {
-	PROCESS_SERVICE_CHECK_RESULT, RESTART_PROGRAM
+	PROCESS_HOST_CHECK_RESULT, PROCESS_SERVICE_CHECK_RESULT, RESTART_PROGRAM
 }

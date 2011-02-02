@@ -5,8 +5,10 @@ import static eu.heliovo.monitoring.util.ReflectionUtils.implementsInterface;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.*;
 
 import org.apache.log4j.Logger;
 import org.apache.xmlbeans.*;
@@ -17,7 +19,9 @@ import com.eviware.soapui.impl.wsdl.*;
 import com.eviware.soapui.impl.wsdl.submit.transports.http.WsdlResponse;
 import com.eviware.soapui.model.iface.Operation;
 import com.eviware.soapui.model.testsuite.AssertionError;
+import com.eviware.soapui.support.SoapUIException;
 
+import eu.heliovo.monitoring.action.ImportWsdlAction;
 import eu.heliovo.monitoring.listener.ServiceUpdateListener;
 import eu.heliovo.monitoring.logging.*;
 import eu.heliovo.monitoring.model.*;
@@ -38,6 +42,7 @@ public final class TestingStage implements MonitoringStage, ServiceUpdateListene
 	private final StageHelper stageHelper;
 	private final LoggingFactory loggingFactory;
 	private final String logFilesUrl;
+	private final ExecutorService executor;
 
 	private final Logger logger = Logger.getLogger(this.getClass());
 
@@ -46,11 +51,12 @@ public final class TestingStage implements MonitoringStage, ServiceUpdateListene
 
 	@Autowired
 	public TestingStage(StageHelper stageHelper, LoggingFactory loggingFactory,
-			@Value("${monitoringService.logUrl}") String logFilesUrl) {
+			@Value("${monitoringService.logUrl}") String logFilesUrl, ExecutorService executor) {
 
 		this.stageHelper = stageHelper;
 		this.loggingFactory = loggingFactory;
 		this.logFilesUrl = logFilesUrl;
+		this.executor = executor;
 	}
 
 	@Override
@@ -61,13 +67,13 @@ public final class TestingStage implements MonitoringStage, ServiceUpdateListene
 		for (Service service : services) {
 
 			String serviceName = service.getName() + SERVICE_NAME_SUFFIX;
-			String logFileWriterName = service.getName() + LOG_FILE_SUFFIX;
+			String logFileWriterName = service.getCanonicalName() + LOG_FILE_SUFFIX;
 			LogFileWriter logFileWriter = loggingFactory.newLogFileWriter(logFileWriterName);
 			WsdlInterface wsdlInterface = null;
 
 			try {
 
-				wsdlInterface = stageHelper.importWsdl(logFileWriter, service.getUrl().toString());
+				wsdlInterface = importWsdl(logFileWriter, service.getUrl().toString());
 				Statistic statistic = new Statistic(serviceName, service.getUrl());
 
 				monitorPredefinedOperations(logFileWriter, service, serviceName, wsdlInterface, statistic);
@@ -372,6 +378,11 @@ public final class TestingStage implements MonitoringStage, ServiceUpdateListene
 			}
 			return status;
 		}
+	}
+
+	private WsdlInterface importWsdl(LogFileWriter logFileWriter, String wsdlUrl) throws XmlException, IOException,
+			SoapUIException, InterruptedException, ExecutionException {
+		return new ImportWsdlAction(logFileWriter, wsdlUrl, executor).getResult();
 	}
 
 	@Override

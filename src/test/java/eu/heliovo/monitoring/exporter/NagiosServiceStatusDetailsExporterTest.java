@@ -4,7 +4,7 @@ import static eu.heliovo.monitoring.model.ModelFactory.newServiceStatusDetails;
 import static eu.heliovo.monitoring.model.ServiceStatus.CRITICAL;
 import static eu.heliovo.monitoring.model.ServiceStatus.OK;
 
-import java.net.URL;
+import java.net.*;
 import java.util.*;
 
 import junit.framework.Assert;
@@ -16,8 +16,9 @@ import eu.heliovo.monitoring.model.ServiceStatusDetails;
 public class NagiosServiceStatusDetailsExporterTest extends Assert {
 
 	private final List<ServiceStatusDetails> serviceStatusDetails = new ArrayList<ServiceStatusDetails>();
+	private final List<ServiceStatusDetails> hostStatusDetails = new ArrayList<ServiceStatusDetails>();
 
-	private class TestNagiosCommandWriter implements NagiosCommandWriter {
+	private class TestServiceNagiosCommandWriter implements NagiosCommandWriter {
 
 		@Override
 		public void write(NagiosCommand command, List<String> commandArguments) {
@@ -49,8 +50,54 @@ public class NagiosServiceStatusDetailsExporterTest extends Assert {
 		}
 	};
 
+	private class TestHostNagiosCommandWriter implements NagiosCommandWriter {
+
+		@Override
+		public void write(NagiosCommand command, List<String> commandArguments) {
+
+			assertTrue(command.equals(NagiosCommand.PROCESS_HOST_CHECK_RESULT));
+
+			boolean firstHostFound = false;
+			boolean secondHostFound = false;
+
+			String hostName = commandArguments.get(0);
+
+			if (hostName.equals("helio.i4ds.ch")) {
+				firstHostFound = true;
+			}
+
+			if (hostName.equals("msslxw.mssl.ucl.ac.uk")) {
+				secondHostFound = true;
+			}
+
+			for (ServiceStatusDetails details : hostStatusDetails) {
+
+				if (hostName.equals(details.getUrl().getHost())) {
+
+					String status = commandArguments.get(1);
+					String statusMessage = commandArguments.get(2);
+
+					NagiosServiceStatus expectedNagiosStatus = NagiosServiceStatus.valueOf(details.getStatus().name());
+
+					assertEquals(String.valueOf(expectedNagiosStatus.ordinal()), status);
+					assertEquals(details.getMessage(), statusMessage);
+
+					break;
+				}
+			}
+
+			assertTrue(firstHostFound || secondHostFound);
+		}
+	};
+
 	@Before
-	public void initTestServiceStatusDetails() throws Exception {
+	public void initTestStatusDetails() throws Exception {
+
+		initTestServiceStatusDetails();
+		initTestHostStatusDetails();
+	}
+
+	private void initTestServiceStatusDetails() throws MalformedURLException {
 
 		String firstMessage = OK.name() + " - response time = " + 5 + " ms";
 		String firstUrl = "http://helio.i4ds.technik.fhnw.ch:8080/core/HECService?wsdl";
@@ -71,13 +118,38 @@ public class NagiosServiceStatusDetailsExporterTest extends Assert {
 
 		assertEquals(3, serviceStatusDetails.size());
 	}
+	
+	private void initTestHostStatusDetails() throws Exception {
+		
+		String firstMessage = "Host is reachable, response time = " + 5 + " ms";
+		String firstUrl = "http://helio.i4ds.ch:8080/core/HECService?wsdl";
+		ServiceStatusDetails first = newServiceStatusDetails("HEC", new URL(firstUrl), OK, 5, firstMessage);
+
+		URL secondUrl = new URL("http://msslxw.mssl.ucl.ac.uk:8080/core/FrontendFacadeService?wsdl");
+		String secondMessage = "Host not reachable";
+		ServiceStatusDetails second = newServiceStatusDetails("FrontendFacade", secondUrl, CRITICAL, 0, secondMessage);
+		
+		hostStatusDetails.add(first);
+		hostStatusDetails.add(second);
+
+		assertEquals(2, hostStatusDetails.size());
+	}
 
 	@Test
 	public void testWriteServiceStatusToNagios() throws Exception {
 
-		TestNagiosCommandWriter testCommandWriter = new TestNagiosCommandWriter();
-		ServiceStatusDetailsExporter exporter = new NagiosServiceStatusDetailsExporter(testCommandWriter);
+		TestServiceNagiosCommandWriter testCommandWriter = new TestServiceNagiosCommandWriter();
+		StatusDetailsExporter exporter = new NagiosServiceStatusDetailsExporter(testCommandWriter);
 
 		exporter.exportServiceStatusDetails(serviceStatusDetails);
+	}
+	
+	@Test
+	public void testWriteHostStatusToNagios() throws Exception {
+
+		TestHostNagiosCommandWriter testCommandWriter = new TestHostNagiosCommandWriter();
+		StatusDetailsExporter exporter = new NagiosServiceStatusDetailsExporter(testCommandWriter);
+
+		exporter.exportHostStatusDetails(hostStatusDetails);
 	}
 }

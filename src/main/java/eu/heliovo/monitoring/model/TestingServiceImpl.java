@@ -3,6 +3,8 @@ package eu.heliovo.monitoring.model;
 import java.net.URL;
 import java.util.*;
 
+import eu.heliovo.monitoring.util.StringUtils;
+
 public final class TestingServiceImpl implements TestingService {
 
 	private final String name;
@@ -18,6 +20,11 @@ public final class TestingServiceImpl implements TestingService {
 	@Override
 	public String getName() {
 		return name;
+	}
+
+	@Override
+	public String getCanonicalName() {
+		return StringUtils.getCanonicalString(this.name);
 	}
 
 	@Override
