@@ -20,7 +20,7 @@ public class NagiosCommandWriterTest extends Assert {
 		String serviceName = "";
 		String status = String.valueOf(NagiosServiceStatus.WARNING.ordinal());
 		String statusMessage = "";
-		List<String> commandArguments = Arrays.asList(new String[] { hostName, serviceName, status, statusMessage });
+		List<String> commandArguments = Arrays.asList(hostName, serviceName, status, statusMessage);
 
 		testFailingFileCreation(time, command, commandArguments);
 		testDontForceFileCreation();
@@ -40,13 +40,12 @@ public class NagiosCommandWriterTest extends Assert {
 		String serviceName = "someService";
 		String status = String.valueOf(NagiosServiceStatus.OK.ordinal());
 		String statusMessage = "someService is working as expected";
-		List<String> commandArguments = Arrays.asList(new String[] { hostName, serviceName, status, statusMessage });
+		List<String> commandArguments = Arrays.asList(hostName, serviceName, status, statusMessage);
 
 		commandWriter.write(time, command, commandArguments);
 
 		assertTrue(nagiosExternalCommandFile.exists());
 
-		@SuppressWarnings("unchecked")
 		List<String> lines = FileUtils.readLines(nagiosExternalCommandFile);
 
 		assertNotNull(lines);

@@ -8,9 +8,9 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import eu.heliovo.monitoring.listener.HostUpdateListener;
 import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.test.util.*;
+import eu.heliovo.monitoring.util.ServiceHostUtils;
 
 public class PhiAccrualFailureDetectorTest extends Assert {
 
@@ -25,7 +25,7 @@ public class PhiAccrualFailureDetectorTest extends Assert {
 	@Test
 	public void testFailureDetector() throws Exception {
 
-		Set<Host> monitoredHosts = getHostsToBeMonitored();
+		Set<Host> monitoredHosts = ServiceHostUtils.getHostsFromServices(TestServices.LIST);
 		failureDetector.updateHosts(monitoredHosts);
 
 		startRegularlyFailureDetection();
@@ -36,12 +36,6 @@ public class PhiAccrualFailureDetectorTest extends Assert {
 
 		executor.shutdown();
 		executor.awaitTermination(60, TimeUnit.SECONDS);
-	}
-
-	private Set<Host> getHostsToBeMonitored() {
-		List<HostUpdateListener> listeners = Collections.emptyList();
-		ServiceToHostAdapter serviceToHostAdapter = new ServiceToHostAdapter(null, listeners);
-		return serviceToHostAdapter.getHostsFromServices(TestServices.LIST);
 	}
 
 	private void startRegularlyFailureDetection() {

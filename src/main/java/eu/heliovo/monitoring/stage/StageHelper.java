@@ -1,6 +1,6 @@
 package eu.heliovo.monitoring.stage;
 
-import static eu.heliovo.monitoring.model.ModelFactory.newServiceStatusDetails;
+import static eu.heliovo.monitoring.model.ModelFactory.newStatusDetails;
 
 import java.io.IOException;
 import java.util.List;
@@ -118,13 +118,12 @@ public final class StageHelper {
 	}
 
 	protected void handleException(Exception exception, LogFileWriter logFileWriter, String serviceName,
-			Service service,
-			List<ServiceStatusDetails> newCache) {
+			Service service, List<StatusDetails<Service>> newCache) {
 
 		String message = "An error occured: " + exception.getMessage()
 				+ LoggingHelper.getLogFileText(logFileWriter, logFilesUrl);
 
-		newCache.add(newServiceStatusDetails(serviceName, service.getUrl(), ServiceStatus.CRITICAL, 0, message));
+		newCache.add(newStatusDetails(service, serviceName, service.getUrl(), Status.CRITICAL, 0, message));
 
 		logFileWriter.write(exception);
 	}

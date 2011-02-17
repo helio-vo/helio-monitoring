@@ -1,33 +1,27 @@
 package eu.heliovo.monitoring.service;
 
-import static eu.heliovo.monitoring.test.util.TestUtils.getStageHelper;
-import static eu.heliovo.monitoring.test.util.TestUtils.logFilesUrl;
+import static java.util.Collections.emptyList;
 
 import java.net.*;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
 
 import junit.framework.Assert;
 
 import org.junit.Test;
 
-import eu.heliovo.monitoring.exporter.StatusDetailsExporter;
-import eu.heliovo.monitoring.failuredetector.*;
 import eu.heliovo.monitoring.listener.ServiceUpdateListener;
-import eu.heliovo.monitoring.logging.LoggingTestUtils;
 import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.serviceloader.*;
 import eu.heliovo.monitoring.serviceloader.ServiceLoader;
-import eu.heliovo.monitoring.stage.*;
-import eu.heliovo.monitoring.test.util.*;
+import eu.heliovo.monitoring.stage.StageExecutor;
+import eu.heliovo.monitoring.test.util.TestServices;
 
-public class MonitoringServiceTest extends Assert {
+public class MonitoringServiceImplTest extends Assert {
 
 	private Set<Service> testServices = new HashSet<Service>();
 	private int timesUpdateReceived = 0;
-	private final ExecutorService executor = TestUtils.getExecutor();
 
-	public MonitoringServiceTest() throws Exception {
+	public MonitoringServiceImplTest() throws Exception {
 	}
 
 	@Test
@@ -37,60 +31,63 @@ public class MonitoringServiceTest extends Assert {
 
 		monitoringService.updateServices();
 
-		// these lines are automatically called by spring through the @Scheduled annotation
-		monitoringService.updatePingStatusAndExport();
-		monitoringService.updateMethodCallStatusAndExport();
-		monitoringService.updateTestingStatusAndExport();
+		List<StatusDetails<Service>> result = monitoringService.getStatus();
+		assertNotNull(result);
+		assertEquals(1, result.size());
 
-		List<ServiceStatusDetails> result = monitoringService.getPingStatus();
-		validateStageResult(result);
+		boolean icsFound = true;
+		for (StatusDetails<Service> statusDetails : result) {
+			if (statusDetails.getName().equals("ICS")) {
+				assertEquals(Status.OK, statusDetails.getStatus());
+				assertEquals(67, statusDetails.getResponseTimeInMillis());
+				assertEquals("ICS", statusDetails.getMonitoredEntity().getName());
+			}
+		}
+		assertTrue(icsFound);
 
-		result = monitoringService.getMethodCallStatus();
-		validateStageResult(result);
-
-		result = monitoringService.getTestingStatus();
-		validateStageResult(result);
+		boolean exceptionCaught = false;
+		try {
+			StatusDetails<Service> singleResult = monitoringService.getStatus("serviceId");
+			assertNotNull(singleResult);
+			// TODO do further tests when implemented
+		} catch (UnsupportedOperationException e) {
+			exceptionCaught = true;
+		}
+		assertTrue(exceptionCaught);
 	}
 
 	private MonitoringServiceImpl initMonitoringService() throws Exception {
 
-		StageHelper stageHelper = getStageHelper();
-		ServiceFailureDetector failureDetector = FailureDetectorTestUtils.getServiceFailureDetector();
-
-		PingStage pingStage = new PingStage(failureDetector);
-
-		MethodCallStage methodCallStage;
-		methodCallStage = new MethodCallStage(stageHelper, LoggingTestUtils.getLoggingFactory(), logFilesUrl, executor);
-
-		TestingStage testingStage;
-		testingStage = new TestingStage(stageHelper, LoggingTestUtils.getLoggingFactory(), logFilesUrl, executor);
-
 		ServiceLoader serviceLoader = new StaticServiceLoader();
+		StageExecutor stageExecutor = new StageExecutor() {
 
-		StatusDetailsExporter exporter = new StatusDetailsExporter() {
 			@Override
-			public void exportServiceStatusDetails(List<ServiceStatusDetails> serviceStatus) {
+			public void updateHosts(Set<Host> newHosts) {
 			}
 
 			@Override
-			public void exportHostStatusDetails(List<ServiceStatusDetails> serviceStatusDetails) {
+			public List<StatusDetails<Service>> getStatus() {
+
+				Service ics = ModelFactory.newService("ICS", null);
+				StatusDetails<Service> icsStatus = ModelFactory.newStatusDetails(ics, "ICS", null, Status.OK, 67, "");
+
+				List<StatusDetails<Service>> status = new ArrayList<StatusDetails<Service>>();
+				status.add(icsStatus);
+
+				return status;
+			}
+
+			@Override
+			public void execute() {
+			}
+
+			@Override
+			public void doContinousExecution() {
 			}
 		};
 
-		List<ServiceUpdateListener> listener = Arrays.asList(new ServiceUpdateListener[] { failureDetector,
-				methodCallStage, testingStage });
-
-		MonitoringServiceImpl monitoringService = new MonitoringServiceImpl(pingStage, methodCallStage, testingStage,
-				serviceLoader, exporter, listener);
-
-		return monitoringService;
-	}
-
-	private void validateStageResult(List<ServiceStatusDetails> result) {
-		assertFalse(result.isEmpty());
-		for (ServiceStatusDetails serviceStatusDetails : result) {
-			System.out.println(serviceStatusDetails);
-		}
+		List<ServiceUpdateListener> servUpdateListeners = emptyList();
+		return new MonitoringServiceImpl(serviceLoader, stageExecutor, servUpdateListeners);
 	}
 
 	@Test
@@ -109,12 +106,12 @@ public class MonitoringServiceTest extends Assert {
 	}
 
 	private MonitoringServiceImpl initMonitoringServiceForUpdateServices() {
+
 		ServiceLoader testServiceLoader = createTestServiceLoader();
 		ServiceUpdateListener testListener = createTestServiceUpdateListener();
-		List<ServiceUpdateListener> listener = Arrays.asList(new ServiceUpdateListener[] { testListener });
-		MonitoringServiceImpl monitoringService = new MonitoringServiceImpl(null, null, null, testServiceLoader, null,
-				listener);
-		return monitoringService;
+		List<ServiceUpdateListener> listener = Arrays.asList(testListener);
+
+		return new MonitoringServiceImpl(testServiceLoader, null, listener);
 	}
 
 	private ServiceLoader createTestServiceLoader() {

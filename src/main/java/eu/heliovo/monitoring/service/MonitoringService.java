@@ -2,25 +2,35 @@ package eu.heliovo.monitoring.service;
 
 import java.util.List;
 
-import javax.jws.WebMethod;
-import javax.jws.WebService;
+import javax.jws.*;
 
-import eu.heliovo.monitoring.model.ServiceStatusDetails;
+import eu.heliovo.monitoring.model.*;
 
+/**
+ * The Monitoring Service offers monitoring information about the HELIO services. It executes three stages (ping, method
+ * call, testing) which result in different testing data. This Interface provides operations to ask for these
+ * informations.
+ * 
+ * @author Kevin Seidler
+ * 
+ */
 @WebService
 public interface MonitoringService {
 
 	/**
-	 * Returning the actual ping status of the services.
+	 * Returning the actual status of the services.
 	 * 
 	 * @return List of service status
 	 */
 	@WebMethod
-	List<ServiceStatusDetails> getPingStatus();
+	List<StatusDetails<Service>> getStatus();
 
+	/**
+	 * Returns the current status of the service given by its ID
+	 * 
+	 * @param serviceId the identifier for this service
+	 * @return the current status of the service
+	 */
 	@WebMethod
-	List<ServiceStatusDetails> getMethodCallStatus();
-
-	@WebMethod
-	List<ServiceStatusDetails> getTestingStatus();
+	StatusDetails<Service> getStatus(String serviceId);
 }

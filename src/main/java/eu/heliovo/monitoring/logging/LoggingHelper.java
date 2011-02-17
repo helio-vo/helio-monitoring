@@ -1,5 +1,7 @@
 package eu.heliovo.monitoring.logging;
 
+import static eu.heliovo.monitoring.util.UrlShortener.shorten;
+
 import java.io.*;
 import java.util.Calendar;
 
@@ -9,7 +11,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.eviware.soapui.model.testsuite.AssertionError;
-
 @Component
 public final class LoggingHelper {
 
@@ -59,8 +60,15 @@ public final class LoggingHelper {
 			return ", no log file available, an error occured creating it: " + dummyLogFileWriter.getErrorMessage();
 		}
 
-		final StringBuffer buffer = new StringBuffer();
-		buffer.append(", see log file: ");
+		String logFileUrl = getLogFileUrl(logFileWriter, logFilesUrl);
+		String shortLogFileUrl = shorten(logFileUrl);
+
+		return ", see log file: " + shortLogFileUrl;
+	}
+
+	private static String getLogFileUrl(LogFileWriter logFileWriter, String logFilesUrl) {
+
+		StringBuffer buffer = new StringBuffer();
 		buffer.append(logFilesUrl);
 		buffer.append("/");
 		buffer.append(logFileWriter.getFileName());

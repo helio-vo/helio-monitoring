@@ -21,23 +21,23 @@ public final class ModelFactory {
 		return new HostImpl(url, services);
 	}
 
-	public static Service newService(final String name, final URL url) {
+	public static Service newService(String name, URL url) {
 		return new ServiceImpl(name, url);
 	}
 
-	public static TestingService newService(final String name, final URL url, final List<OperationTest> operationTests) {
+	public static TestingService newService(String name, URL url, List<OperationTest> operationTests) {
 		return new TestingServiceImpl(name, url, operationTests);
 	}
 
-	public static OperationTest newOperationTest(final String operationName, final String requestContent) {
+	public static OperationTest newOperationTest(String operationName, String requestContent) {
 		return ModelFactory.newOperationTest(operationName, requestContent, null);
 	}
 
-	public static OperationTest newOperationTestWithoutRequest(final String operationName, final String responseContent) {
+	public static OperationTest newOperationTestWithoutRequest(String operationName, String responseContent) {
 		return ModelFactory.newOperationTest(operationName, null, responseContent);
 	}
 
-	public static OperationTest newOperationTest(final String operationName, final String requestContent,
+	public static OperationTest newOperationTest(String operationName, String requestContent,
 			final String responseContent) {
 
 		if (!StringUtils.hasText(operationName)) {
@@ -47,9 +47,9 @@ public final class ModelFactory {
 		return new OperationTestImpl(operationName, requestContent, responseContent);
 	}
 
-	public static ServiceStatusDetails newServiceStatusDetails(String id, URL url, ServiceStatus status,
-			long responseTimeInMillis, String message) {
+	public static <MonitoredEntity> StatusDetails<MonitoredEntity> newStatusDetails(MonitoredEntity monitoredEntity,
+			String name, URL url, Status status, long responseTimeInMillis, String message) {
 
-		return new ServiceStatusDetailsImpl(id, url, status, responseTimeInMillis, message);
+		return new StatusDetailsImpl<MonitoredEntity>(monitoredEntity, name, url, status, responseTimeInMillis, message);
 	}
 }

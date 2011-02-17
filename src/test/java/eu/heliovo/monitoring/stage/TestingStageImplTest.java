@@ -14,23 +14,19 @@ import org.junit.Test;
 import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.test.util.*;
 
-public class MethodCallStageTest extends Assert {
+public final class TestingStageImplTest extends Assert {
 
 	private final ExecutorService executor = TestUtils.getExecutor();
 
-	public MethodCallStageTest() throws Exception {
+	public TestingStageImplTest() throws Exception {
 	}
 
 	@Test
-	public void testMethodCallStage() throws Exception {
+	public void testTestStage() throws Exception {
 
-		// TODO test individual methods of MethodCallStage
+		TestingStage stage = new TestingStageImpl(getStageHelper(), getLoggingFactory(), logFilesUrl, executor);
 
-		MethodCallStage stage = new MethodCallStage(getStageHelper(), getLoggingFactory(), logFilesUrl, executor);
-		stage.updateServices(TestServices.LIST);
-		stage.updateStatus();
-
-		final List<ServiceStatusDetails> serviceStatus = stage.getServicesStatus();
+		List<StatusDetails<Service>> serviceStatus = stage.getStatus(TestServices.LIST);
 
 		assertNotNull(serviceStatus);
 		assertTrue(serviceStatus.size() == TestServices.LIST.size());
@@ -38,29 +34,36 @@ public class MethodCallStageTest extends Assert {
 		boolean testedFakeService = false;
 		boolean testedNoWsdlService = false;
 
-		String fakeOfflineServiceName = "FakeOfflineService" + MethodCallStage.SERVICE_NAME_SUFFIX;
-		String noWsdlOfflineServiceName = "NoWsdlOfflineService" + MethodCallStage.SERVICE_NAME_SUFFIX;
+		String fakeOfflineServiceName = "FakeOfflineService";
+		String noWsdlOfflineServiceName = "NoWsdlOfflineService";
 
-		for (final ServiceStatusDetails actualServiceStatusDetails : serviceStatus) {
+		for (StatusDetails<Service> actualServiceStatusDetails : serviceStatus) {
+
+			Service service = actualServiceStatusDetails.getMonitoredEntity();
+			assertTrue(TestServices.LIST.contains(service));
+
+			String originalServiceName = service.getName();
+			assertEquals(originalServiceName, actualServiceStatusDetails.getName());
+
 			if (actualServiceStatusDetails.getName().equals(fakeOfflineServiceName)) {
 				testedFakeService = true;
-				assertTrue(actualServiceStatusDetails.getStatus().equals(ServiceStatus.CRITICAL));
+				assertTrue(actualServiceStatusDetails.getStatus().equals(Status.CRITICAL));
 			}
 			if (actualServiceStatusDetails.getName().equals(noWsdlOfflineServiceName)) {
 				testedNoWsdlService = true;
-				assertTrue(actualServiceStatusDetails.getStatus().equals(ServiceStatus.CRITICAL));
+				assertTrue(actualServiceStatusDetails.getStatus().equals(Status.CRITICAL));
 			}
 		}
 		assertTrue(testedFakeService);
 		assertTrue(testedNoWsdlService);
 
 		System.out.println("=== Services to be tested ===");
-		for (final Service service : TestServices.LIST) {
+		for (Service service : TestServices.LIST) {
 			System.out.println(service.getName() + " " + service.getUrl());
 		}
 
 		System.out.println("=== testing results");
-		for (final ServiceStatusDetails serviceStatusDetails : stage.getServicesStatus()) {
+		for (StatusDetails<Service> serviceStatusDetails : serviceStatus) {
 			System.out.println(serviceStatusDetails.toString());
 		}
 	}

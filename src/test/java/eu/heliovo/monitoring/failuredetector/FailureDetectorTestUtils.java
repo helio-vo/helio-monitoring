@@ -1,12 +1,12 @@
 package eu.heliovo.monitoring.failuredetector;
 
-import java.util.*;
+import java.util.Set;
 
 import org.junit.Ignore;
 
-import eu.heliovo.monitoring.listener.HostUpdateListener;
 import eu.heliovo.monitoring.model.Host;
 import eu.heliovo.monitoring.test.util.*;
+import eu.heliovo.monitoring.util.ServiceHostUtils;
 
 @Ignore
 public final class FailureDetectorTestUtils {
@@ -35,27 +35,15 @@ public final class FailureDetectorTestUtils {
 		};
 	}
 
-	public static ServiceFailureDetector getServiceFailureDetector() throws Exception {
+	public static FailureDetector getFailureDetector() throws Exception {
 
 		PhiAccrualFailureDetector failureDetector;
 		failureDetector = new PhiAccrualFailureDetector(TestUtils.getExecutor(), getEmptyStatisticsRecorder());
 
-		ServiceFailureDetector serviceFailureDetector = initServiceFailureDetector(failureDetector);
+		failureDetector.updateHosts(ServiceHostUtils.getHostsFromServices(TestServices.LIST));
 		detectForResults(failureDetector);
 
-		return serviceFailureDetector;
-	}
-
-	private static ServiceFailureDetector initServiceFailureDetector(PhiAccrualFailureDetector failureDetector) {
-
-		List<HostUpdateListener> hostUpdateListeners;
-		hostUpdateListeners = Arrays.asList(new HostUpdateListener[] { failureDetector });
-
-		ServiceFailureDetector serviceFailureDetector;
-		serviceFailureDetector = new ServiceToHostAdapter(failureDetector, hostUpdateListeners);
-
-		serviceFailureDetector.updateServices(TestServices.LIST);
-		return serviceFailureDetector;
+		return failureDetector;
 	}
 
 	private static void detectForResults(PhiAccrualFailureDetector failureDetector) throws InterruptedException {
@@ -64,4 +52,27 @@ public final class FailureDetectorTestUtils {
 		failureDetector.detect();
 		Thread.sleep(1500);
 	}
+
+	// public static ServiceFailureDetector getServiceFailureDetector() throws Exception {
+	//
+	// PhiAccrualFailureDetector failureDetector;
+	// failureDetector = new PhiAccrualFailureDetector(TestUtils.getExecutor(), getEmptyStatisticsRecorder());
+	//
+	// ServiceFailureDetector serviceFailureDetector = initServiceFailureDetector(failureDetector);
+	// detectForResults(failureDetector);
+	//
+	// return serviceFailureDetector;
+	// }
+
+	// private static ServiceFailureDetector initServiceFailureDetector(PhiAccrualFailureDetector failureDetector) {
+	//
+	// List<HostUpdateListener> hostUpdateListeners;
+	// hostUpdateListeners = Arrays.asList(new HostUpdateListener[] { failureDetector });
+	//
+	// ServiceFailureDetector serviceFailureDetector;
+	// serviceFailureDetector = new ServiceToHostAdapter(failureDetector, hostUpdateListeners);
+	//
+	// serviceFailureDetector.updateServices(TestServices.LIST);
+	// return serviceFailureDetector;
+	// }
 }

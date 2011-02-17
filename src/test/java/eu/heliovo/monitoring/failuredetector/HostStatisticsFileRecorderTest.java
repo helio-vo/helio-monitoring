@@ -83,7 +83,7 @@ public class HostStatisticsFileRecorderTest extends Assert {
 
 	private List<String> printContentStatisticsFileHost2(File statisticsFileHost2) throws IOException {
 		System.out.println("content statisticsFileHost2:");
-		@SuppressWarnings("unchecked")
+
 		List<String> linesHost2 = FileUtils.readLines(statisticsFileHost2);
 		for (String line : linesHost2) {
 			System.out.println(line);
@@ -93,7 +93,7 @@ public class HostStatisticsFileRecorderTest extends Assert {
 
 	private List<String> printContentStatisticsFileHost1(File statisticsFileHost1) throws IOException {
 		System.out.println("content statisticsFileHost1:");
-		@SuppressWarnings("unchecked")
+
 		List<String> linesHost1 = FileUtils.readLines(statisticsFileHost1);
 		for (String line : linesHost1) {
 			System.out.println(line);

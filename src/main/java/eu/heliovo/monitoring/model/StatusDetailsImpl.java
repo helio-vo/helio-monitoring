@@ -3,26 +3,28 @@ package eu.heliovo.monitoring.model;
 import java.net.URL;
 
 @SuppressWarnings("serial")
-public final class ServiceStatusDetailsImpl implements ServiceStatusDetails {
+public final class StatusDetailsImpl<MonitoredEntity> implements StatusDetails<MonitoredEntity> {
 
-	private final String id;
+	private final MonitoredEntity monitoredEntity;
+	private final String name;
 	private final URL url;
-	private final ServiceStatus status;
+	private final Status status;
 	private final long responseTimeInMillis;
 	private final String message;
 
-	protected ServiceStatusDetailsImpl(String id, URL url, ServiceStatus status, long responseTimeInMillis,
-			String message) {
+	protected StatusDetailsImpl(MonitoredEntity monitoredEntity, String name, URL url, Status status,
+			long responseTimeInMillis, String message) {
 
-		this.id = id;
+		this.name = name;
 		this.url = url;
 		this.status = status;
 		this.responseTimeInMillis = responseTimeInMillis;
 		this.message = message;
+		this.monitoredEntity = monitoredEntity;
 	}
 
 	@Override
-	public ServiceStatus getStatus() {
+	public Status getStatus() {
 		return status;
 	}
 
@@ -33,7 +35,7 @@ public final class ServiceStatusDetailsImpl implements ServiceStatusDetails {
 
 	@Override
 	public String getName() {
-		return id;
+		return name;
 	}
 
 	@Override
@@ -48,7 +50,12 @@ public final class ServiceStatusDetailsImpl implements ServiceStatusDetails {
 
 	@Override
 	public String toString() {
-		return "ServiceStatusDetails [id=" + id + ", message=" + message + ", responseTimeInMillis="
+		return "ServiceStatusDetails [name=" + name + ", message=" + message + ", responseTimeInMillis="
 				+ responseTimeInMillis + ", status=" + status + ", url=" + url + "]";
+	}
+
+	@Override
+	public MonitoredEntity getMonitoredEntity() {
+		return monitoredEntity;
 	}
 }

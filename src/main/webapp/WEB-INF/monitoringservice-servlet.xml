@@ -13,9 +13,9 @@
 
 	<task:annotation-driven executor="executor" scheduler="scheduler" />
 
-	<!-- for Scheduled annotation, 3 threads for the stages, 1 for updating the services, 1 for the failure detector's detect 
+	<!-- for Scheduled annotations, 1 thread for the stage executor, 1 for updating the services, 1 for the failure detector's detect 
 		method -->
-	<task:scheduler id="scheduler" pool-size="4" />
+	<task:scheduler id="scheduler" pool-size="3" />
 
 	<!-- The failure detector needs one thread for every monitored service. It is important that threads are starting immediately. 
 		Therefore enough threads must be in the core pool, otherwise they are queued and the failure detectors time measurement goes 

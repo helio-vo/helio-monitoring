@@ -204,9 +204,7 @@ public class NagiosServiceConfigUpdaterTest extends Assert {
 			}
 
 			for (Service service : host.getServices()) {
-				assertTrue(template.contains(service.getName() + " -ping-"));
-				assertTrue(template.contains(service.getName() + " -method call-"));
-				assertTrue(template.contains(service.getName() + " -testing-"));
+				assertTrue(template.contains(service.getName()));
 			}
 
 			System.out.println(host.getName() + " template:");

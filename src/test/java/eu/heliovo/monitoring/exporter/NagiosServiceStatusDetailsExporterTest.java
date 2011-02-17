@@ -1,8 +1,8 @@
 package eu.heliovo.monitoring.exporter;
 
-import static eu.heliovo.monitoring.model.ModelFactory.newServiceStatusDetails;
-import static eu.heliovo.monitoring.model.ServiceStatus.CRITICAL;
-import static eu.heliovo.monitoring.model.ServiceStatus.OK;
+import static eu.heliovo.monitoring.model.ModelFactory.newStatusDetails;
+import static eu.heliovo.monitoring.model.Status.CRITICAL;
+import static eu.heliovo.monitoring.model.Status.OK;
 
 import java.net.*;
 import java.util.*;
@@ -11,12 +11,12 @@ import junit.framework.Assert;
 
 import org.junit.*;
 
-import eu.heliovo.monitoring.model.ServiceStatusDetails;
+import eu.heliovo.monitoring.model.*;
 
 public class NagiosServiceStatusDetailsExporterTest extends Assert {
 
-	private final List<ServiceStatusDetails> serviceStatusDetails = new ArrayList<ServiceStatusDetails>();
-	private final List<ServiceStatusDetails> hostStatusDetails = new ArrayList<ServiceStatusDetails>();
+	private final List<StatusDetails<Service>> serviceStatusDetails = new ArrayList<StatusDetails<Service>>();
+	private final List<StatusDetails<Host>> hostStatusDetails = new ArrayList<StatusDetails<Host>>();
 
 	private class TestServiceNagiosCommandWriter implements NagiosCommandWriter {
 
@@ -28,7 +28,7 @@ public class NagiosServiceStatusDetailsExporterTest extends Assert {
 			String serviceName = commandArguments.get(1);
 			boolean serviceNameFound = false;
 
-			for (ServiceStatusDetails details : serviceStatusDetails) {
+			for (StatusDetails<Service> details : serviceStatusDetails) {
 				if (details.getName().equals(serviceName)) {
 					serviceNameFound = true;
 
@@ -70,7 +70,7 @@ public class NagiosServiceStatusDetailsExporterTest extends Assert {
 				secondHostFound = true;
 			}
 
-			for (ServiceStatusDetails details : hostStatusDetails) {
+			for (StatusDetails<Host> details : hostStatusDetails) {
 
 				if (hostName.equals(details.getUrl().getHost())) {
 
@@ -101,16 +101,16 @@ public class NagiosServiceStatusDetailsExporterTest extends Assert {
 
 		String firstMessage = OK.name() + " - response time = " + 5 + " ms";
 		String firstUrl = "http://helio.i4ds.technik.fhnw.ch:8080/core/HECService?wsdl";
-		ServiceStatusDetails first = newServiceStatusDetails("HEC", new URL(firstUrl), OK, 5, firstMessage);
+		StatusDetails<Service> first = newStatusDetails(null, "HEC", new URL(firstUrl), OK, 5, firstMessage);
 
 		URL secondUrl = new URL("http://helio.i4ds.technik.fhnw.ch:8080/core/FrontendFacadeService?wsdl");
 		String secondMessage = CRITICAL.name() + " - response time = " + 10 + " ms";
-		ServiceStatusDetails second = newServiceStatusDetails("FrontendFacade", secondUrl, CRITICAL, 10, secondMessage);
+		StatusDetails<Service> second = newStatusDetails(null, "FrontendFacade", secondUrl, CRITICAL, 10, secondMessage);
 
 		URL thirdUrl = new URL("http://helio-dev.i4ds.technik.fhnw.ch/helio-wf/WorkflowsService?wsdl");
 		String thirdMessage = CRITICAL.name() + " - response time = " + 15 + " ms";
 		String thirdServiceName = "helio-dev WorkflowsService";
-		ServiceStatusDetails third = newServiceStatusDetails(thirdServiceName, thirdUrl, CRITICAL, 15, thirdMessage);
+		StatusDetails<Service> third = newStatusDetails(null, thirdServiceName, thirdUrl, CRITICAL, 15, thirdMessage);
 
 		serviceStatusDetails.add(first);
 		serviceStatusDetails.add(second);
@@ -123,11 +123,11 @@ public class NagiosServiceStatusDetailsExporterTest extends Assert {
 		
 		String firstMessage = "Host is reachable, response time = " + 5 + " ms";
 		String firstUrl = "http://helio.i4ds.ch:8080/core/HECService?wsdl";
-		ServiceStatusDetails first = newServiceStatusDetails("HEC", new URL(firstUrl), OK, 5, firstMessage);
+		StatusDetails<Host> first = newStatusDetails(null, "HEC", new URL(firstUrl), OK, 5, firstMessage);
 
 		URL secondUrl = new URL("http://msslxw.mssl.ucl.ac.uk:8080/core/FrontendFacadeService?wsdl");
 		String secondMessage = "Host not reachable";
-		ServiceStatusDetails second = newServiceStatusDetails("FrontendFacade", secondUrl, CRITICAL, 0, secondMessage);
+		StatusDetails<Host> second = newStatusDetails(null, "FrontendFacade", secondUrl, CRITICAL, 0, secondMessage);
 		
 		hostStatusDetails.add(first);
 		hostStatusDetails.add(second);

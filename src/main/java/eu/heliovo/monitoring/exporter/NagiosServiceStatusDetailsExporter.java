@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import eu.heliovo.monitoring.model.*;
 
 /**
- * Exports information of {@link ServiceStatusDetails} to the {@link NagiosCommandWriter} to send it to Nagios for
+ * Exports information of {@link StatusDetails} to the {@link NagiosCommandWriter} to send it to Nagios for
  * representation in its web interface.
  * 
  * @author Kevin Seidler
@@ -25,9 +25,9 @@ public final class NagiosServiceStatusDetailsExporter implements StatusDetailsEx
 	}
 
 	@Override
-	public void exportHostStatusDetails(List<ServiceStatusDetails> serviceStatusDetails) {
+	public void exportHostStatusDetails(List<StatusDetails<Host>> hostStatusDetails) {
 
-		for (ServiceStatusDetails currentStatusDetails : serviceStatusDetails) {
+		for (StatusDetails<Host> currentStatusDetails : hostStatusDetails) {
 
 			NagiosCommand command = NagiosCommand.PROCESS_HOST_CHECK_RESULT;
 			String hostName = currentStatusDetails.getUrl().getHost();
@@ -43,7 +43,7 @@ public final class NagiosServiceStatusDetailsExporter implements StatusDetailsEx
 		}
 	}
 
-	private String buildHostStatusMessage(ServiceStatusDetails currentStatusDetails, NagiosServiceStatus nagiosStatus) {
+	private String buildHostStatusMessage(StatusDetails<Host> currentStatusDetails, NagiosServiceStatus nagiosStatus) {
 
 		long responseTime = currentStatusDetails.getResponseTimeInMillis();
 		String hostReachableMessage = "Host is reachable, response time = " + responseTime + " ms";
@@ -52,9 +52,9 @@ public final class NagiosServiceStatusDetailsExporter implements StatusDetailsEx
 	}
 
 	@Override
-	public void exportServiceStatusDetails(List<ServiceStatusDetails> serviceStatusDetails) {
+	public void exportServiceStatusDetails(List<StatusDetails<Service>> serviceStatusDetails) {
 
-		for (ServiceStatusDetails currentStatusDetails : serviceStatusDetails) {
+		for (StatusDetails<Service> currentStatusDetails : serviceStatusDetails) {
 
 			NagiosCommand command = NagiosCommand.PROCESS_SERVICE_CHECK_RESULT;
 			String hostName = currentStatusDetails.getUrl().getHost();
@@ -69,7 +69,7 @@ public final class NagiosServiceStatusDetailsExporter implements StatusDetailsEx
 		}
 	}
 
-	private List<String> assembleCommandArguments(ServiceStatusDetails actualServiceStatusDetails, String hostName,
+	private List<String> assembleCommandArguments(StatusDetails<?> actualServiceStatusDetails, String hostName,
 			String serviceName, NagiosServiceStatus nagiosStatus) {
 
 		List<String> commandArguments = new ArrayList<String>();
@@ -80,18 +80,18 @@ public final class NagiosServiceStatusDetailsExporter implements StatusDetailsEx
 		return commandArguments;
 	}
 
-	protected NagiosServiceStatus getNagiosServiceStatus(ServiceStatusDetails actualServiceStatusDetails) {
+	protected NagiosServiceStatus getNagiosServiceStatus(StatusDetails<?> actualServiceStatusDetails) {
 
 		NagiosServiceStatus nagiosStatus;
-		ServiceStatus serviceStatus = actualServiceStatusDetails.getStatus();
+		Status serviceStatus = actualServiceStatusDetails.getStatus();
 
-		if (ServiceStatus.OK.equals(serviceStatus)) {
+		if (Status.OK.equals(serviceStatus)) {
 			nagiosStatus = NagiosServiceStatus.OK;
-		} else if (ServiceStatus.CRITICAL.equals(serviceStatus)) {
+		} else if (Status.CRITICAL.equals(serviceStatus)) {
 			nagiosStatus = NagiosServiceStatus.CRITICAL;
-		} else if (ServiceStatus.WARNING.equals(serviceStatus)) {
+		} else if (Status.WARNING.equals(serviceStatus)) {
 			nagiosStatus = NagiosServiceStatus.WARNING;
-		} else if (ServiceStatus.UNKNOWN.equals(serviceStatus)) {
+		} else if (Status.UNKNOWN.equals(serviceStatus)) {
 			nagiosStatus = NagiosServiceStatus.UNKNOWN;
 		} else {
 			throw new IllegalStateException("a state must be given!");
