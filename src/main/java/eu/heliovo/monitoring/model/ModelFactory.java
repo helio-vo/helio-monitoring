@@ -21,12 +21,12 @@ public final class ModelFactory {
 		return new HostImpl(url, services);
 	}
 
-	public static Service newService(String name, URL url) {
-		return new ServiceImpl(name, url);
+	public static Service newService(String identifier, String name, URL url) {
+		return new ServiceImpl(identifier, name, url);
 	}
 
-	public static TestingService newService(String name, URL url, List<OperationTest> operationTests) {
-		return new TestingServiceImpl(name, url, operationTests);
+	public static TestingService newService(String identifier, String name, URL url, List<OperationTest> operationTests) {
+		return new TestingServiceImpl(identifier, name, url, operationTests);
 	}
 
 	public static OperationTest newOperationTest(String operationName, String requestContent) {

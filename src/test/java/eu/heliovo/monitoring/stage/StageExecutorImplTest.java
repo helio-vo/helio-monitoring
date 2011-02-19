@@ -132,14 +132,14 @@ public class StageExecutorImplTest extends Assert {
 		URL ilsUrl = new URL("http://msslxw.mssl.ucl.ac.uk:8080/helio-ils/HelioService?wsdl");
 
 		Set<Service> services = new HashSet<Service>();
-		services.add(newService("ICS", icsUrl));
-		services.add(newService("DPAS", dpasUrl));
-		services.add(newService("ILS", ilsUrl));
+		services.add(newService("", "ICS", icsUrl));
+		services.add(newService("", "DPAS", dpasUrl));
+		services.add(newService("", "ILS", ilsUrl));
 
 		hosts.add(newHost(icsUrl, services));
 
 		URL hfcUrl = new URL("http://helio-fc1.obspm.fr:8080/helio-hfc/HelioService?wsdl");
-		services = new HashSet<Service>(asList(newService("HFC", hfcUrl)));
+		services = new HashSet<Service>(asList(newService("", "HFC", hfcUrl)));
 		hosts.add(newHost(hfcUrl, services));
 
 		executor.updateHosts(hosts);

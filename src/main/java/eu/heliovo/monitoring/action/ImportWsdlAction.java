@@ -12,14 +12,14 @@ import com.eviware.soapui.support.SoapUIException;
 import eu.heliovo.monitoring.logging.LogFileWriter;
 
 /**
- * TODO DOCUMENT ME
+ * This Action loads a WSDL file from a specifies URL and parses it for further use.
  * 
  * @author Kevin Seidler
  * 
  */
 public final class ImportWsdlAction implements Action<WsdlInterface> {
 
-	private static final int IMPORT_WSDL_TIMEOUT = 10;
+	private static final int IMPORT_WSDL_TIMEOUT_IN_SECONDS = 20;
 	private static final int FIRST_WSDL_INTERFACE = 0;
 
 	private final LogFileWriter logFileWriter;
@@ -43,22 +43,23 @@ public final class ImportWsdlAction implements Action<WsdlInterface> {
 		Future<WsdlInterface> future = executor.submit(new Callable<WsdlInterface>() {
 			@Override
 			public WsdlInterface call() throws SoapUIException {
-				// TODO parsing (size of wsdl file) should be excluded, to do correct timeout calculation
+
 				WsdlInterface[] wsdlInterfaces = WsdlInterfaceFactory.importWsdl(project, wsdlUrl, true);
 				return wsdlInterfaces[FIRST_WSDL_INTERFACE];
 			}
 		});
 
 		try {
-			// TODO automatically determine timeout
-			WsdlInterface wsdlInterface = future.get(IMPORT_WSDL_TIMEOUT, TimeUnit.SECONDS);
+			// TODO automatically determine timeout with help of the failure detector, parsing (size of wsdl file)
+			// should be excluded, to do correct timeout calculation
+			WsdlInterface wsdlInterface = future.get(IMPORT_WSDL_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
 			logFileWriter.write("Importing finished");
 
 			return wsdlInterface;
 
 		} catch (TimeoutException e) {
 			project.release();
-			throw new IllegalStateException("Importing WSDL file timed out (timeout: " + IMPORT_WSDL_TIMEOUT + " s)");
+			throw new IllegalStateException("Importing WSDL file timed out (timeout: " + IMPORT_WSDL_TIMEOUT_IN_SECONDS + " s)");
 		} finally {
 			future.cancel(true);
 		}

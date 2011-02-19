@@ -13,13 +13,13 @@ public class StringUtilsTest extends Assert {
 	@Test
 	public void testGetCanonicalName() throws Exception {
 		
-		Service service = ModelFactory.newService("MSSL ILS", new URL("http://www.helio-vo.eu"));
+		Service service = ModelFactory.newService("", "MSSL ILS", new URL("http://www.helio-vo.eu"));
 		assertEquals("MSSL_ILS", service.getCanonicalName());
 		
-		service = ModelFactory.newService("MSSL/ILS", new URL("http://www.helio-vo.eu"));
+		service = ModelFactory.newService("", "MSSL/ILS", new URL("http://www.helio-vo.eu"));
 		assertEquals("MSSLILS", service.getCanonicalName());
 		
-		service = ModelFactory.newService("MSSL\\ /ILS", new URL("http://www.helio-vo.eu"));
+		service = ModelFactory.newService("", "MSSL\\ /ILS", new URL("http://www.helio-vo.eu"));
 		assertEquals("MSSL_ILS", service.getCanonicalName());
 	}
 }

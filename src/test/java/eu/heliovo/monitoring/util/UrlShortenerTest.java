@@ -18,7 +18,7 @@ public class UrlShortenerTest extends Assert {
 		System.out.println("longUrl: " + longUrl);
 		System.out.println("shortUrl: " + shortUrl);
 
-		assertTrue(shortUrl.length() < longUrl.length());
+		assertTrue(shortUrl.length() <= longUrl.length());
 
 		testWellformedUrl(shortUrl);
 
@@ -29,7 +29,7 @@ public class UrlShortenerTest extends Assert {
 		System.out.println("longUrl: " + longUrl);
 		System.out.println("shortUrl: " + shortUrl2);
 
-		assertTrue(shortUrl.length() < longUrl.length());
+		assertTrue(shortUrl.length() <= longUrl.length());
 
 		testWellformedUrl(shortUrl2);
 

@@ -31,13 +31,13 @@ public final class Services {
 
 			// taken from https://grid.ie/helio/wiki/HelioServicesDetails
 			URL hecUrl = new URL("http://140.105.77.30:8080/helio-hec-r3/HelioService?wsdl");
-			services.add(newService("HEC", hecUrl, createHecMsslOperationTests()));
-			services.add(newService("DPAS", new URL(MSSL_URL + "helio-dpas/HelioService?wsdl")));
-			services.add(newService("ICS_R2", new URL(MSSL_URL + "helio-ics/HelioService?wsdl")));
-			services.add(newService("ICS_R3", new URL(MSSL_URL + "helio-ics-r3/HelioService?wsdl")));
-			services.add(newService("ILS", new URL(MSSL_URL + "helio-ils/HelioService?wsdl")));
-			services.add(newService("HRS", new URL(MSSL_URL + "helio_registry/HelioService?wsdl")));
-			services.add(newService("HFC", new URL("http://helio-fc1.obspm.fr:8080/helio-hfc/HelioService?wsdl")));
+			services.add(newService("HEC", "HEC", hecUrl, createHecMsslOperationTests()));
+			services.add(newService("DPAS", "DPAS", new URL(MSSL_URL + "helio-dpas/HelioService?wsdl")));
+			services.add(newService("ICS_R2", "ICS_R2", new URL(MSSL_URL + "helio-ics/HelioService?wsdl")));
+			services.add(newService("ICS_R3", "ICS_R3", new URL(MSSL_URL + "helio-ics-r3/HelioService?wsdl")));
+			services.add(newService("ILS", "ILS", new URL(MSSL_URL + "helio-ils/HelioService?wsdl")));
+			services.add(newService("HRS", "HRS", new URL(MSSL_URL + "helio_registry/HelioService?wsdl")));
+			services.add(newService("HFC", "HFC", new URL("http://helio-fc1.obspm.fr:8080/helio-hfc/HelioService?wsdl")));
 
 			LIST = Collections.unmodifiableSet(services);
 

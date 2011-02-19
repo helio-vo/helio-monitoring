@@ -39,6 +39,40 @@
 			</snapshots>
 		</repository>
 
+		<repository>
+			<id>download.java.net repo 1</id>
+			<url>http://download.java.net/maven/1/</url>
+			<layout>legacy</layout>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+
+		<repository>
+			<id>download.java.net repo 2</id>
+			<url>http://download.java.net/maven/2/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+
+		<repository>
+			<id>JBoss repo</id>
+			<url>http://repository.jboss.org/maven2/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+
 	</repositories>
 
 	<dependencies>
@@ -49,7 +83,7 @@
 			<artifactId>spring-webmvc</artifactId>
 			<version>${spring.version}</version>
 		</dependency>
-		
+
 		<!-- utils -->
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -78,7 +112,7 @@
 		<dependency>
 			<groupId>eviware</groupId>
 			<artifactId>soapui</artifactId>
-			<!--version>3.0.2</version-->
+			<!--version>3.0.2</version -->
 			<version>3.6.1</version>
 		</dependency>
 		<dependency>
@@ -99,7 +133,7 @@
 		<dependency>
 			<groupId>commons-httpclient</groupId>
 			<artifactId>commons-httpclient</artifactId>
-			<!--version>3.0.1-soapui</version-->
+			<!--version>3.0.1-soapui</version -->
 			<version>3.1</version>
 		</dependency>
 		<dependency>
@@ -204,13 +238,39 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
-		
+
 		<!-- for shortening URLs to display them in Nagios GUI -->
 		<dependency>
-    		<groupId>com.rosaloves</groupId>
-    		<artifactId>bitlyj</artifactId>
-    		<version>2.0.0</version>
+			<groupId>com.rosaloves</groupId>
+			<artifactId>bitlyj</artifactId>
+			<version>2.0.0</version>
 		</dependency>
+
 	</dependencies>
+
+	<build>
+
+		<plugins>
+
+			<!-- this generates needed JAX-WS/JAXB classes -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>jaxws-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>wsgen</goal>
+						</goals>
+						<configuration>
+							<sei>eu.heliovo.monitoring.service.MonitoringServiceImpl</sei>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+
+	</build>
 
 </project>

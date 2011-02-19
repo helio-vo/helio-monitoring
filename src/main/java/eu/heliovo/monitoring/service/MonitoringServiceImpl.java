@@ -1,8 +1,11 @@
 package eu.heliovo.monitoring.service;
 
 import static org.springframework.util.CollectionUtils.isEmpty;
+import static org.springframework.util.StringUtils.hasText;
 
 import java.util.*;
+
+import javax.jws.WebService;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.*;
@@ -22,13 +25,21 @@ import eu.heliovo.monitoring.stage.StageExecutor;
  * 
  */
 @org.springframework.stereotype.Service
-public final class MonitoringServiceImpl implements MonitoringService, ApplicationContextAware {
+@WebService(endpointInterface = "eu.heliovo.monitoring.service.MonitoringService", serviceName = "HelioService")
+public class MonitoringServiceImpl implements MonitoringService, ApplicationContextAware {
 
 	private final ServiceLoader serviceLoader;
 	private final StageExecutor stageExecutor;
 	private final List<ServiceUpdateListener> serviceUpdateListeners;
 
 	private int currentServicesHashCode = 0;
+
+	/**
+	 * Do not use this one! It is only needed for JAX-WS.
+	 */
+	public MonitoringServiceImpl() {
+		throw new IllegalStateException("do not use this constructor, it is only needed for JAX-WS");
+	}
 
 	// for manual service definition, please use "staticServiceLoader" as qualifier and define services in Services.java
 	// Spring automatically injects all components implementing the ServiceUpdateListener interface
@@ -69,14 +80,25 @@ public final class MonitoringServiceImpl implements MonitoringService, Applicati
 	}
 
 	@Override
-	public List<StatusDetails<Service>> getStatus() {
+	public List<StatusDetails<Service>> getAllStatus() {
 		return stageExecutor.getStatus();
 	}
 
 	@Override
-	public StatusDetails<Service> getStatus(String serviceId) {
-		// TODO IMPLEMENT ME
-		throw new UnsupportedOperationException("operation not supported yet");
+	public StatusDetails<Service> getStatus(String serviceIdendifier) {
+
+		if (hasText(serviceIdendifier)) {
+
+			for (StatusDetails<Service> details : this.getAllStatus()) {
+
+				Service service = details.getMonitoredEntity();
+				if (serviceIdendifier.equals(service.getIdentifier())) {
+					return details;
+				}
+			}
+		}
+
+		throw new IllegalArgumentException("Service identifier is empty or could not be found!");
 	}
 
 	/**

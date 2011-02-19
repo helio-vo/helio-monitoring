@@ -14,9 +14,9 @@
 		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
-
 	<servlet-mapping>
 		<servlet-name>monitoringservice</servlet-name>
 		<url-pattern>/logs/*</url-pattern>
 	</servlet-mapping>
+	
 </web-app>

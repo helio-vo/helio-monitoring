@@ -24,8 +24,8 @@ public final class TestServices {
 			services.addAll(Services.LIST);
 
 			// just for testing purposes
-			services.add(newService("FakeOfflineService", new URL("http://123.43.121.11/")));
-			services.add(newService("NoWsdlOfflineService", new URL("http://helio-dev.i4ds.ch/fakeofflineservice")));
+			services.add(newService("", "FakeOfflineService", new URL("http://123.43.121.11/")));
+			services.add(newService("", "NoWsdlOfflineService", new URL("http://helio-dev.i4ds.ch/fakeofflineservice")));
 
 			LIST = Collections.unmodifiableSet(services);
 

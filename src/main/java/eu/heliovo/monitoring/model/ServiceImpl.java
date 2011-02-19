@@ -6,12 +6,19 @@ import eu.heliovo.monitoring.util.StringUtils;
 
 public final class ServiceImpl implements Service {
 
+	private final String identifier;
 	private final String name;
 	private final URL url;
 
-	protected ServiceImpl(final String name, final URL url) {
+	protected ServiceImpl(String identifier, String name, URL url) {
+		this.identifier = identifier;
 		this.name = name;
 		this.url = url;
+	}
+
+	@Override
+	public String getIdentifier() {
+		return identifier;
 	}
 
 	@Override

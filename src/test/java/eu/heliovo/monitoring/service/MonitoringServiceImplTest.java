@@ -30,8 +30,71 @@ public class MonitoringServiceImplTest extends Assert {
 		MonitoringServiceImpl monitoringService = initMonitoringService();
 
 		monitoringService.updateServices();
+		testGetAllStatus(monitoringService);
+		testGetStatus(monitoringService);
+	}
 
-		List<StatusDetails<Service>> result = monitoringService.getStatus();
+	private void testGetStatus(MonitoringServiceImpl monitoringService) {
+
+		testNullIdentifier(monitoringService);
+		testEmptyIdentifier(monitoringService);
+		testNotExistingIdentifier(monitoringService);
+		testExistingIdentifier(monitoringService);
+	}
+
+	private void testExistingIdentifier(MonitoringServiceImpl monitoringService) {
+
+		StatusDetails<Service> singleResult = monitoringService.getStatus("ICS");
+		assertNotNull(singleResult);
+
+		assertEquals("ICS", singleResult.getName());
+		assertEquals(Status.OK, singleResult.getStatus());
+
+		assertTrue(singleResult.getUrl() == null);
+		assertEquals(67, singleResult.getResponseTimeInMillis());
+		assertEquals("", singleResult.getMessage());
+	}
+
+	private void testNullIdentifier(MonitoringServiceImpl monitoringService) {
+
+		boolean exceptionCaught = false;
+		try {
+			monitoringService.getStatus(null);
+		} catch (IllegalArgumentException e) {
+			exceptionCaught = true;
+		}
+
+		assertTrue(exceptionCaught);
+	}
+
+	private void testEmptyIdentifier(MonitoringServiceImpl monitoringService) {
+
+		boolean exceptionCaught;
+		exceptionCaught = false;
+		try {
+			monitoringService.getStatus("");
+		} catch (IllegalArgumentException e) {
+			exceptionCaught = true;
+		}
+
+		assertTrue(exceptionCaught);
+	}
+
+	private void testNotExistingIdentifier(MonitoringServiceImpl monitoringService) {
+
+		boolean exceptionCaught;
+		exceptionCaught = false;
+		try {
+			monitoringService.getStatus("notExistingIdentifier");
+		} catch (IllegalArgumentException e) {
+			exceptionCaught = true;
+		}
+
+		assertTrue(exceptionCaught);
+	}
+
+	private void testGetAllStatus(MonitoringServiceImpl monitoringService) {
+		List<StatusDetails<Service>> result = monitoringService.getAllStatus();
 		assertNotNull(result);
 		assertEquals(1, result.size());
 
@@ -44,16 +107,6 @@ public class MonitoringServiceImplTest extends Assert {
 			}
 		}
 		assertTrue(icsFound);
-
-		boolean exceptionCaught = false;
-		try {
-			StatusDetails<Service> singleResult = monitoringService.getStatus("serviceId");
-			assertNotNull(singleResult);
-			// TODO do further tests when implemented
-		} catch (UnsupportedOperationException e) {
-			exceptionCaught = true;
-		}
-		assertTrue(exceptionCaught);
 	}
 
 	private MonitoringServiceImpl initMonitoringService() throws Exception {
@@ -68,7 +121,7 @@ public class MonitoringServiceImplTest extends Assert {
 			@Override
 			public List<StatusDetails<Service>> getStatus() {
 
-				Service ics = ModelFactory.newService("ICS", null);
+				Service ics = ModelFactory.newService("ICS", "ICS", null);
 				StatusDetails<Service> icsStatus = ModelFactory.newStatusDetails(ics, "ICS", null, Status.OK, 67, "");
 
 				List<StatusDetails<Service>> status = new ArrayList<StatusDetails<Service>>();
@@ -162,7 +215,7 @@ public class MonitoringServiceImplTest extends Assert {
 	}
 
 	private Service testAddNewService(MonitoringServiceImpl monitoringService) throws MalformedURLException {
-		Service someService = ModelFactory.newService("SomeService", new URL("http://www.helio-vo.eu/"));
+		Service someService = ModelFactory.newService("", "SomeService", new URL("http://www.helio-vo.eu/"));
 		testServices.add(someService);
 		monitoringService.updateServices();
 		assertEquals(3, timesUpdateReceived);
@@ -175,7 +228,7 @@ public class MonitoringServiceImplTest extends Assert {
 			throws Exception {
 
 		testServices.remove(someService);
-		testServices.add(ModelFactory.newService("SomeService", new URL("http://www.helio-vo.eu/")));
+		testServices.add(ModelFactory.newService("", "SomeService", new URL("http://www.helio-vo.eu/")));
 		monitoringService.updateServices();
 		assertEquals(3, timesUpdateReceived);
 	}
@@ -190,7 +243,7 @@ public class MonitoringServiceImplTest extends Assert {
 
 	private void initExampleList(MonitoringServiceImpl monitoringService) throws MalformedURLException {
 		testServices.clear();
-		testServices.add(ModelFactory.newService("SomeService", new URL("http://www.helio-vo.eu/")));
+		testServices.add(ModelFactory.newService("", "SomeService", new URL("http://www.helio-vo.eu/")));
 		testServices.addAll(TestServices.LIST);
 		monitoringService.updateServices();
 		assertEquals(4, timesUpdateReceived);
@@ -199,7 +252,7 @@ public class MonitoringServiceImplTest extends Assert {
 	private void testNewListWithSameServices(MonitoringServiceImpl monitoringService) throws Exception {
 		testServices = new HashSet<Service>();
 		testServices.addAll(TestServices.LIST);
-		testServices.add(ModelFactory.newService("SomeService", new URL("http://www.helio-vo.eu/")));
+		testServices.add(ModelFactory.newService("", "SomeService", new URL("http://www.helio-vo.eu/")));
 		monitoringService.updateServices();
 		assertEquals(4, timesUpdateReceived);
 	}

@@ -1,7 +1,5 @@
 package eu.heliovo.monitoring.logging;
 
-import static eu.heliovo.monitoring.util.UrlShortener.shorten;
-
 import java.io.*;
 import java.util.Calendar;
 
@@ -61,9 +59,11 @@ public final class LoggingHelper {
 		}
 
 		String logFileUrl = getLogFileUrl(logFileWriter, logFilesUrl);
-		String shortLogFileUrl = shorten(logFileUrl);
+		// TODO bit.ly has a rate limit, the monitoring service needs more URLs than that rate limit allows, use another
+		// service, create an own service or try to reuse these shorten URLs
+		// String shortLogFileUrl = shorten(logFileUrl);
 
-		return ", see log file: " + shortLogFileUrl;
+		return ", see log file: " + logFileUrl;
 	}
 
 	private static String getLogFileUrl(LogFileWriter logFileWriter, String logFilesUrl) {

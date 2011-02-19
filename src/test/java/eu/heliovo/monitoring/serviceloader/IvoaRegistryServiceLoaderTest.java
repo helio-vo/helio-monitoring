@@ -26,7 +26,7 @@ public class IvoaRegistryServiceLoaderTest extends Assert {
 		ServiceLoader serviceloader = new IvoaRegistryServiceLoader(registryUrl, executor);
 		Set<Service> services = serviceloader.loadServices();
 		for (Service service : services) {
-			System.out.println(service.getName() + " " + service.getUrl());
+			System.out.println(service.getIdentifier() + " " + service.getName() + " " + service.getUrl());
 		}
 
 		// at this url there is no registry, getting 404 and the result is an empty list

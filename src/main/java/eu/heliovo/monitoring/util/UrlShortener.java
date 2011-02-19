@@ -2,6 +2,8 @@ package eu.heliovo.monitoring.util;
 
 import static com.rosaloves.bitlyj.Jmp.as;
 
+import org.apache.log4j.Logger;
+
 import com.rosaloves.bitlyj.*;
 
 /**
@@ -19,13 +21,21 @@ public final class UrlShortener {
 	private static final String BITLY_USER = "heliomonitoring"; // password: vUAxchcf
 	private static final String BITLY_API_KEY = "R_87f7938d6608fa33caf31e08e4204908";
 
+	private static final Logger LOGGER = Logger.getLogger(UrlShortener.class);
+
 	private UrlShortener() {
 	}
 
 	public static String shorten(String longUrl) {
 
-		Url shortUrl = as(BITLY_USER, BITLY_API_KEY).call(Bitly.shorten(longUrl));
+		try {
 
-		return shortUrl.getShortUrl();
+			Url shortUrl = as(BITLY_USER, BITLY_API_KEY).call(Bitly.shorten(longUrl));
+			return shortUrl.getShortUrl();
+
+		} catch (Exception e) {
+			LOGGER.warn(e.getMessage(), e);
+			return longUrl;
+		}
 	}
 }

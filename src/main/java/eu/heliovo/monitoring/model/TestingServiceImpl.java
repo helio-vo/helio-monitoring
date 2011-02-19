@@ -7,14 +7,21 @@ import eu.heliovo.monitoring.util.StringUtils;
 
 public final class TestingServiceImpl implements TestingService {
 
+	private final String identifier;
 	private final String name;
 	private final URL url;
 	private final List<OperationTest> operationTests;
 
-	protected TestingServiceImpl(final String name, final URL url, final List<OperationTest> operationTests) {
+	protected TestingServiceImpl(String identifier, String name, URL url, List<OperationTest> operationTests) {
+		this.identifier = identifier;
 		this.name = name;
 		this.url = url;
 		this.operationTests = Collections.unmodifiableList(operationTests);
+	}
+
+	@Override
+	public String getIdentifier() {
+		return identifier;
 	}
 
 	@Override

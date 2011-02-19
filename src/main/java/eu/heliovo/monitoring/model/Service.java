@@ -12,6 +12,13 @@ import java.net.URL;
  */
 public interface Service {
 
+	/**
+	 * Returns an unique identifier for this service.
+	 * 
+	 * @return unique identifier
+	 */
+	String getIdentifier();
+
 	String getName();
 
 	/**

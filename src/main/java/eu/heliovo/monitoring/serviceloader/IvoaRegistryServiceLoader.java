@@ -104,6 +104,7 @@ public final class IvoaRegistryServiceLoader implements ServiceLoader {
 	private Service readService(BasicResource registryResource) throws MalformedURLException {
 
 		String serviceName = registryResource.getTitle();
+		String serviceIdentifier = registryResource.getIdentifier();
 
 		BasicCapability[] capabilities = registryResource.getCapabilities();
 		String serviceUrl = getServiceUrl(capabilities);
@@ -112,7 +113,7 @@ public final class IvoaRegistryServiceLoader implements ServiceLoader {
 			serviceUrl += WSDL_SUFFIX;
 		}
 
-		return newService(serviceName, new URL(serviceUrl));
+		return newService(serviceIdentifier, serviceName, new URL(serviceUrl));
 	}
 
 	private String getServiceUrl(BasicCapability[] capabilities) {

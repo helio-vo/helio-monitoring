@@ -18,19 +18,17 @@ import eu.heliovo.monitoring.model.*;
 public interface MonitoringService {
 
 	/**
-	 * Returning the actual status of the services.
+	 * Returning the actual status of all services.
 	 * 
 	 * @return List of service status
 	 */
-	@WebMethod
-	List<StatusDetails<Service>> getStatus();
+	List<StatusDetails<Service>> getAllStatus();
 
 	/**
 	 * Returns the current status of the service given by its ID
 	 * 
-	 * @param serviceId the identifier for this service
+	 * @param serviceIdendifier the identifier for this service
 	 * @return the current status of the service
 	 */
-	@WebMethod
-	StatusDetails<Service> getStatus(String serviceId);
+	StatusDetails<Service> getStatus(@WebParam(name = "serviceIdendifier") String serviceIdendifier);
 }

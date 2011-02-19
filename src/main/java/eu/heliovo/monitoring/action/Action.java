@@ -1,7 +1,7 @@
 package eu.heliovo.monitoring.action;
 
 /**
- * TODO DOCUMENT ME<br/>
+ * This is a common interface for all actions. TODO DOCUMENT ME<br/>
  * TODO to log taken actions, see Design Patterns from Gamma et. al. at Pattern Command
  * 
  * @author Kevin Seidler
