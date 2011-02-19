@@ -17,7 +17,7 @@ import eu.heliovo.monitoring.logging.LogFileWriter;
  * @author Kevin Seidler
  * 
  */
-public final class ImportWsdlAction implements Action<WsdlInterface> {
+public final class ImportWsdlAction implements ResultAction<WsdlInterface> {
 
 	private static final int IMPORT_WSDL_TIMEOUT_IN_SECONDS = 20;
 	private static final int FIRST_WSDL_INTERFACE = 0;

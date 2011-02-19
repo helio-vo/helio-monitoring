@@ -30,16 +30,14 @@ public final class MethodCallStageImpl implements MethodCallStage {
 	private static final String LOG_FILE_SUFFIX = "_method-call_";
 	private static final boolean TEST_FOR_SOAP_FAULT = false;
 
-	private final StageHelper stageHelper;
 	private final LoggingFactory loggingFactory;
 	private final String logFilesUrl; // TODO should be moved somewhere in the logging classes
 	private final ExecutorService executor;
 
 	@Autowired
-	protected MethodCallStageImpl(StageHelper stageHelper, LoggingFactory loggingFactory,
+	protected MethodCallStageImpl(LoggingFactory loggingFactory,
 			@Value("${monitoringService.logUrl}") String logFilesUrl, ExecutorService executor) {
 
-		this.stageHelper = stageHelper;
 		this.loggingFactory = loggingFactory;
 		this.logFilesUrl = logFilesUrl;
 		this.executor = executor;
@@ -66,17 +64,17 @@ public final class MethodCallStageImpl implements MethodCallStage {
 
 				wsdlInterface = new ImportWsdlAction(logFileWriter, serviceUrlAsString, executor).getResult();
 				WsdlOperation operation = new SelectOperationAction(wsdlInterface).getResult();
-				WsdlRequest request = stageHelper.createRequest(wsdlInterface, logFileWriter, operation);
-				WsdlResponse response = stageHelper.submitRequest(request, logFileWriter);
-				stageHelper.processResponse(response, serviceName, service, logFileWriter);
+				WsdlRequest request = new CreateRequestAction(wsdlInterface, logFileWriter, operation).getResult();
+				WsdlResponse response = new SubmitRequestAction(request, logFileWriter, executor).getResult();
+				new ProcessResponseAction(response, serviceName, service, logFileWriter).execute();
 				StatusDetails<Service> serviceStatus = buildServiceStatus(response, serviceName, service, logFileWriter);
 
 				servicesStatus.add(serviceStatus);
 
 			} catch (Exception e) {
-				stageHelper.handleException(e, logFileWriter, serviceName, service, servicesStatus);
+				new HandleErrorAction(e, logFileWriter, serviceName, service, servicesStatus, logFilesUrl).execute();
 			} finally {
-				stageHelper.cleanUp(logFileWriter, wsdlInterface);
+				new CleanUpAction(logFileWriter, wsdlInterface).execute();
 			}
 		}
 

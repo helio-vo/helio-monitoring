@@ -22,7 +22,7 @@ import com.eviware.soapui.model.iface.Operation;
 import com.eviware.soapui.model.testsuite.AssertionError;
 import com.eviware.soapui.support.SoapUIException;
 
-import eu.heliovo.monitoring.action.ImportWsdlAction;
+import eu.heliovo.monitoring.action.*;
 import eu.heliovo.monitoring.logging.*;
 import eu.heliovo.monitoring.model.*;
 import eu.heliovo.monitoring.util.WsdlValidationUtils;
@@ -38,7 +38,6 @@ public final class TestingStageImpl implements TestingStage {
 
 	private static final String LOG_FILE_SUFFIX = "_testing_";
 
-	private final StageHelper stageHelper;
 	private final LoggingFactory loggingFactory;
 	private final String logFilesUrl;
 	private final ExecutorService executor;
@@ -46,10 +45,9 @@ public final class TestingStageImpl implements TestingStage {
 	private final Logger logger = Logger.getLogger(this.getClass());
 
 	@Autowired
-	protected TestingStageImpl(StageHelper stageHelper, LoggingFactory loggingFactory,
+	protected TestingStageImpl(LoggingFactory loggingFactory,
 			@Value("${monitoringService.logUrl}") String logFilesUrl, ExecutorService executor) {
 
-		this.stageHelper = stageHelper;
 		this.loggingFactory = loggingFactory;
 		this.logFilesUrl = logFilesUrl;
 		this.executor = executor;
@@ -75,20 +73,14 @@ public final class TestingStageImpl implements TestingStage {
 				monitorPredefinedOperations(logFileWriter, service, serviceName, wsdlInterface, statistic);
 				monitorAvailableOperations(logFileWriter, service, serviceName, wsdlInterface, statistic);
 
-				// TODO record value over a time, if 3 times the same, take as right value, if it changes, do alert
-				// => problem if value are generated and data type to less restrictive, e.g. string for an integer
-
-				// TODO if service has predefined testing data, user can decide to deactivate the test of not
-				// predefined operations
-
 				StatusDetails<Service> serviceStatusDetails;
 				serviceStatusDetails = buildServiceStatusDetails(service, statistic, logFileWriter);
 				statusDetails.add(serviceStatusDetails);
 
 			} catch (Exception e) {
-				stageHelper.handleException(e, logFileWriter, serviceName, service, statusDetails);
+				new HandleErrorAction(e, logFileWriter, serviceName, service, statusDetails, logFilesUrl).execute();
 			} finally {
-				stageHelper.cleanUp(logFileWriter, wsdlInterface);
+				new CleanUpAction(logFileWriter, wsdlInterface).execute();
 			}
 		}
 		return statusDetails;
@@ -114,16 +106,19 @@ public final class TestingStageImpl implements TestingStage {
 
 						WsdlOperation wsdlOperation = operation;
 
-						String requestContent = operationTest.getRequestContent();
+						String content = operationTest.getRequestContent();
 						WsdlRequest request;
-						if (hasText(requestContent)) {
-							request = stageHelper.createRequest(wsdlInterface, logFileWriter, wsdlOperation,
-									requestContent);
+						if (hasText(content)) {
+
+							CreateRequestAction action;
+							action = new CreateRequestAction(wsdlInterface, logFileWriter, wsdlOperation, content);
+							request = action.getResult();
+							
 						} else {
-							request = stageHelper.createRequest(wsdlInterface, logFileWriter, wsdlOperation);
+							request = new CreateRequestAction(wsdlInterface, logFileWriter, wsdlOperation).getResult();
 						}
 
-						WsdlResponse response = stageHelper.submitRequest(request, logFileWriter);
+						WsdlResponse response = new SubmitRequestAction(request, logFileWriter, executor).getResult();
 						processResponse(response, statistic, service, serviceName, logFileWriter);
 
 						String actualResponseContent = response.getContentAsString();
@@ -148,7 +143,6 @@ public final class TestingStageImpl implements TestingStage {
 							}
 						}
 
-						// TODO if request is a predefined one and not valid => State.CRITICAL, may throw an exeception
 						// TODO test with predefined response only
 
 					} catch (Exception e) {
@@ -180,8 +174,8 @@ public final class TestingStageImpl implements TestingStage {
 				try {
 
 					WsdlOperation wsdlOperation = (WsdlOperation) operation;
-					WsdlRequest request = stageHelper.createRequest(wsdlInterface, logFileWriter, wsdlOperation);
-					WsdlResponse response = stageHelper.submitRequest(request, logFileWriter);
+					WsdlRequest request = new CreateRequestAction(wsdlInterface, logFileWriter, wsdlOperation).getResult();
+					WsdlResponse response = new SubmitRequestAction(request, logFileWriter, executor).getResult();
 					processResponse(response, statistic, service, serviceName, logFileWriter);
 
 				} catch (Exception e) {
@@ -198,7 +192,7 @@ public final class TestingStageImpl implements TestingStage {
 	private void processResponse(WsdlResponse response, Statistic statistic, Service service, String serviceName,
 			LogFileWriter logFileWriter) throws XmlException {
 
-		stageHelper.processResponse(response, serviceName, service, logFileWriter);
+		new ProcessResponseAction(response, serviceName, service, logFileWriter).execute();
 
 		// response validation
 		WsdlOperation operation = response.getRequest().getOperation();

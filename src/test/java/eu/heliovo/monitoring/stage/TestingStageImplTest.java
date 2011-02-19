@@ -1,7 +1,6 @@
 package eu.heliovo.monitoring.stage;
 
 import static eu.heliovo.monitoring.logging.LoggingTestUtils.getLoggingFactory;
-import static eu.heliovo.monitoring.test.util.TestUtils.getStageHelper;
 import static eu.heliovo.monitoring.test.util.TestUtils.logFilesUrl;
 
 import java.util.List;
@@ -24,7 +23,7 @@ public final class TestingStageImplTest extends Assert {
 	@Test
 	public void testTestStage() throws Exception {
 
-		TestingStage stage = new TestingStageImpl(getStageHelper(), getLoggingFactory(), logFilesUrl, executor);
+		TestingStage stage = new TestingStageImpl(getLoggingFactory(), logFilesUrl, executor);
 
 		List<StatusDetails<Service>> serviceStatus = stage.getStatus(TestServices.LIST);
 

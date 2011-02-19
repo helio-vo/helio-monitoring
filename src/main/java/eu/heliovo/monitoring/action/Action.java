@@ -1,14 +1,12 @@
 package eu.heliovo.monitoring.action;
 
 /**
- * This is a common interface for all actions. TODO DOCUMENT ME<br/>
- * TODO to log taken actions, see Design Patterns from Gamma et. al. at Pattern Command
+ * This is a common interface for all actions. It is a design pattern also called "Command" from the book
+ * "Design Patterns" of Gamma et. al. It can be used for logging, so every action executed results in one or more log
+ * entries (maybe with the help of pointscuts/AOP). But as well it structured the code.
  * 
  * @author Kevin Seidler
  * 
- * @param <T>
  */
-public interface Action<T> {
-
-	T getResult() throws Exception;
+public interface Action {
 }

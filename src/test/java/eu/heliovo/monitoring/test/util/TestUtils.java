@@ -5,8 +5,6 @@ import java.util.concurrent.*;
 import org.junit.Ignore;
 import org.springframework.scheduling.concurrent.*;
 
-import eu.heliovo.monitoring.stage.StageHelper;
-
 @Ignore
 public final class TestUtils {
 
@@ -30,9 +28,4 @@ public final class TestUtils {
 		factory.afterPropertiesSet();
 		return factory.getObject();
 	}
-
-	public static StageHelper getStageHelper() throws Exception {
-		return new StageHelper(getExecutor(), logFilesUrl);
-	}
-
 }

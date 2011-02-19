@@ -8,7 +8,7 @@ import com.eviware.soapui.impl.wsdl.*;
  * @author Kevin Seidler
  * 
  */
-public final class SelectOperationAction implements Action<WsdlOperation> {
+public final class SelectOperationAction implements ResultAction<WsdlOperation> {
 
 	private final WsdlInterface wsdlInterface;
 

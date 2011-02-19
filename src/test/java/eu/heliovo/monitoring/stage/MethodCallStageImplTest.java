@@ -1,7 +1,6 @@
 package eu.heliovo.monitoring.stage;
 
 import static eu.heliovo.monitoring.logging.LoggingTestUtils.getLoggingFactory;
-import static eu.heliovo.monitoring.test.util.TestUtils.getStageHelper;
 import static eu.heliovo.monitoring.test.util.TestUtils.logFilesUrl;
 
 import java.util.List;
@@ -26,7 +25,7 @@ public class MethodCallStageImplTest extends Assert {
 
 		// TODO test individual methods of MethodCallStage
 
-		MethodCallStage stage = new MethodCallStageImpl(getStageHelper(), getLoggingFactory(), logFilesUrl, executor);
+		MethodCallStage stage = new MethodCallStageImpl(getLoggingFactory(), logFilesUrl, executor);
 
 		List<StatusDetails<Service>> serviceStatus = stage.getStatus(TestServices.LIST);
 
