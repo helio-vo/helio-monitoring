@@ -44,7 +44,7 @@ public final class MethodCallStageImpl implements MethodCallStage {
 	}
 
 	// TODO cache WSDL documents to avoid the import on every run
-	// see http://www.soapui.org/architecture/integration.html
+	// see http://replay.waybackmachine.org/20081220182936/http://www.soapui.org/architecture/integration.html
 	// see http://www.soapui.org/userguide/functional/response-assertions.html, download source of soapUI &
 	// search for files containing "assertion"
 	@Override
@@ -85,33 +85,43 @@ public final class MethodCallStageImpl implements MethodCallStage {
 			LogFileWriter logFileWriter) throws XmlException {
 
 		// build message
-		StringBuffer stringBuffer = new StringBuffer("Service is working");
+		StringBuffer messageBuffer = new StringBuffer();
 		Status status = Status.OK;
+
+		if (responseIsNotValid(response, logFileWriter)) {
+
+			messageBuffer.append("Service is malfunctioning, because the repsonse is not valid");
+			status = Status.CRITICAL;
+
+		} else {
+
+			messageBuffer.append("Service is working");
+
+			if (TEST_FOR_SOAP_FAULT) {
+
+				WsdlOperation operation = response.getRequest().getOperation();
+				if (WsdlValidationUtils.isSoapFault(response.getContentAsString(), operation)) {
+					messageBuffer.append(", but the response is a SOAP fault");
+					logFileWriter.write("The response is a SOAP fault!");
+					status = Status.WARNING;
+				}
+			}
+		}
+
+		long responseTime = response.getTimeTaken();
+		messageBuffer.append(", response time = " + responseTime + " ms");
+		messageBuffer.append(LoggingHelper.getLogFileText(logFileWriter, logFilesUrl));
+		String message = messageBuffer.toString();
+
+		return newStatusDetails(service, serviceName, service.getUrl(), status, responseTime, message);
+	}
+
+	private boolean responseIsNotValid(WsdlResponse response, LogFileWriter logFileWriter) {
 
 		// response validation
 		AssertionError[] responseAssertionErrors = WsdlValidationUtils.validateResponse(response);
 		LoggingHelper.logResponseValidation(responseAssertionErrors, logFileWriter);
 
-		if (responseAssertionErrors != null && responseAssertionErrors.length > 0) {
-
-			stringBuffer.append(", but the repsonse is not valid");
-			status = Status.CRITICAL;
-
-		} else if (TEST_FOR_SOAP_FAULT) {
-
-			WsdlOperation operation = response.getRequest().getOperation();
-			if (WsdlValidationUtils.isSoapFault(response.getContentAsString(), operation)) {
-				stringBuffer.append(", but the response is a SOAP fault");
-				logFileWriter.write("The response is a SOAP fault!");
-				status = Status.WARNING;
-			}
-		}
-
-		long responseTime = response.getTimeTaken();
-		stringBuffer.append(", response time = " + responseTime + " ms");
-		stringBuffer.append(LoggingHelper.getLogFileText(logFileWriter, logFilesUrl));
-		String message = stringBuffer.toString();
-
-		return newStatusDetails(service, serviceName, service.getUrl(), status, responseTime, message);
+		return responseAssertionErrors != null && responseAssertionErrors.length > 0;
 	}
 }

@@ -5,10 +5,9 @@ import static eu.heliovo.monitoring.util.ReflectionUtils.implementsInterface;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
 import org.apache.log4j.Logger;
@@ -20,7 +19,6 @@ import com.eviware.soapui.impl.wsdl.*;
 import com.eviware.soapui.impl.wsdl.submit.transports.http.WsdlResponse;
 import com.eviware.soapui.model.iface.Operation;
 import com.eviware.soapui.model.testsuite.AssertionError;
-import com.eviware.soapui.support.SoapUIException;
 
 import eu.heliovo.monitoring.action.*;
 import eu.heliovo.monitoring.logging.*;
@@ -66,8 +64,10 @@ public final class TestingStageImpl implements TestingStage {
 			WsdlInterface wsdlInterface = null;
 
 			try {
-
-				wsdlInterface = importWsdl(logFileWriter, service.getUrl().toString());
+				
+				String wsdlUrl = service.getUrl().toString();
+				wsdlInterface = new ImportWsdlAction(logFileWriter, wsdlUrl, executor).getResult();
+				
 				Statistic statistic = new Statistic(serviceName, service.getUrl());
 
 				monitorPredefinedOperations(logFileWriter, service, serviceName, wsdlInterface, statistic);
@@ -386,10 +386,5 @@ public final class TestingStageImpl implements TestingStage {
 		public long getAverageResonseTime() {
 			return Math.round(responseTimeStatistic.getMean());
 		}
-	}
-
-	private WsdlInterface importWsdl(LogFileWriter logFileWriter, String wsdlUrl) throws XmlException, IOException,
-			SoapUIException, InterruptedException, ExecutionException {
-		return new ImportWsdlAction(logFileWriter, wsdlUrl, executor).getResult();
 	}
 }

@@ -2,8 +2,6 @@ package eu.heliovo.monitoring.service;
 
 import java.util.List;
 
-import javax.jws.*;
-
 import eu.heliovo.monitoring.model.*;
 
 /**
@@ -14,7 +12,6 @@ import eu.heliovo.monitoring.model.*;
  * @author Kevin Seidler
  * 
  */
-@WebService
 public interface MonitoringService {
 
 	/**
@@ -30,5 +27,5 @@ public interface MonitoringService {
 	 * @param serviceIdendifier the identifier for this service
 	 * @return the current status of the service
 	 */
-	StatusDetails<Service> getStatus(@WebParam(name = "serviceIdendifier") String serviceIdendifier);
+	StatusDetails<Service> getStatus(String serviceIdendifier);
 }

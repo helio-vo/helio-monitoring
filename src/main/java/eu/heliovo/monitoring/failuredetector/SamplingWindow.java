@@ -60,7 +60,7 @@ public final class SamplingWindow {
 		return Math.pow(Math.E, exponent);
 	}
 
-	// TODO use normal distribution as originally proposed?
+	// TODO use normal distribution as originally proposed
 	// private double pLaterNormalDistribution(double t) {
 	//
 	// double mean = statistics.getMean();

@@ -5,8 +5,6 @@ import static org.springframework.util.StringUtils.hasText;
 
 import java.util.*;
 
-import javax.jws.WebService;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.context.*;
@@ -25,7 +23,6 @@ import eu.heliovo.monitoring.stage.StageExecutor;
  * 
  */
 @org.springframework.stereotype.Service
-@WebService(endpointInterface = "eu.heliovo.monitoring.service.MonitoringService", serviceName = "HelioService")
 public class MonitoringServiceImpl implements MonitoringService, ApplicationContextAware {
 
 	private final ServiceLoader serviceLoader;
@@ -33,13 +30,6 @@ public class MonitoringServiceImpl implements MonitoringService, ApplicationCont
 	private final List<ServiceUpdateListener> serviceUpdateListeners;
 
 	private int currentServicesHashCode = 0;
-
-	/**
-	 * Do not use this one! It is only needed for JAX-WS.
-	 */
-	public MonitoringServiceImpl() {
-		throw new IllegalStateException("do not use this constructor, it is only needed for JAX-WS");
-	}
 
 	// for manual service definition, please use "staticServiceLoader" as qualifier and define services in Services.java
 	// Spring automatically injects all components implementing the ServiceUpdateListener interface
@@ -102,12 +92,13 @@ public class MonitoringServiceImpl implements MonitoringService, ApplicationCont
 	}
 
 	/**
-	 * This method is called after the application context was initialized. It updates the services to be monitored and
-	 * starts the continous monitoring.
+	 * This method is called after the application context has been initialized. It sets updates the services to be
+	 * monitored and starts the continous monitoring.
 	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 
+		HelioServiceEndpoint.setMonitoringService(this); // see the Endpoint for more info about this
 		updateServices();
 		stageExecutor.doContinousExecution();
 	}

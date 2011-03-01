@@ -1,14 +1,10 @@
 package eu.heliovo.monitoring.controller;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.*;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,13 +18,12 @@ public final class LogFilesDownloadController {
 	private final String logFilePath;
 
 	@Autowired
-	public LogFilesDownloadController(@Value("${logging.filePath}") final String logFilePath) {
+	public LogFilesDownloadController(@Value("${logging.filePath}") String logFilePath) {
 		this.logFilePath = logFilePath;
 	}
 
 	@RequestMapping("*.txt")
-	public void downloadLogFile(final HttpServletRequest request, final HttpServletResponse response)
-			throws IOException {
+	public void downloadLogFile(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
 		String pathWithinServlet = urlPathHelper.getPathWithinServletMapping(request);
 		String logFile = pathWithinServlet.substring(1);

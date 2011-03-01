@@ -15,7 +15,7 @@ public final class StatusDetailsImpl<MonitoredEntity> implements StatusDetails<M
 
 	@SuppressWarnings("unused")
 	@XmlElement
-	private final String identifier; // only used the web service interface
+	private final String identifier; // only used in the web service interface
 
 	@XmlElement
 	private final String name;

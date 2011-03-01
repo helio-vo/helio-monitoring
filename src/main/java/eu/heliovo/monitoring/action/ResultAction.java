@@ -5,9 +5,9 @@ package eu.heliovo.monitoring.action;
  * 
  * @author Kevin Seidler
  * 
- * @param <T> The Type of the result the action returns.
+ * @param <ResultType> The Type of the result the action returns.
  */
-public interface ResultAction<T> extends Action {
+public interface ResultAction<ResultType> extends Action {
 
 	/**
 	 * Executes the action and returns its result.
@@ -15,5 +15,5 @@ public interface ResultAction<T> extends Action {
 	 * @return the result of executing this action.
 	 * @throws Exception in case of an error
 	 */
-	T getResult() throws Exception;
+	ResultType getResult() throws Exception;
 }
