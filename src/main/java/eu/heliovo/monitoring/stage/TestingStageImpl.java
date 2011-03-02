@@ -272,10 +272,12 @@ public final class TestingStageImpl implements TestingStage {
 
 		message.append(LoggingHelper.getLogFileText(logFileWriter, logFilesUrl));
 
+		String serviceName = statistic.serviceName;
+		URL serviceURL = statistic.serviceUrl;
 		String statusMessage = message.toString();
 		Status status = statistic.getServiceStatus();
 
-		return newStatusDetails(service, statistic.serviceName, statistic.serviceUrl, status, 0, statusMessage);
+		return newStatusDetails(service, serviceName, serviceURL, status, responseTime, statusMessage);
 	}
 
 	// TODO refactor, to many nested blocks

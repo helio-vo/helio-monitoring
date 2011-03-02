@@ -57,12 +57,13 @@ public class StageExecutorImplTest extends Assert {
 		List<StatusDetails<Service>> latestStatus = executor.getStatus();
 		assertEquals(0, latestStatus.size());
 
-		Thread.sleep(510); // START_DELAY + 100 ms Threas.sleep in Ping Stage, so no result should be calculated
+		// START_DELAY + 100 ms Threas.sleep in Ping Stage, so no result should be calculated
+		// Thread.sleep(510);
 
 		latestStatus = executor.getStatus();
 		assertEquals(0, latestStatus.size());
 
-		Thread.sleep(200);
+		Thread.sleep(1000);
 
 		latestStatus = executor.getStatus();
 		assertEquals(4, latestStatus.size());
