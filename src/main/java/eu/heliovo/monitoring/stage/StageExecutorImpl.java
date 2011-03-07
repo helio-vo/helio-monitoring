@@ -30,7 +30,7 @@ import eu.heliovo.monitoring.model.*;
 public final class StageExecutorImpl implements StageExecutor {
 
 	private static final int START_DELAY_IN_MILLIS = 500;
-	private static final int SLEEPING_TIME_IN_MILLIS = 100;
+	private static final int SLEEPING_TIME_IN_MILLIS = 5 * 60 * 1000;
 
 	private final Logger logger = Logger.getLogger(this.getClass());
 
