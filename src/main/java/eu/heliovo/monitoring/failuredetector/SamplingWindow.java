@@ -1,5 +1,7 @@
 package eu.heliovo.monitoring.failuredetector;
 
+import org.apache.commons.math.MathException;
+import org.apache.commons.math.distribution.*;
 import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
 
 /**
@@ -47,36 +49,66 @@ public final class SamplingWindow {
 		if (availableSamples > 0) {
 			phi = -Math.log10(pLater(tNow - tLast));
 		}
+
 		return phi;
 	}
 
 	/**
-	 * Calculates the propability from t to infinity with: 1 - cumulative distribution function of the exponential
+	 * Calculates the propability from t to infinity with: 1 - cumulative distribution function of the normal
 	 * distribution.
 	 */
 	private double pLater(double t) {
-		double mean = statistics.getMean();
-		double exponent = -t / mean;
-		return Math.pow(Math.E, exponent);
+		return pLaterNormalDistributed(t);
 	}
 
-	// TODO use normal distribution as originally proposed
-	// private double pLaterNormalDistribution(double t) {
-	//
+	private double pLaterNormalDistributed(double t) {
+
+		double mean = statistics.getMean();
+		double standardDeviation = getStandardDeviation();
+
+		NormalDistribution normalDistribution = new NormalDistributionImpl(mean, standardDeviation);
+
+		try {
+			double cumulativeProbability = getCumulativeProbability(t, normalDistribution);
+			return 1.0 - cumulativeProbability;
+		} catch (MathException e) {
+			throw new IllegalStateException(e.getMessage(), e);
+		}
+	}
+
+	private double getCumulativeProbability(double t, NormalDistribution normalDistribution) throws MathException {
+
+		double cumulativeProbability = normalDistribution.cumulativeProbability(t);
+
+		// in some case cum. Prob. is greater than 1, which is impossible
+		if (cumulativeProbability > 1) {
+			cumulativeProbability = 1.0;
+		}
+
+		return cumulativeProbability;
+	}
+
+	private double getStandardDeviation() {
+
+		double standardDeviation = statistics.getStandardDeviation();
+
+		// cannot be zero, the NormalDistributionImpl throws an error in this case, because of division by zero
+		standardDeviation = guaranteeNotZero(standardDeviation);
+
+		return standardDeviation;
+	}
+
+	private double guaranteeNotZero(double standardDeviation) {
+		if (standardDeviation == 0.0) {
+			standardDeviation = 0.1;
+		}
+		return standardDeviation;
+	}
+
+	// exponential distribution just for testing
+	// private double pLaterExponentialDistributed(double t) {
 	// double mean = statistics.getMean();
-	// double standardDeviation = statistics.getStandardDeviation();
-	//
-	// if (standardDeviation == 0.0) {
-	// standardDeviation = 0.000000000000000000000000000000001;
-	// }
-	//
-	// System.out.println(mean + " std: " + standardDeviation);
-	// NormalDistribution normalDistribution = new NormalDistributionImpl(mean, standardDeviation);
-	//
-	// try {
-	// return 1 - normalDistribution.cumulativeProbability(t);
-	// } catch (MathException e) {
-	// throw new IllegalStateException(e.getMessage(), e);
-	// }
+	// double exponent = -t / mean;
+	// return Math.pow(Math.E, exponent);
 	// }
 }

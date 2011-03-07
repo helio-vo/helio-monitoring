@@ -122,9 +122,11 @@ public class StageExecutorImplTest extends Assert {
 		TestingStage testingStage = initTestingStage();
 		StatusDetailsExporter statusDetailsExporter = initStatusDetailsExporter();
 		ThreadPoolTaskScheduler taskScheduler = initScheduler();
+		int executionDelayInMillis = 100;
 
 		StageExecutorImpl executor;
-		executor = new StageExecutorImpl(pingstage, methodCallStage, testingStage, statusDetailsExporter, taskScheduler);
+		executor = new StageExecutorImpl(pingstage, methodCallStage, testingStage, statusDetailsExporter,
+				taskScheduler, executionDelayInMillis);
 
 		Set<Host> hosts = new HashSet<Host>();
 

@@ -7,7 +7,7 @@ import java.net.URL;
 import java.util.*;
 
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.*;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
@@ -30,7 +30,6 @@ import eu.heliovo.monitoring.model.*;
 public final class StageExecutorImpl implements StageExecutor {
 
 	private static final int START_DELAY_IN_MILLIS = 500;
-	private static final int SLEEPING_TIME_IN_MILLIS = 5 * 60 * 1000;
 
 	private final Logger logger = Logger.getLogger(this.getClass());
 
@@ -39,6 +38,7 @@ public final class StageExecutorImpl implements StageExecutor {
 	private final TestingStage testingStage;
 	private final StatusDetailsExporter statusDetailsExporter;
 	private final TaskScheduler scheduler;
+	private final int executionDelayInMillis;
 
 	private Set<Host> hosts = Collections.emptySet();
 
@@ -46,13 +46,15 @@ public final class StageExecutorImpl implements StageExecutor {
 
 	@Autowired
 	protected StageExecutorImpl(PingStage pingStage, MethodCallStage methodCallStage, TestingStage testingStage,
-			StatusDetailsExporter statusDetailsExporter, TaskScheduler scheduler) {
+			StatusDetailsExporter statusDetailsExporter, TaskScheduler scheduler,
+			@Value("${stageExecuter.executionDelayInMillis}") int executionDelayInMillis) {
 
 		this.pingStage = pingStage;
 		this.methodCallStage = methodCallStage;
 		this.testingStage = testingStage;
 		this.statusDetailsExporter = statusDetailsExporter;
 		this.scheduler = scheduler;
+		this.executionDelayInMillis = executionDelayInMillis;
 	}
 
 	@Override
@@ -67,7 +69,7 @@ public final class StageExecutorImpl implements StageExecutor {
 				while (true) {
 					try {
 						execute();
-						Thread.sleep(SLEEPING_TIME_IN_MILLIS); // to let other threads get to work
+						Thread.sleep(executionDelayInMillis); // to let other threads get to work or to
 
 					} catch (Throwable t) {
 						System.out.println("StageExecutor: Exception in continuous Execution");

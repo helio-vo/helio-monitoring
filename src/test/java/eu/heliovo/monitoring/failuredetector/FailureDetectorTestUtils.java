@@ -52,27 +52,4 @@ public final class FailureDetectorTestUtils {
 		failureDetector.detect();
 		Thread.sleep(1500);
 	}
-
-	// public static ServiceFailureDetector getServiceFailureDetector() throws Exception {
-	//
-	// PhiAccrualFailureDetector failureDetector;
-	// failureDetector = new PhiAccrualFailureDetector(TestUtils.getExecutor(), getEmptyStatisticsRecorder());
-	//
-	// ServiceFailureDetector serviceFailureDetector = initServiceFailureDetector(failureDetector);
-	// detectForResults(failureDetector);
-	//
-	// return serviceFailureDetector;
-	// }
-
-	// private static ServiceFailureDetector initServiceFailureDetector(PhiAccrualFailureDetector failureDetector) {
-	//
-	// List<HostUpdateListener> hostUpdateListeners;
-	// hostUpdateListeners = Arrays.asList(new HostUpdateListener[] { failureDetector });
-	//
-	// ServiceFailureDetector serviceFailureDetector;
-	// serviceFailureDetector = new ServiceToHostAdapter(failureDetector, hostUpdateListeners);
-	//
-	// serviceFailureDetector.updateServices(TestServices.LIST);
-	// return serviceFailureDetector;
-	// }
 }
