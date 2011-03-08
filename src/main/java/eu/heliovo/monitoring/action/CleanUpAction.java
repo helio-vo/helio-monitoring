@@ -6,7 +6,7 @@ import com.eviware.soapui.impl.wsdl.support.http.HttpClientSupport;
 import eu.heliovo.monitoring.logging.LogFileWriter;
 
 /**
- * Cleans up the execution of a stage.
+ * Cleans up the execution of a stage by releasing resources.
  * 
  * @author Kevin Seidler
  * 

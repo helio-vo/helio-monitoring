@@ -1,6 +1,11 @@
 package eu.heliovo.monitoring.model;
 
-
+/**
+ * Please see {@link OperationTest}.
+ * 
+ * @author Kevin Seidler
+ * 
+ */
 public final class OperationTestImpl implements OperationTest {
 
 	private final String operationName;
@@ -13,14 +18,17 @@ public final class OperationTestImpl implements OperationTest {
 		this.responseContent = responseContent;
 	}
 
+	@Override
 	public String getOperationName() {
 		return operationName;
 	}
 
+	@Override
 	public String getRequestContent() {
 		return requestContent;
 	}
 
+	@Override
 	public String getResponseContent() {
 		return responseContent;
 	}

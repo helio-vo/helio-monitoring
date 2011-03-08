@@ -9,6 +9,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.eviware.soapui.model.testsuite.AssertionError;
+
+/**
+ * Provides common methods for logging to be used in the stages or other components.
+ * 
+ * @author Kevin Seidler
+ * 
+ */
 @Component
 public final class LoggingHelper {
 

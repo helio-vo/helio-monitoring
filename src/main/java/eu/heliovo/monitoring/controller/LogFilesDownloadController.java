@@ -10,6 +10,12 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.util.UrlPathHelper;
 
+/**
+ * This Controller sends a requested log file for a URL displayed in the Nagios service status information.
+ * 
+ * @author Kevin Seidler
+ * 
+ */
 @Controller
 public final class LogFilesDownloadController {
 

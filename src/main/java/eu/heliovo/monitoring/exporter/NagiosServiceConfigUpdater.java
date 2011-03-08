@@ -299,8 +299,4 @@ public final class NagiosServiceConfigUpdater implements ServiceUpdateListener {
 		restartArguments.add(String.valueOf(currentTimeInMillis));
 		nagiosCommandWriter.write(NagiosCommand.RESTART_PROGRAM, restartArguments);
 	}
-
-	// TODO if a new host is added, send passive check for host is up, otherwise the host is shown as pending
-	// see http://www.mail-archive.com/nagios-users@lists.sourceforge.net/msg15879.html
-	// TODO (low prio) maybe send passive check, that host is down, if ping stage says, that host is down
 }

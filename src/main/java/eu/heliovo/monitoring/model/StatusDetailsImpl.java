@@ -5,6 +5,14 @@ import static eu.heliovo.monitoring.util.ReflectionUtils.implementsInterface;
 import java.net.URL;
 
 import javax.xml.bind.annotation.*;
+
+/**
+ * Please see {@link StatusDetails}.
+ * 
+ * @author Kevin Seidler
+ * 
+ * @param <MonitoredEntity>
+ */
 @SuppressWarnings("serial")
 @XmlType(name = "StatusDetails")
 @XmlAccessorType(XmlAccessType.FIELD)

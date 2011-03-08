@@ -5,6 +5,12 @@ import java.util.*;
 
 import eu.heliovo.monitoring.util.StringUtils;
 
+/**
+ * Please see {@link TestingService}.
+ * 
+ * @author Kevin Seidler
+ * 
+ */
 public final class TestingServiceImpl implements TestingService {
 
 	private final String identifier;

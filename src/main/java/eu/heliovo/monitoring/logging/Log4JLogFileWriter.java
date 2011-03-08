@@ -8,7 +8,7 @@ import org.apache.log4j.*;
 
 /**
  * This implementation of logFileWriter writes log files by a log4j logger and fileAppender in XML layout. <br/>
- * TODO create own XML layout? layout is log4j specific and has a bit overhead
+ * TODO create own XML layout? layout is log4j specific and has a bit overhead, see commented code
  * 
  * @author Kevin Seidler
  * 

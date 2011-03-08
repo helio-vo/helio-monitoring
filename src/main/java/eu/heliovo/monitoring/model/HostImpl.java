@@ -3,6 +3,12 @@ package eu.heliovo.monitoring.model;
 import java.net.*;
 import java.util.*;
 
+/**
+ * Please see {@link Host}.
+ * 
+ * @author Kevin Seidler
+ * 
+ */
 public final class HostImpl implements Host {
 
 	private final URL url;

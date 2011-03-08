@@ -7,7 +7,7 @@ import eu.heliovo.monitoring.logging.LogFileWriter;
 import eu.heliovo.monitoring.model.Service;
 
 /**
- * Processes the Response of a SOAP request which.
+ * Processes the response of a SOAP request by logging its content and response time.
  * 
  * @author Kevin Seidler
  * 

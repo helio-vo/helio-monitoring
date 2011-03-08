@@ -4,6 +4,12 @@ import java.net.URL;
 
 import eu.heliovo.monitoring.util.StringUtils;
 
+/**
+ * Please see {@link Service}.
+ * 
+ * @author Kevin Seidler
+ * 
+ */
 public final class ServiceImpl implements Service {
 
 	private final String identifier;
