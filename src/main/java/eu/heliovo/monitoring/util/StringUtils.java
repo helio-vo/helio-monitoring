@@ -1,5 +1,9 @@
 package eu.heliovo.monitoring.util;
 
+import static org.springframework.util.StringUtils.arrayToDelimitedString;
+
+import java.net.*;
+
 /**
  * Utility-Methods for manipulating Strings.
  * 
@@ -22,5 +26,41 @@ public final class StringUtils {
 		canoncialText = canoncialText.replace("/", "");
 
 		return canoncialText;
+	}
+
+	/**
+	 * Returns a new string replacing all URLs with a HTML anchor and its anchor name in the given order.
+	 */
+	public static String replaceUrlAsHtmlAnchor(String text, String... anchorNames) {
+
+		// separete input by spaces (URLs don't have spaces)
+		String[] textParts = text.split("\\s");
+
+		int nextAnchorNameIndex = 0;
+
+		// attempt to convert each item into an URL.
+		for (int i = 0; i < textParts.length; i++) {
+
+			try {
+				URL url = new URL(textParts[i]);
+
+				// if possible then replace with anchor
+
+				String anchorName = getAnchorName(nextAnchorNameIndex, url, anchorNames);
+
+				nextAnchorNameIndex++;
+
+				textParts[i] = "<a href=\"" + url + "\" target=\"_blank\">" + anchorName + "</a>";
+
+			} catch (MalformedURLException e) {
+				// if it was not a URL
+			}
+		}
+
+		return arrayToDelimitedString(textParts, " ");
+	}
+
+	private static String getAnchorName(int nextAnchorNameIndex, URL url, String... anchorNames) {
+		return nextAnchorNameIndex < anchorNames.length ? anchorNames[nextAnchorNameIndex] : url.toString();
 	}
 }

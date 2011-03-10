@@ -65,12 +65,7 @@ public final class LoggingHelper {
 			return ", no log file available, an error occured creating it: " + dummyLogFileWriter.getErrorMessage();
 		}
 
-		String logFileUrl = getLogFileUrl(logFileWriter, logFilesUrl);
-		// TODO bit.ly has a rate limit, the monitoring service needs more URLs than that rate limit allows, use another
-		// service, create an own service or try to reuse these shorten URLs
-		// String shortLogFileUrl = shorten(logFileUrl);
-
-		return ", see log file: " + logFileUrl;
+		return ", see " + getLogFileUrl(logFileWriter, logFilesUrl);
 	}
 
 	private static String getLogFileUrl(LogFileWriter logFileWriter, String logFilesUrl) {

@@ -1,12 +1,13 @@
 package eu.heliovo.monitoring.exporter;
 
+import static eu.heliovo.monitoring.util.StringUtils.replaceUrlAsHtmlAnchor;
+
 import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import eu.heliovo.monitoring.model.*;
-
 /**
  * Exports information of {@link StatusDetails} to the {@link NagiosCommandWriter} to send it to Nagios for
  * representation in its web interface.
@@ -72,11 +73,14 @@ public final class NagiosServiceStatusDetailsExporter implements StatusDetailsEx
 	private List<String> assembleCommandArguments(StatusDetails<?> actualServiceStatusDetails, String hostName,
 			String serviceName, NagiosServiceStatus nagiosStatus) {
 
+		String message = replaceUrlAsHtmlAnchor(actualServiceStatusDetails.getMessage(), "log file");
+
 		List<String> commandArguments = new ArrayList<String>();
 		commandArguments.add(hostName);
 		commandArguments.add(serviceName);
 		commandArguments.add(String.valueOf(nagiosStatus.ordinal()));
-		commandArguments.add(actualServiceStatusDetails.getMessage());
+		commandArguments.add(message);
+
 		return commandArguments;
 	}
 
