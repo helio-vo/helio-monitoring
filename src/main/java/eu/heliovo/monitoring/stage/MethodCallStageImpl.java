@@ -64,9 +64,9 @@ public final class MethodCallStageImpl implements MethodCallStage {
 
 				wsdlInterface = new ImportWsdlAction(logFileWriter, serviceUrlAsString, executor).getResult();
 				WsdlOperation operation = new SelectOperationAction(wsdlInterface).getResult();
-				WsdlRequest request = new CreateRequestAction(wsdlInterface, logFileWriter, operation).getResult();
+				WsdlRequest request = new CreateRequestAction(logFileWriter, operation).getResult();
 				WsdlResponse response = new SubmitRequestAction(request, logFileWriter, executor).getResult();
-				new ProcessResponseAction(response, serviceName, service, logFileWriter).execute();
+				new ProcessResponseAction(response, logFileWriter).execute();
 				StatusDetails<Service> serviceStatus = buildServiceStatus(response, serviceName, service, logFileWriter);
 
 				servicesStatus.add(serviceStatus);

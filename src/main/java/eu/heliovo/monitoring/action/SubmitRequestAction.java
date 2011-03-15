@@ -14,7 +14,7 @@ import eu.heliovo.monitoring.logging.LogFileWriter;
  * @author Kevin Seidler
  * 
  */
-public class SubmitRequestAction implements ResultAction<WsdlResponse> {
+public final class SubmitRequestAction implements ResultAction<WsdlResponse> {
 
 	private static final boolean SUBMIT_ASYNC = false;
 	private static final int RESPONSE_TIMEOUT_IN_SECONDS = 10;
@@ -30,7 +30,7 @@ public class SubmitRequestAction implements ResultAction<WsdlResponse> {
 	}
 
 	@Override
-	public WsdlResponse getResult() throws Exception {
+	public WsdlResponse getResult() throws SubmitException, ExecutionException, InterruptedException {
 		return submitRequest(request, logFileWriter);
 	}
 

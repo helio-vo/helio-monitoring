@@ -12,38 +12,36 @@ import eu.heliovo.monitoring.util.WsdlValidationUtils;
  * @author Kevin Seidler
  * 
  */
-public class CreateRequestAction implements ResultAction<WsdlRequest> {
+public final class CreateRequestAction implements ResultAction<WsdlRequest> {
 
 	private static final boolean GENERATE_OPTINAL_PARAMS = false;
 
-	private final WsdlInterface wsdlInterface;
 	private final LogFileWriter logFileWriter;
 	private final WsdlOperation operation;
 	private final String requestContent;
 
-	public CreateRequestAction(WsdlInterface wsdlInterface, LogFileWriter logFileWriter, WsdlOperation operation) {
-		this(wsdlInterface, logFileWriter, operation, getRequestContent(operation));
+	public CreateRequestAction(LogFileWriter logFileWriter, WsdlOperation operation) {
+		this(logFileWriter, operation, getRequestContent(operation));
 	}
 
 	private static String getRequestContent(WsdlOperation operation) {
 		return operation.createRequest(GENERATE_OPTINAL_PARAMS);
 	}
 
-	public CreateRequestAction(WsdlInterface wsdlInterface, LogFileWriter logFileWriter, WsdlOperation operation,
+	public CreateRequestAction(LogFileWriter logFileWriter, WsdlOperation operation,
 			String requestContent) {
 
-		this.wsdlInterface = wsdlInterface;
 		this.logFileWriter = logFileWriter;
 		this.operation = operation;
 		this.requestContent = requestContent;
 	}
 
 	@Override
-	public WsdlRequest getResult() throws Exception {
-		return createRequest(wsdlInterface, logFileWriter, operation, requestContent);
+	public WsdlRequest getResult() {
+		return createRequest(logFileWriter, operation, requestContent);
 	}
 
-	private WsdlRequest createRequest(WsdlInterface wsdlInterface, LogFileWriter logFileWriter,
+	private WsdlRequest createRequest(LogFileWriter logFileWriter,
 			WsdlOperation operation, String requestContent) {
 
 		WsdlRequest request = operation.addNewRequest(operation.getName());

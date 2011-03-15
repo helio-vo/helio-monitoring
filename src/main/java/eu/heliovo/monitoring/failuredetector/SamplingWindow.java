@@ -12,6 +12,7 @@ import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
  */
 public final class SamplingWindow {
 
+	private static final double NON_ZERO_STANDARD_DEVIATION = 0.1;
 	private final DescriptiveStatistics statistics;
 	private final int intervalTimeInMillis;
 
@@ -99,10 +100,7 @@ public final class SamplingWindow {
 	}
 
 	private double guaranteeNotZero(double standardDeviation) {
-		if (standardDeviation == 0.0) {
-			standardDeviation = 0.1;
-		}
-		return standardDeviation;
+		return standardDeviation == 0.0 ? NON_ZERO_STANDARD_DEVIATION : standardDeviation;
 	}
 
 	// exponential distribution just for testing

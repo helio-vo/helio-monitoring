@@ -43,8 +43,8 @@ public final class TestingStageImpl implements TestingStage {
 	private final Logger logger = Logger.getLogger(this.getClass());
 
 	@Autowired
-	protected TestingStageImpl(LoggingFactory loggingFactory,
-			@Value("${monitoringService.logUrl}") String logFilesUrl, ExecutorService executor) {
+	protected TestingStageImpl(LoggingFactory loggingFactory, @Value("${monitoringService.logUrl}") String logFilesUrl,
+			ExecutorService executor) {
 
 		this.loggingFactory = loggingFactory;
 		this.logFilesUrl = logFilesUrl;
@@ -64,10 +64,10 @@ public final class TestingStageImpl implements TestingStage {
 			WsdlInterface wsdlInterface = null;
 
 			try {
-				
+
 				String wsdlUrl = service.getUrl().toString();
 				wsdlInterface = new ImportWsdlAction(logFileWriter, wsdlUrl, executor).getResult();
-				
+
 				Statistic statistic = new Statistic(serviceName, service.getUrl());
 
 				monitorPredefinedOperations(logFileWriter, service, serviceName, wsdlInterface, statistic);
@@ -86,7 +86,6 @@ public final class TestingStageImpl implements TestingStage {
 		return statusDetails;
 	}
 
-	// TODO refactor, too many nested blocks
 	private void monitorPredefinedOperations(LogFileWriter logFileWriter, Service service, String serviceName,
 			WsdlInterface wsdlInterface, Statistic statistic) {
 
@@ -102,62 +101,75 @@ public final class TestingStageImpl implements TestingStage {
 				WsdlOperation operation = wsdlInterface.getOperationByName(operationTest.getOperationName());
 				if (operation != null) {
 
-					try {
-
-						WsdlOperation wsdlOperation = operation;
-
-						String content = operationTest.getRequestContent();
-						WsdlRequest request;
-						if (hasText(content)) {
-
-							CreateRequestAction action;
-							action = new CreateRequestAction(wsdlInterface, logFileWriter, wsdlOperation, content);
-							request = action.getResult();
-							
-						} else {
-							request = new CreateRequestAction(wsdlInterface, logFileWriter, wsdlOperation).getResult();
-						}
-
-						WsdlResponse response = new SubmitRequestAction(request, logFileWriter, executor).getResult();
-						processResponse(response, statistic, service, serviceName, logFileWriter);
-
-						String actualResponseContent = response.getContentAsString();
-						String expectedResponseContent = operationTest.getResponseContent();
-
-						if (hasText(expectedResponseContent)) {
-
-							XmlObject expectedXml = XmlObject.Factory.parse(expectedResponseContent);
-							XmlObject actualXml = XmlObject.Factory.parse(actualResponseContent);
-
-							if (expectedXml.valueEquals(actualXml)) {
-								logFileWriter.write("Actual and predefined response are matching");
-							} else {
-
-								statistic.notMatchingResponseOperations.add(operation.getName());
-
-								logFileWriter.write("Actual and expected response are not the same!");
-								logFileWriter.write("=== Actual response Content for Operation \""
-										+ operation.getName() + "\" ===");
-								logFileWriter.write(actualResponseContent);
-
-							}
-						}
-
-						// TODO test with predefined response only
-
-					} catch (Exception e) {
-						logException(e, logFileWriter, operation.getName(), statistic);
-					}
-
+					monitorPredefinedOperation(logFileWriter, service, serviceName, statistic, operationTest, operation);
 				} else {
-
-					String operationName = operationTest.getOperationName();
-					String message = "predefined operation " + operationName + " not found!";
-					logFileWriter.write(message);
-					statistic.predefinedNotFoundOperations.add(operationTest.getOperationName());
+					handlePredefinedOperationNotFound(logFileWriter, statistic, operationTest);
 				}
 			}
 		}
+	}
+
+	private void monitorPredefinedOperation(LogFileWriter logFileWriter, Service service, String serviceName,
+			Statistic statistic, OperationTest operationTest, WsdlOperation operation) {
+
+		try {
+
+			WsdlOperation wsdlOperation = operation;
+			String content = operationTest.getRequestContent();
+			WsdlRequest request;
+
+			if (hasText(content)) {
+
+				CreateRequestAction action;
+				action = new CreateRequestAction(logFileWriter, wsdlOperation, content);
+				request = action.getResult();
+
+			} else {
+				request = new CreateRequestAction(logFileWriter, wsdlOperation).getResult();
+			}
+
+			WsdlResponse response = new SubmitRequestAction(request, logFileWriter, executor).getResult();
+			processResponse(response, statistic, logFileWriter);
+			evaluateResponse(logFileWriter, statistic, operationTest, operation, response);
+
+			// TODO test with predefined response only
+
+		} catch (Exception e) {
+			logException(e, logFileWriter, operation.getName(), statistic);
+		}
+	}
+
+	private void evaluateResponse(LogFileWriter logFileWriter, Statistic statistic, OperationTest operationTest,
+			WsdlOperation operation, WsdlResponse response) throws XmlException {
+
+		String actualResponseContent = response.getContentAsString();
+		String expectedResponseContent = operationTest.getResponseContent();
+
+		if (hasText(expectedResponseContent)) {
+
+			XmlObject expectedXml = XmlObject.Factory.parse(expectedResponseContent);
+			XmlObject actualXml = XmlObject.Factory.parse(actualResponseContent);
+
+			if (expectedXml.valueEquals(actualXml)) {
+				logFileWriter.write("Actual and predefined response are matching");
+			} else {
+
+				statistic.notMatchingResponseOperations.add(operation.getName());
+
+				logFileWriter.write("Actual and expected response are not the same!");
+				logFileWriter.write("=== Actual response Content for Operation \"" + operation.getName() + "\" ===");
+				logFileWriter.write(actualResponseContent);
+			}
+		}
+	}
+
+	private void handlePredefinedOperationNotFound(LogFileWriter logFileWriter, Statistic statistic,
+			OperationTest operationTest) {
+
+		String operationName = operationTest.getOperationName();
+		String message = "predefined operation " + operationName + " not found!";
+		logFileWriter.write(message);
+		statistic.predefinedNotFoundOperations.add(operationTest.getOperationName());
 	}
 
 	private void monitorAvailableOperations(LogFileWriter logFileWriter, Service service, String serviceName,
@@ -174,9 +186,9 @@ public final class TestingStageImpl implements TestingStage {
 				try {
 
 					WsdlOperation wsdlOperation = (WsdlOperation) operation;
-					WsdlRequest request = new CreateRequestAction(wsdlInterface, logFileWriter, wsdlOperation).getResult();
+					WsdlRequest request = new CreateRequestAction(logFileWriter, wsdlOperation).getResult();
 					WsdlResponse response = new SubmitRequestAction(request, logFileWriter, executor).getResult();
-					processResponse(response, statistic, service, serviceName, logFileWriter);
+					processResponse(response, statistic, logFileWriter);
 
 				} catch (Exception e) {
 					logException(e, logFileWriter, operation.getName(), statistic);
@@ -189,10 +201,10 @@ public final class TestingStageImpl implements TestingStage {
 		}
 	}
 
-	private void processResponse(WsdlResponse response, Statistic statistic, Service service, String serviceName,
-			LogFileWriter logFileWriter) throws XmlException {
+	private void processResponse(WsdlResponse response, Statistic statistic, LogFileWriter logFileWriter)
+			throws XmlException {
 
-		new ProcessResponseAction(response, serviceName, service, logFileWriter).execute();
+		new ProcessResponseAction(response, logFileWriter).execute();
 
 		// response validation
 		WsdlOperation operation = response.getRequest().getOperation();
@@ -280,40 +292,55 @@ public final class TestingStageImpl implements TestingStage {
 		return newStatusDetails(service, serviceName, serviceURL, status, responseTime, statusMessage);
 	}
 
-	// TODO refactor, to many nested blocks
 	private void logStatistic(Statistic statistic, LogFileWriter logFileWriter, String logMessage) {
 
 		logFileWriter.write("==== Testing statistic ====");
 		logFileWriter.write(logMessage);
 
+		logExceptionalOperations(statistic, logFileWriter);
+		logInvalidResponseOperations(statistic, logFileWriter);
+		logPredefinedNotFoundOperations(statistic, logFileWriter);
+		logSoapFaultOperations(statistic, logFileWriter);
+		logNotMatchingResponseOperations(statistic, logFileWriter);
+	}
+
+	private void logExceptionalOperations(Statistic statistic, LogFileWriter logFileWriter) {
 		if (!isEmpty(statistic.exceptionalOperations)) {
 			logFileWriter.write("=== exceptional operations ===");
 			for (String operationName : statistic.exceptionalOperations) {
 				logFileWriter.write(operationName);
 			}
 		}
+	}
 
+	private void logInvalidResponseOperations(Statistic statistic, LogFileWriter logFileWriter) {
 		if (!isEmpty(statistic.invalidResponseOperations)) {
 			logFileWriter.write("=== operations with invalid responses ===");
 			for (String operationName : statistic.invalidResponseOperations) {
 				logFileWriter.write(operationName);
 			}
 		}
+	}
 
+	private void logPredefinedNotFoundOperations(Statistic statistic, LogFileWriter logFileWriter) {
 		if (!isEmpty(statistic.predefinedNotFoundOperations)) {
 			logFileWriter.write("=== predefined operations not found ===");
 			for (String operationName : statistic.predefinedNotFoundOperations) {
 				logFileWriter.write(operationName);
 			}
 		}
+	}
 
+	private void logSoapFaultOperations(Statistic statistic, LogFileWriter logFileWriter) {
 		if (!isEmpty(statistic.soapFaultOperations)) {
 			logFileWriter.write("=== operations with SOAP faults ===");
 			for (String operationName : statistic.soapFaultOperations) {
 				logFileWriter.write(operationName);
 			}
 		}
+	}
 
+	private void logNotMatchingResponseOperations(Statistic statistic, LogFileWriter logFileWriter) {
 		if (!isEmpty(statistic.notMatchingResponseOperations)) {
 			logFileWriter.write("=== operations with reponse not matching with predefinition ===");
 			for (String operationName : statistic.notMatchingResponseOperations) {
@@ -328,16 +355,6 @@ public final class TestingStageImpl implements TestingStage {
 		statistic.exceptionalOperations.add(operationName);
 		logFileWriter.write(exception);
 	}
-
-	// TODO invalid requests
-	// at least one soap fault => WARNING state
-	// at least one invalid response => CRITICAL state
-	// invalid predefined request => WARNING or CRITICAL?
-	// predefined: what when predefined request or predefined repsonse invalid?
-	// predefined: CRITICAL when response does not match or if no response predefined and response is
-	// predefined: operation with predefined name not found => CRITICAL
-	// invalid or SOAP fault => CRITICAL, because user did predefine, he means the result must be valid
-	// maybe separate predefined statistic
 
 	private static class Statistic {
 

@@ -10,15 +10,15 @@ import eu.heliovo.monitoring.model.*;
  * @author Kevin Seidler
  * 
  */
-public class StatusDetailsXmlAdapter extends XmlAdapter<StatusDetailsImpl<?>, StatusDetails<?>> {
+public final class StatusDetailsXmlAdapter extends XmlAdapter<StatusDetailsImpl<?>, StatusDetails<?>> {
 
 	@Override
-	public StatusDetails<?> unmarshal(StatusDetailsImpl<?> implementation) throws Exception {
+	public StatusDetails<?> unmarshal(StatusDetailsImpl<?> implementation) {
 		return implementation;
 	}
 
 	@Override
-	public StatusDetailsImpl<?> marshal(StatusDetails<?> interfaze) throws Exception {
+	public StatusDetailsImpl<?> marshal(StatusDetails<?> interfaze) {
 
 		if (interfaze instanceof StatusDetailsImpl) {
 			return (StatusDetailsImpl<?>) interfaze;

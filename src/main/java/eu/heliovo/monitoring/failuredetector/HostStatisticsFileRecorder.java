@@ -38,13 +38,13 @@ public final class HostStatisticsFileRecorder implements HostStatisticsRecorder 
 	}
 
 	private File initStatisticFilesDir(String statisticFilesDirPath) {
-		File statisticFilesDir = new File(statisticFilesDirPath);
+		File fileDir = new File(statisticFilesDirPath);
 		try {
-			statisticFilesDir.mkdirs();
+			fileDir.mkdirs();
 		} catch (Exception e) {
 			throw new IllegalArgumentException(e);
 		}
-		return statisticFilesDir;
+		return fileDir;
 	}
 
 	@Override
@@ -114,6 +114,7 @@ public final class HostStatisticsFileRecorder implements HostStatisticsRecorder 
 	@Override
 	protected void finalize() throws Throwable {
 		closeAllFileWriters();
+		super.finalize();
 	}
 
 	private static final class EntryIdFileWriter {

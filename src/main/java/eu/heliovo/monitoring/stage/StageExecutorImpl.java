@@ -71,10 +71,8 @@ public final class StageExecutorImpl implements StageExecutor {
 						execute();
 						Thread.sleep(executionDelayInMillis); // to let other threads get to work or to
 
-					} catch (Throwable t) {
-						System.out.println("StageExecutor: Exception in continuous Execution");
-						t.printStackTrace();
-						logger.warn(t.getMessage(), t);
+					} catch (Exception e) {
+						logger.warn("StageExecutor: Exception in continuous Execution: " + e.getMessage(), e);
 					}
 				}
 			}
@@ -100,21 +98,21 @@ public final class StageExecutorImpl implements StageExecutor {
 	@Override
 	public void execute() {
 
-		List<StatusDetails<Service>> latestStatus = new ArrayList<StatusDetails<Service>>();
+		List<StatusDetails<Service>> newStatus = new ArrayList<StatusDetails<Service>>();
 
 		// the Method getStatus executes a stage and returns its results
 		List<StatusDetails<Host>> pingStatus = pingStage.getStatus(getHosts()); // List of Hosts OK or CRITICAL
 
-		Set<Service> servicesWithHostsOk = partServicesForMethodCall(latestStatus, pingStatus);
+		Set<Service> servicesWithHostsOk = partServicesForMethodCall(newStatus, pingStatus);
 		List<StatusDetails<Service>> methodCallStatus = methodCallStage.getStatus(servicesWithHostsOk);
 
-		Set<Service> servicesOk = partServicesForTesting(latestStatus, methodCallStatus);
+		Set<Service> servicesOk = partServicesForTesting(newStatus, methodCallStatus);
 		List<StatusDetails<Service>> testingStatus = testingStage.getStatus(servicesOk);
 
-		latestStatus.addAll(testingStatus);
-		setLatestStatus(latestStatus);
+		newStatus.addAll(testingStatus);
+		setLatestStatus(newStatus);
 
-		exportStatusDetails(latestStatus, pingStatus);
+		exportStatusDetails(newStatus, pingStatus);
 	}
 
 	private synchronized Set<Host> getHosts() {

@@ -13,7 +13,7 @@ import eu.heliovo.monitoring.model.*;
  * @author Kevin Seidler
  * 
  */
-public class HandleErrorAction implements NoResultAction {
+public final class HandleErrorAction implements NoResultAction {
 
 	private final Exception exception;
 	private final LogFileWriter logFileWriter;

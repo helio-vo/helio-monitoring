@@ -47,8 +47,8 @@ public final class NagiosServiceConfigUpdater implements ServiceUpdateListener {
 
 	private final Logger logger = Logger.getLogger(this.getClass());
 
-	// these filename have to be updated if changed under src/main/resources/nagiosconfig
-	private final static String[] PREDEFINED_CONFIG_RESOURCE_FILENAMES = new String[] { "contacts_nagios2.cfg",
+	// these filenames have to be updated if changed under src/main/resources/nagiosconfig
+	private static final String[] PREDEFINED_CONFIG_RESOURCE_FILENAMES = new String[] { "contacts_nagios2.cfg",
 			"generic-host_nagios2.cfg", "generic-service_nagios2.cfg", "timeperiods_nagios2.cfg" };
 
 	@Autowired

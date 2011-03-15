@@ -5,7 +5,6 @@ import static org.springframework.util.StringUtils.hasText;
 
 import java.util.*;
 
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.context.*;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -96,7 +95,7 @@ public class MonitoringServiceImpl implements MonitoringService, ApplicationCont
 	 * monitored and starts the continous monitoring.
 	 */
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	public void setApplicationContext(ApplicationContext applicationContext) {
 
 		HelioServiceEndpoint.setMonitoringService(this); // see the Endpoint for more info about this
 		updateServices();

@@ -4,7 +4,6 @@ import com.eviware.soapui.impl.wsdl.WsdlOperation;
 import com.eviware.soapui.impl.wsdl.submit.transports.http.WsdlResponse;
 
 import eu.heliovo.monitoring.logging.LogFileWriter;
-import eu.heliovo.monitoring.model.Service;
 
 /**
  * Processes the response of a SOAP request by logging its content and response time.
@@ -12,26 +11,22 @@ import eu.heliovo.monitoring.model.Service;
  * @author Kevin Seidler
  * 
  */
-public class ProcessResponseAction implements NoResultAction {
+public final class ProcessResponseAction implements NoResultAction {
 
 	private final WsdlResponse response;
-	private final String serviceName;
-	private final Service service;
 	private final LogFileWriter logFileWriter;
 
-	public ProcessResponseAction(WsdlResponse response, String serviceName, Service service, LogFileWriter logFileWriter) {
+	public ProcessResponseAction(WsdlResponse response, LogFileWriter logFileWriter) {
 		this.response = response;
-		this.serviceName = serviceName;
-		this.service = service;
 		this.logFileWriter = logFileWriter;
 	}
 
 	@Override
 	public void execute() {
-		processResponse(response, serviceName, service, logFileWriter);
+		processResponse(response, logFileWriter);
 	}
 
-	private void processResponse(WsdlResponse response, String serviceName, Service service, LogFileWriter logFileWriter) {
+	private void processResponse(WsdlResponse response, LogFileWriter logFileWriter) {
 
 		long responseTime = response.getTimeTaken();
 		logFileWriter.write("Response received, response time = " + responseTime + " ms");

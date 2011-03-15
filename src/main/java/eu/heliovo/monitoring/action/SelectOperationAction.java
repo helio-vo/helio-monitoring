@@ -18,7 +18,7 @@ public final class SelectOperationAction implements ResultAction<WsdlOperation> 
 	}
 
 	@Override
-	public WsdlOperation getResult() throws Exception {
+	public WsdlOperation getResult() {
 		return wsdlInterface.getOperationAt(0);
 	}
 

@@ -21,7 +21,7 @@ public class IvoaRegistryServiceLoaderTest extends Assert {
 	}
 
 	@Test
-	public void testRegistryClient() throws Exception {
+	public void testLoadServices() throws Exception {
 
 		ServiceLoader serviceloader = new IvoaRegistryServiceLoader(registryUrl, executor);
 		Set<Service> services = serviceloader.loadServices();
