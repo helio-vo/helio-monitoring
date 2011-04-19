@@ -4,13 +4,14 @@
 	<parent>
 		<groupId>eu.heliovo</groupId>
 		<artifactId>heliovo</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>0.4-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>eu.heliovo</groupId>
 	<artifactId>helio-monitoring</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.4-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<description>
 		This module provides the Helio Monitoring Service which offers monitoring information about the Helio services. 
