@@ -106,6 +106,8 @@ public final class PhiAccrualFailureDetector implements FailureDetector {
 
 		long millisBefore = System.currentTimeMillis();
 		URLConnection connection = host.getUrl().openConnection();
+		connection.setDefaultUseCaches(false);
+		
 		connection.connect();
 		long milliesAfter = System.currentTimeMillis();
 		closeConnection(connection);

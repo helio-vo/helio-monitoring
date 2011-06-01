@@ -24,7 +24,9 @@ import eu.heliovo.monitoring.model.Service;
 @Component
 public final class IvoaRegistryServiceLoader implements ServiceLoader {
 
-	private static final String ADQLS_QUERY = "capability/@standardID='ivo://helio-vo.eu/std/FullQuery/v0.2'";
+//	private static final String ADQLS_QUERY = "capability/@standardID='ivo://helio-vo.eu/std/FullQuery/v0.2'";
+	private static final String ADQLS_QUERY = "capability/interface/@xsi:type='vr:WebService'";
+	
 	private static final int SOAP_SERVICE_INDEX = 1;
 	private static final String INTERFACE_NAME = "HelioService";
 	private static final String WSDL_SUFFIX = "?wsdl";
@@ -117,15 +119,13 @@ public final class IvoaRegistryServiceLoader implements ServiceLoader {
 	}
 
 	private String getServiceUrl(BasicCapability[] capabilities) {
-
-		if (capabilities.length > SOAP_SERVICE_INDEX) {
-
-			String serviceUrl = capabilities[SOAP_SERVICE_INDEX].getAccessUrl();
-			if (hasText(serviceUrl) && serviceUrl.endsWith(INTERFACE_NAME)) {
+	    // always return the first capability with a url assigned.
+	    for (BasicCapability basicCapability : capabilities) {
+			String serviceUrl = basicCapability.getAccessUrl();
+			if (hasText(serviceUrl)) {
 				return serviceUrl;
 			}
 		}
-
 		return searchForServiceUrl(capabilities); // if the url is registered at the wrong place
 	}
 
