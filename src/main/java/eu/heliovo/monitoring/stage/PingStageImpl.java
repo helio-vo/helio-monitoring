@@ -47,7 +47,7 @@ public final class PingStageImpl implements PingStage {
 
 			if (hostIsAlive) {
 
-				message = "Service host is reachable, response time = " + responseTimeInMillis + " ms";
+				message = "Service host " + host + "  is reachable, response time = " + responseTimeInMillis + " ms";
 
 			} else {
 

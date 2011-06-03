@@ -201,11 +201,11 @@ public class StageExecutorImplTest extends Assert {
 
 					if ("msslxw.mssl.ucl.ac.uk".equals(host.getName())) {
 						responseTime = 54;
-						message = "Service is reachable";
+						message = "Service is " + host + " reachable";
 					}
 					if ("helio-fc1.obspm.fr".equals(host.getName())) {
 						status = CRITICAL;
-						message = "Service host is unreachable";
+						message = "Service host " + host + " is unreachable";
 					}
 
 					hostStatusDetails

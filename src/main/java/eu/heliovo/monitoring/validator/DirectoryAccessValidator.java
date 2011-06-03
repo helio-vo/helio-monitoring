@@ -21,7 +21,7 @@ public final class DirectoryAccessValidator {
 
 	private static void validateAccessRights(File directory) {
 		if (!hasNeededAccess(directory)) {
-			throw new IllegalArgumentException("directory does not have needed access rights!");
+			throw new IllegalArgumentException("directory " + directory.getAbsolutePath() + " does not have needed access rights [r=" + directory.canRead() + ",w=" + directory.canWrite() + ",x=" + directory.canExecute()+"]");
 		}
 	}
 

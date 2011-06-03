@@ -45,9 +45,9 @@ public final class ServiceHostUtils {
 		for (Service service : newServices) {
 
 			URL serviceUrl = service.getUrl();
-			String host = serviceUrl.getHost();
+			String host = serviceUrl.getProtocol() + "://" + serviceUrl.getHost() + (serviceUrl.getPort() != 80 ? serviceUrl.getPort() : "");
 
-			if (hostsWithServices.containsKey(serviceUrl.getHost())) {
+			if (hostsWithServices.containsKey(host)) {
 				Set<Service> hostsServices = hostsWithServices.get(host);
 				hostsServices.add(service);
 			} else {
