@@ -16,7 +16,7 @@ import eu.heliovo.registryclient.impl.ServiceRegistryClientFactory;
 
 public class RegistryClientServiceLoaderTest extends Assert {
 
-	private static final String REGISTRY_TABLE_FORMAT = "| %-80s | %-50s | %-20sÊ| %-90s |";
+	private static final String REGISTRY_TABLE_FORMAT = "| %-80s | %-50s | %-20sÂ | %-90s |";
 
     public RegistryClientServiceLoaderTest() throws Exception {
 	}
