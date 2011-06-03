@@ -29,7 +29,6 @@ public class RegistryClientServiceLoader implements ServiceLoader {
      */
     private static final Logger _LOGGER = Logger.getLogger(RegistryClientServiceLoader.class);
     
-    @Autowired
     public RegistryClientServiceLoader() {
     }
     
