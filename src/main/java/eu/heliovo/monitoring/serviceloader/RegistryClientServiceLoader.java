@@ -6,11 +6,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import eu.heliovo.monitoring.model.ModelFactory;
 import eu.heliovo.monitoring.model.Service;
 import eu.heliovo.registryclient.AccessInterface;
-import eu.heliovo.registryclient.AccessInterfaceType;
 import eu.heliovo.registryclient.ServiceDescriptor;
 import eu.heliovo.registryclient.ServiceRegistryClient;
 import eu.heliovo.registryclient.impl.ServiceRegistryClientFactory;
@@ -21,11 +22,16 @@ import eu.heliovo.registryclient.impl.ServiceRegistryClientFactory;
  * @author MarcoSoldati
  *
  */
+@Component
 public class RegistryClientServiceLoader implements ServiceLoader {
     /**
      * the logger
      */
     private static final Logger _LOGGER = Logger.getLogger(RegistryClientServiceLoader.class);
+    
+    @Autowired
+    public RegistryClientServiceLoader() {
+    }
     
     @Override
     public Set<Service> loadServices() {
