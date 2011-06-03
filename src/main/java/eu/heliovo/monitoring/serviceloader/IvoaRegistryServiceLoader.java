@@ -27,7 +27,6 @@ public final class IvoaRegistryServiceLoader implements ServiceLoader {
 //	private static final String ADQLS_QUERY = "capability/@standardID='ivo://helio-vo.eu/std/FullQuery/v0.2'";
 	private static final String ADQLS_QUERY = "capability/interface/@xsi:type='vr:WebService'";
 	
-	private static final int SOAP_SERVICE_INDEX = 1;
 	private static final String INTERFACE_NAME = "HelioService";
 	private static final String WSDL_SUFFIX = "?wsdl";
 	private static final int RESPONSE_TIMEOUT = 10;

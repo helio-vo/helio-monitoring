@@ -33,7 +33,7 @@ public class MonitoringServiceImpl implements MonitoringService, ApplicationCont
 	// for manual service definition, please use "staticServiceLoader" as qualifier and define services in Services.java
 	// Spring automatically injects all components implementing the ServiceUpdateListener interface
 	@Autowired
-	public MonitoringServiceImpl(@Qualifier("ivoaRegistryServiceLoader") ServiceLoader serviceLoader,
+	public MonitoringServiceImpl(@Qualifier("registryClientServiceLoader") ServiceLoader serviceLoader,
 			StageExecutor stageExecutor, List<ServiceUpdateListener> serviceUpdateListeners) {
 
 		this.serviceLoader = serviceLoader;

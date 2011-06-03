@@ -33,7 +33,7 @@ public final class DirectoryAccessValidator {
 
 	private static void validateExisting(File directory) {
 		if (!isExisting(directory)) {
-			throw new IllegalArgumentException("directory does not exist!");
+			throw new IllegalArgumentException("Directory '" + directory.getAbsolutePath() + "' does not exist!");
 		}
 	}
 
