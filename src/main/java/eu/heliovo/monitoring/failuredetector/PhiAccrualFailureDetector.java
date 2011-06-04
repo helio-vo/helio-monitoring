@@ -1,10 +1,11 @@
 package eu.heliovo.monitoring.failuredetector;
 
 import java.io.IOException;
-import java.net.*;
-import java.util.*;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.*;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,34 +106,23 @@ public final class PhiAccrualFailureDetector implements FailureDetector {
 	private long measureResponseTimeInMillies(Host host) throws IOException, InterruptedException {
 
 		long millisBefore = System.currentTimeMillis();
-		URLConnection connection = host.getUrl().openConnection();
-		connection.setDefaultUseCaches(false);
+	        java.net.Socket soc = null;
+	        long milliesAfter;
+	        try {
+	            java.net.InetAddress addr = java.net.InetAddress.getByName(host.getUrl().getHost());
+	            soc = new java.net.Socket(addr, host.getUrl().getPort() < 0 ? 80 : host.getUrl().getPort());
+	            milliesAfter = System.currentTimeMillis();
+	        } finally {
+	            if (soc != null) {
+	                try {
+	                    soc.close();
+	                } catch (java.io.IOException error) {
+	                    logger.error(error.getMessage(), error);
+	                }
+	            }
+	        }
 		
-		connection.connect();
-		long milliesAfter = System.currentTimeMillis();
-		closeConnection(connection);
-
 		return milliesAfter - millisBefore;
-	}
-
-	/**
-	 * If the {@link URLConnection} is a {@link HttpURLConnection} it can be easily closed by calling
-	 * {@link HttpURLConnection#disconnect()}. If it is any other connection, we try to get the input stream. Closing
-	 * this stream will close the connection, but erros can occur, e.g. if the resource is not available. Errors will be
-	 * catched and logged, so the measurement and the detection can continue. If some connections could not be closed,
-	 * this can lead to an "too many open connections"-error and prevent the failure detector to get the next
-	 * measurements.
-	 */
-	private void closeConnection(URLConnection connection) {
-		try {
-			if (connection instanceof HttpURLConnection) {
-				((HttpURLConnection) connection).disconnect();
-			} else {
-				connection.getInputStream().close();
-			}
-		} catch (Exception error) {
-			logger.error(error.getMessage(), error);
-		}
 	}
 
 	@Override
