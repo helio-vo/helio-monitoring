@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import eu.heliovo.monitoring.model.ModelFactory;
 import eu.heliovo.monitoring.model.Service;
 import eu.heliovo.registryclient.AccessInterface;
+import eu.heliovo.registryclient.AccessInterfaceType;
 import eu.heliovo.registryclient.ServiceDescriptor;
 import eu.heliovo.registryclient.ServiceRegistryClient;
 import eu.heliovo.registryclient.impl.ServiceRegistryClientFactory;
@@ -41,7 +42,7 @@ public class RegistryClientServiceLoader implements ServiceLoader {
         
         ServiceDescriptor[] serviceDescriptors = serviceRegistryClient.getAllServiceDescriptors();
         for (ServiceDescriptor serviceDescriptor : serviceDescriptors) {
-            AccessInterface[] soapServices = serviceRegistryClient.getAllEndpoints(serviceDescriptor, null, null);
+            AccessInterface[] soapServices = serviceRegistryClient.getAllEndpoints(serviceDescriptor, null, AccessInterfaceType.SOAP_SERVICE);
             if (soapServices != null && soapServices.length > 0) {
                 try {
                     services.add(ModelFactory.newService(serviceDescriptor.getName(), serviceDescriptor.getLabel(), new URL(soapServices[0].getUrl().toExternalForm() + "?wsdl")));
