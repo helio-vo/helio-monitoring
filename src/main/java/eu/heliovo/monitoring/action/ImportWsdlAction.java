@@ -1,12 +1,18 @@
 package eu.heliovo.monitoring.action;
 
 import java.io.IOException;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.xmlbeans.XmlException;
 
 import com.eviware.soapui.impl.WsdlInterfaceFactory;
-import com.eviware.soapui.impl.wsdl.*;
+import com.eviware.soapui.impl.wsdl.WsdlInterface;
+import com.eviware.soapui.impl.wsdl.WsdlProject;
 import com.eviware.soapui.support.SoapUIException;
 
 import eu.heliovo.monitoring.logging.LogFileWriter;
@@ -32,6 +38,7 @@ public final class ImportWsdlAction implements ResultAction<WsdlInterface> {
 		this.executor = executor;
 	}
 
+	
 	@Override
 	public WsdlInterface getResult() throws XmlException, IOException, SoapUIException, InterruptedException,
 			ExecutionException {
@@ -39,12 +46,13 @@ public final class ImportWsdlAction implements ResultAction<WsdlInterface> {
 		final WsdlProject project = new WsdlProject();
 
 		logFileWriter.write("Importing WSDL file " + wsdlUrl);
-
 		Future<WsdlInterface> future = executor.submit(new Callable<WsdlInterface>() {
 			@Override
 			public WsdlInterface call() throws SoapUIException {
-
 				WsdlInterface[] wsdlInterfaces = WsdlInterfaceFactory.importWsdl(project, wsdlUrl, true);
+				if (wsdlInterfaces == null || wsdlInterfaces.length == 0) {
+				    throw new SoapUIException("Unable to load WsdlInterface for URL " + wsdlUrl);
+				} 
 				return wsdlInterfaces[FIRST_WSDL_INTERFACE];
 			}
 		});
@@ -64,4 +72,34 @@ public final class ImportWsdlAction implements ResultAction<WsdlInterface> {
 			future.cancel(true);
 		}
 	}
+	
+	public static void main(String[] args) throws Exception {
+	    ExecutorService executor = null;
+        LogFileWriter logger = new LogFileWriter() {
+            
+            @Override
+            public void write(Exception e) {
+                e.printStackTrace();
+            }
+            
+            @Override
+            public void write(String text) {
+                System.err.println(text);
+            }
+            
+            @Override
+            public String getFileName() {
+                return "test";
+            }
+            
+            @Override
+            public void close() {
+            }
+        };
+        ImportWsdlAction action = new ImportWsdlAction(logger , "http://festung1.oats.inaf.it:8080/helio-hec/HelioService?wsdl", executor);
+        WsdlInterface res = action.getResult();
+        System.out.println(res);
+        res = null;
+        
+    }
 }

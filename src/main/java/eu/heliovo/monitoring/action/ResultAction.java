@@ -12,8 +12,8 @@ public interface ResultAction<ResultType> extends Action {
 	/**
 	 * Executes the action and returns its result.
 	 * 
-	 * @return the result of executing this action.
-	 * @throws Exception in case of an error
+	 * @return the result of executing this action. Will not be null.
+	 * @throws Exception in case of an error or if the result is null.
 	 */
 	ResultType getResult() throws Exception;
 }
