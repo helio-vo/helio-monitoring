@@ -44,7 +44,7 @@ public class RegistryClientServiceLoader implements ServiceLoader {
             AccessInterface[] soapServices = serviceRegistryClient.getAllEndpoints(serviceDescriptor, null, AccessInterfaceType.SOAP_SERVICE);
             if (soapServices != null && soapServices.length > 0) {
                 try {
-                    services.add(ModelFactory.newService(serviceDescriptor.getName(), serviceDescriptor.getLabel(), new URL(soapServices[0].getUrl().toExternalForm())));
+                    services.add(ModelFactory.newService(serviceDescriptor.getName().getServiceId(), serviceDescriptor.getLabel(), new URL(soapServices[0].getUrl().toExternalForm())));
                 } catch (MalformedURLException e) {
                     _LOGGER.warn("illegal URL: " + e.getMessage(), e);
                 }
