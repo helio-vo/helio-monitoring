@@ -12,7 +12,7 @@ import eu.heliovo.registryclient.AccessInterface;
 import eu.heliovo.registryclient.ServiceCapability;
 import eu.heliovo.registryclient.ServiceDescriptor;
 import eu.heliovo.registryclient.ServiceRegistryClient;
-import eu.heliovo.registryclient.impl.ServiceRegistryClientFactory;
+import eu.heliovo.registryclient.impl.HelioRemoteServiceRegistryClient;
 
 public class RegistryClientServiceLoaderTest extends Assert {
 
@@ -39,7 +39,7 @@ public class RegistryClientServiceLoaderTest extends Assert {
 		System.out.println("-------------------------------------------------------------------------------------------------------------------");
 		
 	    // get a pointer to the service registry client
-        ServiceRegistryClient serviceRegistryClient = ServiceRegistryClientFactory.getInstance().getServiceRegistryClient();
+        ServiceRegistryClient serviceRegistryClient = new HelioRemoteServiceRegistryClient("helio-monitor-test");
         
         System.out.println(String.format(REGISTRY_TABLE_FORMAT, "service", "capability", "xsi:Type", "url"));
         ServiceDescriptor[] serviceDescriptors = serviceRegistryClient.getAllServiceDescriptors();

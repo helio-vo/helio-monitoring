@@ -14,7 +14,7 @@ import eu.heliovo.registryclient.AccessInterface;
 import eu.heliovo.registryclient.AccessInterfaceType;
 import eu.heliovo.registryclient.ServiceDescriptor;
 import eu.heliovo.registryclient.ServiceRegistryClient;
-import eu.heliovo.registryclient.impl.ServiceRegistryClientFactory;
+import eu.heliovo.registryclient.impl.HelioRemoteServiceRegistryClient;
 
 /**
  * Service loader that uses the helio-registryclient to load the
@@ -37,7 +37,7 @@ public class RegistryClientServiceLoader implements ServiceLoader {
         final Set<Service> services = new HashSet<Service>();
         
         // get a pointer to the service registry client
-        ServiceRegistryClient serviceRegistryClient = ServiceRegistryClientFactory.getInstance().getServiceRegistryClient();
+        ServiceRegistryClient serviceRegistryClient = new HelioRemoteServiceRegistryClient("registry");
         
         ServiceDescriptor[] serviceDescriptors = serviceRegistryClient.getAllServiceDescriptors();
         for (ServiceDescriptor serviceDescriptor : serviceDescriptors) {
