@@ -18,17 +18,6 @@
 		<servlet-name>monitoringservice</servlet-name>
 		<url-pattern>/logs/*</url-pattern>
 	</servlet-mapping>
-
-	<servlet>
-		<servlet-name>HelioServiceEndpoint</servlet-name>
-		<servlet-class>eu.heliovo.monitoring.service.HelioServiceEndpoint</servlet-class>
-		<load-on-startup>2</load-on-startup>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>HelioServiceEndpoint</servlet-name>
-		<url-pattern>/HelioService</url-pattern>
-	</servlet-mapping>
 	
 	<welcome-file-list>
 		<welcome-file>index.jsp</welcome-file>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="11.4">
+  <zoom_level>10</zoom_level>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>40</x>
+      <y>150</y>
+      <w>230</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>StatusDetails
+--
+name : String
+url : URL
+status : Status
+responseTimeInMillis : long
+message : String</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Note</type>
+    <coordinates>
+      <x>300</x>
+      <y>150</y>
+      <w>140</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>Status: 
+OK, CRITICAL, 
+WARNING, 
+UNKNOWN
+bg=blue</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>240</x>
+      <y>160</y>
+      <w>80</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=..</panel_attributes>
+    <additional_attributes>30;30;60;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>40</x>
+      <y>20</y>
+      <w>370</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+MonitoringService
+--
+getAllStatus() : List&lt;StatusDetails&gt;
+getStatus(serviceId : String) : StatusDetails</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

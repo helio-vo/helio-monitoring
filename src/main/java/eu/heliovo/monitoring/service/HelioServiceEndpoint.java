@@ -2,9 +2,14 @@ package eu.heliovo.monitoring.service;
 
 import java.util.List;
 
-import javax.jws.*;
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+import javax.jws.WebService;
 
-import eu.heliovo.monitoring.model.*;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import eu.heliovo.monitoring.model.Service;
+import eu.heliovo.monitoring.model.StatusDetails;
 
 /**
  * Represents the JAX-WS endpoint, it is needed for JAW-WS and Spring to work together and is registered as a servlet in
@@ -15,11 +20,16 @@ import eu.heliovo.monitoring.model.*;
  * @author Kevin Seidler
  * 
  */
+@org.springframework.stereotype.Service
 @WebService(serviceName = "HelioService")
-public class HelioServiceEndpoint {
+public class HelioServiceEndpoint{
 
-	private static MonitoringService monitoringService;
+    @Autowired
+	private MonitoringService monitoringService;
 
+	public HelioServiceEndpoint() {
+    }
+	
 	/**
 	 * Please see {@link MonitoringService#getAllStatus()}.
 	 * 
@@ -36,9 +46,5 @@ public class HelioServiceEndpoint {
 	@WebMethod
 	public StatusDetails<Service> getStatus(@WebParam(name = "serviceIdendifier") String serviceIdendifier) {
 		return monitoringService.getStatus(serviceIdendifier);
-	}
-
-	protected static void setMonitoringService(MonitoringService monitoringService) {
-		HelioServiceEndpoint.monitoringService = monitoringService;
 	}
 }

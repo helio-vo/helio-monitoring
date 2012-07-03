@@ -35,7 +35,6 @@ public class MonitoringServiceImpl implements MonitoringService, ApplicationCont
 	@Autowired
 	public MonitoringServiceImpl(@Qualifier("registryClientServiceLoader") ServiceLoader serviceLoader,
 			StageExecutor stageExecutor, List<ServiceUpdateListener> serviceUpdateListeners) {
-
 		this.serviceLoader = serviceLoader;
 		this.stageExecutor = stageExecutor;
 		this.serviceUpdateListeners = Collections.unmodifiableList(serviceUpdateListeners);
@@ -96,8 +95,7 @@ public class MonitoringServiceImpl implements MonitoringService, ApplicationCont
 	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) {
-
-		HelioServiceEndpoint.setMonitoringService(this); // see the Endpoint for more info about this
+		//HelioServiceEndpoint.setMonitoringService(this); // see the Endpoint for more info about this
 		updateServices();
 		stageExecutor.doContinousExecution();
 	}

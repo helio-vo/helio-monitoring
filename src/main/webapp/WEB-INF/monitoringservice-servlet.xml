@@ -1,29 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:context="http://www.springframework.org/schema/context" xmlns:task="http://www.springframework.org/schema/task"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+  xmlns:task="http://www.springframework.org/schema/task"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans 
 			http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 			http://www.springframework.org/schema/context
 			http://www.springframework.org/schema/context/spring-context-3.0.xsd
 			http://www.springframework.org/schema/task
 			http://www.springframework.org/schema/task/spring-task-3.0.xsd">
 
-	<context:component-scan base-package="eu.heliovo.monitoring" />
+  <bean class="org.springframework.remoting.jaxws.SimpleJaxWsServiceExporter">
+    <property name="baseAddress" value="http://localhost:8080/helio-monitoring/" />
+  </bean>
+  
+  <context:component-scan base-package="eu.heliovo.monitoring" />
 
-	<context:property-placeholder location="classpath:helio-monitoring.properties" />
+  <context:property-placeholder location="classpath:helio-monitoring.properties" />
 
-	<task:annotation-driven executor="executor" scheduler="scheduler" />
+  <task:annotation-driven executor="executor"
+    scheduler="scheduler" />
 
-	<!-- for Scheduled annotations, 1 thread for the stage executor, 1 for updating the services, 1 for the failure detector's 
-		detect method -->
-	<task:scheduler id="scheduler" pool-size="3" />
+  <!-- for Scheduled annotations, 1 thread for the stage executor, 1 for 
+    updating the services, 1 for the failure detector's detect method -->
+  <task:scheduler id="scheduler" pool-size="3" />
 
-	<!-- The failure detector needs one thread for every monitored service. It is important that threads are starting immediately. 
-		Therefore enough threads must be in the core pool, otherwise they are queued and the failure detectors time measurement goes 
-		wrong. Core threads can time out, so resources are released, if not needed. -->
-	<bean id="executor" class="org.springframework.scheduling.concurrent.ThreadPoolExecutorFactoryBean">
-		<property name="corePoolSize" value="100" />
-		<property name="allowCoreThreadTimeOut" value="true" />
-	</bean>
+  <!-- The failure detector needs one thread for every monitored service. 
+    It is important that threads are starting immediately. Therefore enough threads 
+    must be in the core pool, otherwise they are queued and the failure detectors 
+    time measurement goes wrong. Core threads can time out, so resources are 
+    released, if not needed. -->
+  <bean id="executor"
+    class="org.springframework.scheduling.concurrent.ThreadPoolExecutorFactoryBean">
+    <property name="corePoolSize" value="100" />
+    <property name="allowCoreThreadTimeOut" value="true" />
+  </bean>
 
 </beans>
