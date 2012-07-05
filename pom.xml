@@ -24,6 +24,7 @@
     <spring.version>3.1.0.RELEASE</spring.version>
     <commons-io.verion>2.0</commons-io.verion>
     <servlet-api.version>2.5</servlet-api.version>
+    <cxf.version>2.6.1</cxf.version>
   </properties>
 
   <repositories>
@@ -64,6 +65,17 @@
       <artifactId>servlet-api</artifactId>
       <version>${servlet-api.version}</version>
       <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-frontend-jaxws</artifactId>
+      <version>${cxf.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-transports-http</artifactId>
+      <version>${cxf.version}</version>
     </dependency>
 
     <!-- for unit testing -->
@@ -193,14 +205,6 @@
       <groupId>antlr</groupId>
       <artifactId>stringtemplate</artifactId>
       <version>2.3b6</version>
-    </dependency>
-
-    <dependency>
-      <groupId>xerces</groupId>
-      <artifactId>xercesImpl</artifactId>
-      <version>2.4.0</version>
-      <type>jar</type>
-      <scope>compile</scope>
     </dependency>
 
     <!-- for shortening URLs to display them in Nagios GUI -->

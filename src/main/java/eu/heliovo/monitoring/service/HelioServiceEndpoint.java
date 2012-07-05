@@ -7,6 +7,7 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 import eu.heliovo.monitoring.model.Service;
 import eu.heliovo.monitoring.model.StatusDetails;
@@ -20,9 +21,8 @@ import eu.heliovo.monitoring.model.StatusDetails;
  * @author Kevin Seidler
  * 
  */
-@org.springframework.stereotype.Service
 @WebService(serviceName = "HelioService")
-public class HelioServiceEndpoint{
+public class HelioServiceEndpoint extends SpringBeanAutowiringSupport {
 
     @Autowired
 	private MonitoringService monitoringService;
