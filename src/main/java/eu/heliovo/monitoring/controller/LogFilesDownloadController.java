@@ -28,16 +28,15 @@ public final class LogFilesDownloadController {
 		this.logFilePath = logFilePath;
 	}
 
-	@RequestMapping("*.txt")
+	@RequestMapping("/**/*.txt")
 	public void downloadLogFile(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
 		String pathWithinServlet = urlPathHelper.getPathWithinServletMapping(request);
 		String logFile = pathWithinServlet.substring(1);
-
+		File logFileFile = new File(logFilePath, logFile);
 		try {
-			FileCopyUtils.copy(new FileReader(logFilePath + "/" + logFile), response.getWriter());
+			FileCopyUtils.copy(new FileReader(logFileFile), response.getWriter());
 		} catch (FileNotFoundException e) {
-			response.sendError(HTTP_404);
+			response.sendError(HTTP_404, "Unable to find log file at " + logFileFile.getCanonicalPath());
 		}
 	}
 }
