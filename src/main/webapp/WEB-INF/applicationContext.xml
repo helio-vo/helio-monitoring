@@ -13,12 +13,11 @@
 
   <import resource="classpath:META-INF/cxf/cxf.xml" />
   <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
-
     
   <context:component-scan base-package="eu.heliovo.monitoring" />
 
   <context:property-placeholder location="classpath:helio-monitoring.properties" />
-
+    
   <task:annotation-driven executor="executor"
     scheduler="scheduler" />
 

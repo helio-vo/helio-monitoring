@@ -86,6 +86,7 @@ public class StageExecutorImplTest extends Assert {
 		assertEquals(4, result.size());
 
 		boolean icsFound = false;
+		boolean ilsFound = false;
 		boolean hfcFound = false;
 		boolean dpasFound = false;
 
@@ -97,6 +98,11 @@ public class StageExecutorImplTest extends Assert {
 			if (statusDetails.getName().equals("ICS")) {
 				icsFound = true;
 				assertEquals(CRITICAL, statusDetails.getStatus());
+			}
+			
+			if (statusDetails.getName().equals("ILS")) {
+			    ilsFound = true;
+			    assertEquals(OK, statusDetails.getStatus());
 			}
 
 			if (statusDetails.getName().equals("HFC")) {
@@ -111,12 +117,17 @@ public class StageExecutorImplTest extends Assert {
 		}
 
 		assertTrue(icsFound);
+		assertTrue(ilsFound);
 		assertTrue(hfcFound);
 		assertTrue(dpasFound);
 	}
 
+	/**
+	 * Create a stage executor with four registered services and assign a handler for every stage.
+	 * @return the executor impl.
+	 * @throws Exception
+	 */
 	private StageExecutorImpl initStageExecutor() throws Exception {
-
 		PingStage pingstage = initPingStage();
 		MethodCallStage methodCallStage = initMethodCallStage();
 		TestingStage testingStage = initTestingStage();
@@ -130,9 +141,9 @@ public class StageExecutorImplTest extends Assert {
 
 		Set<Host> hosts = new HashSet<Host>();
 
-		URL icsUrl = new URL("http://msslxw.mssl.ucl.ac.uk:8080/helio-ics/HelioService?wsdl");
-		URL dpasUrl = new URL("http://msslxw.mssl.ucl.ac.uk:8080/helio-dpas/HelioService?wsdl");
-		URL ilsUrl = new URL("http://msslxw.mssl.ucl.ac.uk:8080/helio-ils/HelioService?wsdl");
+		URL icsUrl = new URL("http://msslkz.mssl.ucl.ac.uk/helio-ics/HelioService?wsdl");
+		URL dpasUrl = new URL("http://msslkz.mssl.ucl.ac.uk/helio-dpas/HelioService?wsdl");
+		URL ilsUrl = new URL("http://msslkz.mssl.ucl.ac.uk/helio-ils/HelioService?wsdl");
 
 		Set<Service> services = new HashSet<Service>();
 		services.add(newService("", "ICS", icsUrl));
@@ -141,7 +152,7 @@ public class StageExecutorImplTest extends Assert {
 
 		hosts.add(newHost(icsUrl, services));
 
-		URL hfcUrl = new URL("http://helio-fc1.obspm.fr:8080/helio-hfc/HelioService?wsdl");
+		URL hfcUrl = new URL("http://voparis-helio.obspm.fr/helio-hfc");
 		services = new HashSet<Service>(asList(newService("", "HFC", hfcUrl)));
 		hosts.add(newHost(hfcUrl, services));
 
@@ -193,17 +204,16 @@ public class StageExecutorImplTest extends Assert {
 
 				List<StatusDetails<Host>> hostStatusDetails = new ArrayList<StatusDetails<Host>>();
 				for (Host host : hosts) {
-
 					Status status = OK;
 					long responseTime = Long.MAX_VALUE;
 					String hostName = host.getName();
 					String message = "";
 
-					if ("msslxw.mssl.ucl.ac.uk".equals(host.getName())) {
+					if ("msslkz.mssl.ucl.ac.uk".equals(host.getName())) {
 						responseTime = 54;
 						message = "Service is " + host + " reachable";
 					}
-					if ("helio-fc1.obspm.fr".equals(host.getName())) {
+					if ("voparis-helio.obspm.fr".equals(host.getName())) {
 						status = CRITICAL;
 						message = "Service host " + host + " is unreachable";
 					}
@@ -224,11 +234,11 @@ public class StageExecutorImplTest extends Assert {
 			public List<StatusDetails<Service>> getStatus(Set<Service> services) {
 
 				methodCallStageCalled = true;
+				// one service failed in ping status. thus there are just three left.
 				assertEquals(3, services.size());
 
 				List<StatusDetails<Service>> statusDetails = new ArrayList<StatusDetails<Service>>();
 				for (Service service : services) {
-
 					if ("ICS".equals(service.getName())) {
 						String message = "Service is working";
 						statusDetails.add(newStatusDetails(service, service.getName(), service.getUrl(), OK, 83,
@@ -245,7 +255,7 @@ public class StageExecutorImplTest extends Assert {
 						String message = "Service is working";
 						statusDetails.add(newStatusDetails(service, service.getName(), service.getUrl(), OK, 78,
 								message));
-					}
+					}					
 				}
 
 				assertEquals(3, statusDetails.size());

@@ -41,6 +41,11 @@ public final class HostImpl implements Host {
 	public Set<Service> getServices() {
 		return services;
 	}
+	
+	@Override
+	public String toString() {
+	    return url.toExternalForm(); 
+	}
 
 	@Override
 	public int hashCode() {

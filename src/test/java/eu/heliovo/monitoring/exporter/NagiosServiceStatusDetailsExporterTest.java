@@ -66,7 +66,7 @@ public class NagiosServiceStatusDetailsExporterTest extends Assert {
 				firstHostFound = true;
 			}
 
-			if (hostName.equals("msslxw.mssl.ucl.ac.uk")) {
+			if (hostName.equals("msslkz.mssl.ucl.ac.uk")) {
 				secondHostFound = true;
 			}
 
@@ -125,7 +125,7 @@ public class NagiosServiceStatusDetailsExporterTest extends Assert {
 		String firstUrl = "http://helio.i4ds.ch:8080/core/HECService?wsdl";
 		StatusDetails<Host> first = newStatusDetails(null, "HEC", new URL(firstUrl), OK, 5, firstMessage);
 
-		URL secondUrl = new URL("http://msslxw.mssl.ucl.ac.uk:8080/core/FrontendFacadeService?wsdl");
+		URL secondUrl = new URL("http://msslkz.mssl.ucl.ac.uk:8080/core/FrontendFacadeService?wsdl");
 		String secondMessage = "Host not reachable";
 		StatusDetails<Host> second = newStatusDetails(null, "FrontendFacade", secondUrl, CRITICAL, 0, secondMessage);
 		

@@ -12,7 +12,7 @@ import eu.heliovo.monitoring.test.util.TestUtils;
 
 public class IvoaRegistryServiceLoaderTest extends Assert {
 
-	private static final String registryUrl = "http://msslxw.mssl.ucl.ac.uk:8080/helio_registry/services/RegistryQueryv1_0";
+	private static final String registryUrl = "http://msslkz.mssl.ucl.ac.uk/helio_registry/services/RegistryQueryv1_0";
 
 	private final ExecutorService executor;
 
@@ -25,10 +25,11 @@ public class IvoaRegistryServiceLoaderTest extends Assert {
 
 		ServiceLoader serviceloader = new IvoaRegistryServiceLoader(registryUrl, executor);
 		Set<Service> services = serviceloader.loadServices();
+		assertTrue(services.size() > 0); // at least one service should be registered.
 		for (Service service : services) {
 			System.out.println(service.getIdentifier() + " - " + service.getName() + " - " + service.getUrl());
 		}
-
+		
 		// at this url there is no registry, getting 404 and the result is an empty list
 		serviceloader = new IvoaRegistryServiceLoader("http://imaginary.com/Registry", executor);
 		services = serviceloader.loadServices();
