@@ -71,7 +71,7 @@ public final class StageExecutorImpl implements StageExecutor {
 						execute();
 						Thread.sleep(executionDelayInMillis); // to let other threads get to work or to
 
-					} catch (Exception e) {
+					} catch (Throwable e) {
 						logger.warn("StageExecutor: Exception in continuous Execution: " + e.getMessage(), e);
 					}
 				}
