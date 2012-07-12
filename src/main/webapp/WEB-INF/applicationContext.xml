@@ -17,11 +17,12 @@
   <import resource="classpath:META-INF/cxf/cxf.xml" />
   <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 
+  <context:property-placeholder location="classpath:helio-monitoring.properties" />
   <context:component-scan base-package="eu.heliovo.monitoring">
-    <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
   </context:component-scan>
 
-  <context:property-placeholder location="classpath:helio-monitoring.properties" />
+  <!-- Configures the @Controller programming model -->
+  <mvc:annotation-driven />
 
   <task:annotation-driven executor="executor"
     scheduler="scheduler" />
