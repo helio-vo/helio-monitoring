@@ -39,7 +39,7 @@ public final class Log4JLogFileWriter implements LogFileWriter {
 	}
 
 	private File createLogFileDirectory(String logFilesdirectoryPath) {
-		File logFilesdirectory = new File(logFilesdirectoryPath);
+		File logFilesdirectory = new File(logFilesdirectoryPath).getAbsoluteFile();
 		if (!logFilesdirectory.exists()) {
 			try {
 				logFilesdirectory.mkdirs();
