@@ -12,7 +12,7 @@ import eu.heliovo.monitoring.test.util.TestUtils;
 
 public class IvoaRegistryServiceLoaderTest extends Assert {
 
-	private static final String registryUrl = "http://msslkz.mssl.ucl.ac.uk/helio_registry/services/RegistryQueryv1_0";
+	private static final String registryUrl = "http://helio.mssl.ucl.ac.uk/helio_registry/services/RegistryQueryv1_0";
 
 	private final ExecutorService executor;
 
