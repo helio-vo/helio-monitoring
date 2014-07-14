@@ -19,7 +19,7 @@ public final class Services {
 
 	public static final Set<Service> LIST;
 
-	private static final String MSSL_URL = "http://msslkz.mssl.ucl.ac.uk/";
+	private static final String MSSL_URL = "http://helio.mssl.ucl.ac.uk/";
 
 	private Services() {
 	}
